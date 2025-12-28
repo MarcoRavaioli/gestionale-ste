@@ -3,8 +3,8 @@ import { Cliente } from './cliente.entity';
 import { Commessa } from './commessa.entity';
 
 export enum TipoFattura {
-  ENTRATA = 'entrata',
-  USCITA = 'uscita',
+  ENTRATA = 'entrata', // Fattura emessa al cliente
+  USCITA = 'uscita', // Fattura ricevuta da fornitore (acquisto)
 }
 
 @Entity()
@@ -13,31 +13,35 @@ export class Fattura {
   id: number;
 
   @Column()
-  numero_fattura: string;
+  numero_fattura: string; // Es: "34/2025" o "Fatt. Acquisto 201"
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'date' }) // Basta date, l'ora di emissione è superflua
   data_emissione: Date;
+
+  @Column({ type: 'text', nullable: true })
+  descrizione: string; // <--- AGGIUNTO: Es. "Acconto 30% fornitura serramenti PVC"
 
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   totale: number;
 
   @Column({
-    type: 'simple-enum',
+    type: 'simple-enum', // Su SQLite simple-enum salva la stringa, va benissimo
     enum: TipoFattura,
     default: TipoFattura.ENTRATA,
   })
   tipo: TipoFattura;
 
-  // Scadenza incasso (default calcolato lato service, qui salviamo la data)
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'date', nullable: true })
   data_scadenza: Date;
 
   @Column({ default: false })
-  incassata: boolean;
+  incassata: boolean; // O "pagata" se è un'uscita
 
-  @ManyToOne(() => Cliente, (cliente) => cliente.fatture)
-  cliente: Cliente;
+  // CORREZIONE CRITICA: nullable: true
+  // Se è una spesa (benzina), non c'è un Cliente collegato.
+  @ManyToOne(() => Cliente, (cliente) => cliente.fatture, { nullable: true })
+  cliente: Cliente | null;
 
   @ManyToOne(() => Commessa, (commessa) => commessa.fatture, { nullable: true })
-  commessa: Commessa;
+  commessa: Commessa | null;
 }

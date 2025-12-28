@@ -12,6 +12,13 @@ import { Fattura } from './entities/fattura.entity';
 import { Collaboratore } from './entities/collaboratore.entity';
 import { TracciamentoPersonale } from './entities/tracciamento.entity';
 import { ClienteModule } from './cliente/cliente.module';
+import { AppuntamentoModule } from './appuntamento/appuntamento.module';
+import { CommessaModule } from './commessa/commessa.module';
+import { CollaboratoreModule } from './collaboratore/collaboratore.module';
+import { TracciamentoModule } from './tracciamento/tracciamento.module';
+import { FatturaModule } from './fattura/fattura.module';
+import { AllegatoModule } from './allegato/allegato.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -31,6 +38,13 @@ import { ClienteModule } from './cliente/cliente.module';
       synchronize: true, // Questo creerà le tabelle nel DB automaticamente
     }),
     ClienteModule,
+    AppuntamentoModule,
+    CommessaModule,
+    CollaboratoreModule,
+    TracciamentoModule,
+    FatturaModule,
+    AllegatoModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

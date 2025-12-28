@@ -6,21 +6,27 @@ export class Indirizzo {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: 'Italia' })
-  stato: string;
+  @Column()
+  via: string; // <--- Prima forse si chiamava 'indirizzo'
 
   @Column()
-  provincia: string;
+  civico: string; // <--- Aggiunto campo specifico
 
   @Column()
   citta: string;
 
   @Column()
-  indirizzo: string; // Via/Piazza
+  cap: string; // <--- Aggiunto campo specifico
 
-  @Column({ type: 'text', nullable: true })
-  note: string;
+  // Rendiamo la provincia OPZIONALE (nullable: true)
+  @Column({ nullable: true })
+  provincia: string;
 
-  @ManyToOne(() => Cliente, (cliente) => cliente.indirizzi)
+  @Column({ default: 'Italia' })
+  stato: string;
+
+  @ManyToOne(() => Cliente, (cliente) => cliente.indirizzi, {
+    onDelete: 'CASCADE',
+  })
   cliente: Cliente;
 }

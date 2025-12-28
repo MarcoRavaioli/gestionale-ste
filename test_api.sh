@@ -54,3 +54,12 @@ echo "============================================="
 curl -i -X GET "$BASE_URL/cliente/1"
 
 echo -e "\n\nTest Completato."
+
+echo "1. CREO UN APPUNTAMENTO per il Cliente ID 999"
+# Nota la data in formato ISO
+curl -i -X POST "$BASE_URL/appuntamento" \
+     -H "Content-Type: application/json" \
+     -d '{"nome": "Visita Controllo", "data_ora": "2025-12-25T15:30:00.000Z", "clienteId": 999, "descrizione": "Controllo posturale"}'
+
+echo -e "\n\n2. LEGGO GLI APPUNTAMENTI (Devo vedere anche i dati del cliente)"
+curl -i -X GET "$BASE_URL/appuntamento"
