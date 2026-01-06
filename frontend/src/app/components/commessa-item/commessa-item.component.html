@@ -1,0 +1,49 @@
+<ion-accordion [value]="'commessa-' + commessa.id" class="commessa-accordion">
+  
+  <ion-item slot="header" lines="none" class="commessa-header-item">
+    <div class="commessa-row-grid">
+      
+      <div class="col-status">
+        <ion-badge [color]="getColoreStato(commessa.stato)" class="status-badge">
+          {{ commessa.stato }}
+        </ion-badge>
+        <span class="serial-code">{{ commessa.seriale }}</span>
+      </div>
+
+      <div class="col-info">
+        <p class="descrizione">{{ commessa.descrizione || 'Nessuna descrizione' }}</p>
+        <div class="meta-info" *ngIf="isAdmin && commessa.valore_totale">
+          <span class="price-tag">€ {{ commessa.valore_totale | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="col-actions" *ngIf="isAdmin">
+        <ion-button fill="clear" size="small" (click)="handleEdit($event)">
+          <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button fill="clear" size="small" color="danger" (click)="handleDelete($event)">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+  </ion-item>
+
+  <div slot="content" class="appuntamenti-content">
+    <div class="appuntamenti-label">
+      <ion-icon name="calendar-outline"></ion-icon> APPUNTAMENTI COLLEGATI
+    </div>
+
+    <div *ngIf="!commessa.appuntamenti?.length" class="no-appuntamenti">
+      Nessun appuntamento registrato.
+    </div>
+
+    <ion-list lines="full">
+      <ion-item *ngFor="let app of commessa.appuntamenti">
+        <ion-label>
+          <h3>{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</h3>
+          <p>{{ app.nome }}</p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </div>
+</ion-accordion>

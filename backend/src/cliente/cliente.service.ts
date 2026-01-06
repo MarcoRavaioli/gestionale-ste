@@ -21,9 +21,11 @@ export class ClienteService {
 
   findAll() {
     return this.clienteRepository.find({
-      // PRIMA ERA: relations: ['commesse'] o simili
-      // ORA DEVE ESSERE:
-      relations: ['indirizzi', 'indirizzi.commesse'],
+      relations: [
+        'indirizzi',
+        'indirizzi.commesse',
+        'indirizzi.commesse.appuntamenti',
+      ],
     });
   }
 
@@ -31,7 +33,11 @@ export class ClienteService {
     return this.clienteRepository.findOne({
       where: { id },
       // ANCHE QUI, carica a cascata: Cliente -> Indirizzi -> Commesse
-      relations: ['indirizzi', 'indirizzi.commesse'],
+      relations: [
+        'indirizzi',
+        'indirizzi.commesse',
+        'indirizzi.commesse.appuntamenti',
+      ],
     });
   }
 

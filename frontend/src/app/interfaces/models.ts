@@ -6,8 +6,8 @@ export interface Indirizzo {
   cap: string;
   provincia?: string;
   stato: string;
-  commesse?: Commessa[]; // Importante: contiene la lista commesse
-  cliente?: Cliente; // Importante: contiene il cliente proprietario
+  commesse?: Commessa[];
+  cliente?: Cliente;
 }
 
 export interface Commessa {
@@ -16,12 +16,10 @@ export interface Commessa {
   descrizione?: string;
   stato: 'APERTA' | 'CHIUSA' | 'IN_CORSO';
   valore_totale?: number;
-  
-  // ORA DIPENDE DALL'INDIRIZZO
   indirizzo?: Indirizzo; 
   
-  // NON PIÙ DAL CLIENTE DIRETTO
-  // clienteId?: number;  <-- RIMOSSO
+  // AGGIUNGI QUESTA RIGA QUI SOTTO:
+  appuntamenti?: Appuntamento[]; 
 }
 
 export interface Cliente {
@@ -30,7 +28,6 @@ export interface Cliente {
   telefono?: string;
   email?: string;
   indirizzi?: Indirizzo[];
-  // commesse?: Commessa[]; <-- RIMOSSO (si passa dagli indirizzi)
 }
 
 export interface Appuntamento {
@@ -38,10 +35,8 @@ export interface Appuntamento {
   nome: string;
   data_ora: string;
   descrizione?: string;
-  
-  // L'appuntamento DEVE avere una commessa
   commessa?: Commessa; 
-  commessaId?: number; // Utile per l'invio dati
+  commessaId?: number;
 }
 
 export interface User {

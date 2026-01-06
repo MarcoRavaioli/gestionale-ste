@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCommessaDto } from './dto/create-commessa.dto';
 import { Commessa } from '../entities/commessa.entity';
+import { UpdateCommessaDto } from './dto/update-commessa.dto';
 
 @Injectable()
 export class CommessaService {
@@ -37,10 +38,18 @@ export class CommessaService {
     });
   }
 
-  // update e remove rimangono standard...
-  update(id: number, updateDto: any) {
-    return this.commessaRepository.update(id, updateDto);
+  async update(id: number, updateDto: UpdateCommessaDto) {
+    const datiPuliti: Partial<UpdateCommessaDto> = { ...updateDto };
+
+    if ('appuntamenti' in datiPuliti) delete datiPuliti.appuntamenti;
+    if ('fatture' in datiPuliti) delete datiPuliti.fatture;
+    if ('allegati' in datiPuliti) delete datiPuliti.allegati;
+
+    await this.commessaRepository.update(id, datiPuliti);
+
+    return this.findOne(id);
   }
+
   remove(id: number) {
     return this.commessaRepository.delete(id);
   }

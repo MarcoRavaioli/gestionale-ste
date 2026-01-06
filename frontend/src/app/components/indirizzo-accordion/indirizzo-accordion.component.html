@@ -1,0 +1,44 @@
+<ion-accordion [value]="indirizzo.id">
+  
+  <ion-item slot="header" color="light">
+    <ion-icon name="location-outline" slot="start" color="primary"></ion-icon>
+    <ion-label>
+      <h2>{{ indirizzo.via }} {{ indirizzo.civico }}</h2>
+      <p>{{ indirizzo.citta }} ({{ indirizzo.cap }})</p>
+    </ion-label>
+    
+    <div slot="end" class="action-buttons" *ngIf="isAdmin">
+      <ion-button fill="clear" (click)="handleEditIndirizzo($event)">
+        <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" color="danger" (click)="onDeleteIndirizzo.emit(indirizzo); $event.stopPropagation()">
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-item>
+
+  <div slot="content" class="accordion-content">
+    
+    <div class="commesse-toolbar">
+      <span class="label-commesse">COMMESSE</span>
+      <ion-button *ngIf="isAdmin" size="small" fill="outline" shape="round" (click)="handleAddCommessa()">
+        <ion-icon name="add" slot="start"></ion-icon> Nuova
+      </ion-button>
+    </div>
+
+    <div *ngIf="!indirizzo.commesse?.length" class="empty-commesse">
+      <p>Nessuna commessa.</p>
+    </div>
+
+    <ion-accordion-group>
+      <app-commessa-item 
+        *ngFor="let c of indirizzo.commesse" 
+        [commessa]="c" 
+        [isAdmin]="isAdmin"
+        (onEdit)="onEditCommessa.emit($event)"
+        (onDelete)="onDeleteCommessa.emit($event)">
+      </app-commessa-item>
+    </ion-accordion-group>
+
+  </div>
+</ion-accordion>

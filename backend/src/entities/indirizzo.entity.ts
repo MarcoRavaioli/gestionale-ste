@@ -34,6 +34,7 @@ export class Indirizzo {
 
   @ManyToOne(() => Cliente, (cliente) => cliente.indirizzi, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
   cliente: Cliente;
 

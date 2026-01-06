@@ -7,7 +7,7 @@ import { Indirizzo } from '../interfaces/models';
   providedIn: 'root'
 })
 export class IndirizzoService {
-  private apiUrl = '/api/indirizzo'; // Assumiamo tu abbia fatto il controller nel backend
+  private apiUrl = '/api/indirizzo';
 
   constructor(private http: HttpClient) {}
 
@@ -15,5 +15,12 @@ export class IndirizzoService {
     return this.http.post<Indirizzo>(this.apiUrl, indirizzo);
   }
 
-  // Aggiungi delete/update se serviranno in futuro
+  // AGGIUNGI QUESTO METODO:
+  update(id: number, indirizzo: Partial<Indirizzo>): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/${id}`, indirizzo);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }
