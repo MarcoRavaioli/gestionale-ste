@@ -1,0 +1,27 @@
+/* Rende il calendario alto abbastanza da riempire lo schermo */
+.calendar-wrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+full-calendar {
+  height: 100%;
+  width: 100%;
+  
+  /* Personalizzazione colori eventi (opzionale) */
+  --fc-event-bg-color: var(--ion-color-primary);
+  --fc-event-border-color: var(--ion-color-primary);
+  --fc-today-bg-color: rgba(var(--ion-color-secondary-rgb), 0.1);
+}
+
+/* Migliora la leggibilità del titolo su mobile */
+::ng-deep .fc-toolbar-title {
+  font-size: 1.2rem !important;
+}
+
+/* Ingrandisce un po' i bottoni */
+::ng-deep .fc-button {
+  font-size: 0.8rem !important;
+  text-transform: capitalize;
+}

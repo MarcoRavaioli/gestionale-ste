@@ -2,13 +2,14 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
   ManyToOne,
+  OneToMany,
 } from 'typeorm';
-import { Cliente } from './cliente.entity';
+// RIMOSSO: import { Cliente } ... non serve più qui
+import { Indirizzo } from './indirizzo.entity';
 import { Appuntamento } from './appuntamento.entity';
 import { Fattura } from './fattura.entity';
-import { Allegato } from './allegato.entity'; // <--- Importa
+import { Allegato } from './allegato.entity';
 
 @Entity()
 export class Commessa {
@@ -21,11 +22,22 @@ export class Commessa {
   @Column({ nullable: true })
   descrizione: string;
 
-  @ManyToOne(() => Cliente, (cliente) => cliente.commesse)
-  cliente: Cliente;
-
   @Column({ default: 'APERTA' })
   stato: string;
+
+  @Column({ nullable: true, type: 'float' })
+  valore_totale: number;
+
+  // --- MODIFICA QUI ---
+  // 1. Abbiamo tolto la relazione diretta @ManyToOne con Cliente
+
+  // 2. La relazione con Indirizzo ora è il "genitore" principale
+  // (Ho tolto nullable: true perché senza indirizzo la commessa "vola nel nulla")
+  @ManyToOne(() => Indirizzo, (indirizzo) => indirizzo.commesse, {
+    onDelete: 'CASCADE', // Se cancello l'indirizzo, spariscono le commesse
+    nullable: false,
+  })
+  indirizzo: Indirizzo;
 
   @OneToMany(() => Appuntamento, (app) => app.commessa)
   appuntamenti: Appuntamento[];

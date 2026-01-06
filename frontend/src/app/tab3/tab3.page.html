@@ -1,0 +1,55 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title> Archivio Clienti </ion-title>
+  </ion-toolbar>
+
+  <ion-toolbar color="primary">
+    <ion-searchbar
+      placeholder="Cerca nome o email..."
+      [(ngModel)]="ricerca"
+      (ionInput)="filtraClienti()"
+      animated="true"
+    >
+    </ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-refresher slot="fixed" (ionRefresh)="caricaClienti($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list>
+    <ion-item
+      *ngFor="let cliente of clientiFiltrati"
+      button
+      detail="true"
+      [routerLink]="['/cliente-dettaglio', cliente.id]"
+    >
+      <ion-avatar slot="start">
+        <div class="avatar-placeholder">{{ cliente.nome.charAt(0) }}</div>
+      </ion-avatar>
+
+      <ion-label>
+        <h2>{{ cliente.nome }}</h2>
+        <p>{{ cliente.email || 'Nessuna email' }}</p>
+        <p *ngIf="cliente.telefono">
+          <ion-icon name="call-outline"></ion-icon> {{ cliente.telefono }}
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+
+  <div
+    *ngIf="clientiFiltrati.length === 0"
+    class="ion-text-center ion-padding ion-margin-top"
+  >
+    <p>Nessun cliente trovato.</p>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="apriNuovoCliente()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

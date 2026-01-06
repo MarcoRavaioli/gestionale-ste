@@ -1,0 +1,45 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%; /* Occupa tutta l'altezza dello schermo */
+  max-width: 400px; /* Non diventare gigante su Desktop */
+  margin: 0 auto; /* Centrato orizzontalmente */
+}
+
+.header-section {
+  text-align: center;
+  margin-bottom: 3rem;
+
+  .app-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--ion-color-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .app-subtitle {
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+    margin: 0;
+  }
+}
+
+.custom-input {
+  --border-radius: 8px; /* Bordi arrotondati moderni */
+}
+
+.login-btn {
+  --border-radius: 8px;
+  margin-top: 2rem;
+  font-weight: 600;
+}
+
+.footer-section {
+  text-align: center;
+  margin-top: 3rem;
+  .version {
+    color: var(--ion-color-light-shade);
+    font-size: 0.8rem;
+  }
+}

@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Nuovo Cliente</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">Chiudi</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <ion-item>
+    <ion-input label="Nome e Cognome *" label-placement="floating" [(ngModel)]="cliente.nome"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input label="Telefono" type="tel" label-placement="floating" [(ngModel)]="cliente.telefono"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input label="Email" type="email" label-placement="floating" [(ngModel)]="cliente.email"></ion-input>
+  </ion-item>
+
+  <div class="ion-margin-top">
+    <ion-button expand="block" (click)="salva()" [disabled]="!cliente.nome">
+      SALVA CLIENTE
+    </ion-button>
+  </div>
+
+</ion-content>

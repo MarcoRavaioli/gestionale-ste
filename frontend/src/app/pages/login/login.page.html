@@ -1,0 +1,47 @@
+<ion-content [fullscreen]="true" class="ion-padding">
+  
+  <div class="login-container">
+    
+    <div class="header-section">
+      <h1 class="app-title">GS POSE</h1>
+      <p class="app-subtitle">Gestionale Cantieri & Infissi</p>
+    </div>
+
+    <div class="form-section">
+      
+      <ion-input
+        class="custom-input"
+        label="Email"
+        label-placement="floating"
+        fill="outline"
+        type="email"
+        placeholder="nome@esempio.com"
+        [(ngModel)]="email">
+      </ion-input>
+
+      <ion-input
+        class="custom-input ion-margin-top"
+        label="Password"
+        label-placement="floating"
+        fill="outline"
+        type="password"
+        [(ngModel)]="password">
+      </ion-input>
+
+      <ion-button 
+        expand="block" 
+        class="ion-margin-top login-btn" 
+        size="large"
+        (click)="login()">
+        ACCEDI
+      </ion-button>
+
+    </div>
+
+    <div class="footer-section">
+      <p class="version">v1.0.0</p>
+    </div>
+
+  </div>
+
+</ion-content>

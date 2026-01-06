@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Nuovo Indirizzo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">Annulla</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="form-grid">
+    <ion-input label="Via *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.via"></ion-input>
+    <ion-input label="Civico *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.civico"></ion-input>
+    <ion-input label="Città *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.citta"></ion-input>
+    <ion-input label="CAP *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.cap"></ion-input>
+    <ion-input label="Provincia" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.provincia"></ion-input>
+  </div>
+
+  <ion-button expand="block" class="ion-margin-top" (click)="salva()" [disabled]="!indirizzo.via || !indirizzo.citta">
+    SALVA INDIRIZZO
+  </ion-button>
+</ion-content>

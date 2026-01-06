@@ -29,7 +29,7 @@ export class ClienteService {
   findOne(id: number) {
     return this.clienteRepository.findOne({
       where: { id },
-      relations: ['indirizzi', 'appuntamenti'],
+      relations: ['indirizzi', 'commesse'], // <--- FONDAMENTALE
     });
   }
 

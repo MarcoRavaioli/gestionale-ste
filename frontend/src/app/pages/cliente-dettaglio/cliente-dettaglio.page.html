@@ -1,0 +1,103 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ cliente?.nome }}</ion-title>
+    
+    <ion-buttons slot="end" *ngIf="isAdmin">
+      <ion-button *ngIf="!isEditing" (click)="abilitaModifica()">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" *ngIf="cliente">
+
+  <div class="ion-padding section-header">
+    <h3>Contatti</h3>
+  </div>
+  <ion-list inset="true">
+    <ion-item>
+      <ion-icon name="mail-outline" slot="start"></ion-icon>
+      
+      <ion-label *ngIf="!isEditing">
+        <h3>Email</h3>
+        <p>{{ cliente.email || 'Nessuna' }}</p>
+      </ion-label>
+
+      <ion-input *ngIf="isEditing" [(ngModel)]="cliente.email" placeholder="Email"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-icon name="call-outline" slot="start"></ion-icon>
+      
+      <ion-label *ngIf="!isEditing">
+        <h3>Telefono</h3>
+        <p>{{ cliente.telefono || 'Nessuno' }}</p>
+      </ion-label>
+
+      <ion-input *ngIf="isEditing" [(ngModel)]="cliente.telefono" placeholder="Telefono"></ion-input>
+    </ion-item>
+  </ion-list>
+
+  <div class="section-header ion-padding-horizontal ion-margin-top flex-header">
+    <h3>Indirizzi</h3>
+    <ion-button *ngIf="isAdmin" size="small" fill="clear" (click)="aggiungiIndirizzo()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon> Aggiungi
+    </ion-button>
+  </div>
+
+  <div *ngIf="!cliente.indirizzi?.length" class="ion-padding-horizontal text-muted">
+    <small>Nessun indirizzo registrato.</small>
+  </div>
+
+  <ion-card *ngFor="let indirizzo of cliente.indirizzi">
+    <ion-card-content>
+      <div style="display: flex; align-items: flex-start;">
+        <ion-icon name="location-outline" slot="start" size="large" color="secondary"></ion-icon>
+        <div style="margin-left: 10px;">
+          <h2>{{ indirizzo.via }} {{ indirizzo.civico }}</h2>
+          <p>{{ indirizzo.citta }} ({{ indirizzo.cap }})</p>
+        </div>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="section-header ion-padding-horizontal ion-margin-top flex-header">
+    <h3>Commesse</h3>
+    <ion-button *ngIf="isAdmin" size="small" fill="clear" (click)="aggiungiCommessa()">
+      <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuova
+    </ion-button>
+  </div>
+
+  <div *ngIf="!cliente.commesse?.length" class="ion-padding-horizontal text-muted">
+    <small>Nessuna commessa attiva.</small>
+  </div>
+
+  <ion-card *ngFor="let commessa of cliente.commesse">
+    <ion-card-header>
+      <ion-card-subtitle>{{ commessa.seriale }}</ion-card-subtitle>
+      <ion-card-title>{{ commessa.descrizione }}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-chip [color]="commessa.stato === 'APERTA' ? 'success' : 'medium'">
+        {{ commessa.stato }}
+      </ion-chip>
+      
+      <div *ngIf="isAdmin" class="admin-box ion-margin-top">
+        <p><ion-icon name="wallet-outline"></ion-icon> € {{ commessa.valore_totale || '0.00' }}</p>
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="ion-margin-bottom" style="height: 50px"></div>
+</ion-content>

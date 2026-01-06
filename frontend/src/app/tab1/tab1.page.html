@@ -1,0 +1,40 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>
+      Dashboard
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  
+  <ion-refresher slot="fixed" (ionRefresh)="doRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <div class="welcome-box">
+    <h1>Ciao, {{ userNome }} 👋</h1>
+    <p>Ecco il programma di oggi</p>
+  </div>
+
+  <h3 class="section-title">In programma</h3>
+
+  <div *ngIf="appuntamentiOggi.length === 0" class="empty-state">
+    <p>Nessun appuntamento trovato.</p>
+  </div>
+
+  <ion-card *ngFor="let app of appuntamentiOggi">
+    <ion-card-header>
+      <ion-card-subtitle>{{ app.data_ora | date:'HH:mm' }} - {{ app.data_ora | date:'dd/MM' }}</ion-card-subtitle>
+      <ion-card-title>{{ app.nome }}</ion-card-title>
+    </ion-card-header>
+
+    <ion-card-content>
+      <p *ngIf="app.cliente">👤 {{ app.cliente.nome }}</p>
+      <p *ngIf="app.descrizione">{{ app.descrizione }}</p>
+    </ion-card-content>
+    
+    <ion-button fill="clear" slot="end">Vedi Dettagli</ion-button>
+  </ion-card>
+
+</ion-content>

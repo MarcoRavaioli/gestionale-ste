@@ -1,0 +1,19 @@
+.flex-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h3 { margin: 0; }
+}
+
+.text-muted {
+  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+.admin-box {
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--ion-color-warning);
+}
