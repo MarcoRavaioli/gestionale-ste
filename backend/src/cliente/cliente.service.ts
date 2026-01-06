@@ -20,16 +20,18 @@ export class ClienteService {
   }
 
   findAll() {
-    // Trova tutti, includendo le relazioni (es. indirizzi) se servono
     return this.clienteRepository.find({
-      relations: ['indirizzi', 'commesse'], // Carica anche i dati collegati
+      // PRIMA ERA: relations: ['commesse'] o simili
+      // ORA DEVE ESSERE:
+      relations: ['indirizzi', 'indirizzi.commesse'],
     });
   }
 
   findOne(id: number) {
     return this.clienteRepository.findOne({
       where: { id },
-      relations: ['indirizzi', 'commesse'], // <--- FONDAMENTALE
+      // ANCHE QUI, carica a cascata: Cliente -> Indirizzi -> Commesse
+      relations: ['indirizzi', 'indirizzi.commesse'],
     });
   }
 

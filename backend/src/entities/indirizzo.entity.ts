@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Cliente } from './cliente.entity';
+import { Commessa } from './commessa.entity';
 
 @Entity()
 export class Indirizzo {
@@ -29,4 +36,7 @@ export class Indirizzo {
     onDelete: 'CASCADE',
   })
   cliente: Cliente;
+
+  @OneToMany(() => Commessa, (commessa) => commessa.indirizzo)
+  commesse: Commessa[];
 }

@@ -70,7 +70,7 @@ export class Tab2Page implements OnInit {
           // Possiamo aggiungere dati extra per usarli al click
           extendedProps: {
             descrizione: app.descrizione,
-            cliente: app.cliente?.nome
+            cliente: app.commessa?.indirizzo?.cliente?.nome
           }
         }));
 

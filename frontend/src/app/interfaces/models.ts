@@ -1,12 +1,3 @@
-export interface Cliente {
-  id: number;
-  nome: string;
-  telefono?: string;
-  email?: string;
-  indirizzi?: Indirizzo[];
-  commesse?: Commessa[];
-}
-
 export interface Indirizzo {
   id: number;
   via: string;
@@ -14,6 +5,9 @@ export interface Indirizzo {
   citta: string;
   cap: string;
   provincia?: string;
+  stato: string;
+  commesse?: Commessa[]; // Importante: contiene la lista commesse
+  cliente?: Cliente; // Importante: contiene il cliente proprietario
 }
 
 export interface Commessa {
@@ -21,21 +15,33 @@ export interface Commessa {
   seriale: string;
   descrizione?: string;
   stato: 'APERTA' | 'CHIUSA' | 'IN_CORSO';
-  valore_totale?: number; 
-  clienteId: number;
-  cliente?: Cliente;
+  valore_totale?: number;
+  
+  // ORA DIPENDE DALL'INDIRIZZO
+  indirizzo?: Indirizzo; 
+  
+  // NON PIÙ DAL CLIENTE DIRETTO
+  // clienteId?: number;  <-- RIMOSSO
 }
 
+export interface Cliente {
+  id: number;
+  nome: string;
+  telefono?: string;
+  email?: string;
+  indirizzi?: Indirizzo[];
+  // commesse?: Commessa[]; <-- RIMOSSO (si passa dagli indirizzi)
+}
 
 export interface Appuntamento {
   id: number;
-  nome: string; // Titolo appuntamento
-  data_ora: string; // ISO String
+  nome: string;
+  data_ora: string;
   descrizione?: string;
-  clienteId?: number;
-  cliente?: Cliente;
-  commessaId?: number;
-  commessa?: Commessa;
+  
+  // L'appuntamento DEVE avere una commessa
+  commessa?: Commessa; 
+  commessaId?: number; // Utile per l'invio dati
 }
 
 export interface User {

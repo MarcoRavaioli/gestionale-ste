@@ -32,7 +32,7 @@ export class NuovoIndirizzoModalComponent {
     // Prepariamo l'oggetto come lo vuole il backend (con la relazione cliente)
     const payload = { ...this.indirizzo, cliente: { id: this.clienteId } };
     
-    this.indirizzoService.create(payload).subscribe({
+    this.indirizzoService.create(payload as any).subscribe({
       next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
       error: (err) => console.error(err)
     });

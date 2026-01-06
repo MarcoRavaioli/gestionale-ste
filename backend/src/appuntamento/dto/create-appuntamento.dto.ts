@@ -1,39 +1,29 @@
-import { IsOptional, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-
-// Definiamo la struttura per i nuovi indirizzi
-class CreateIndirizzoDto {
-  via: string;
-  civico: string;
-  citta: string;
-  cap: string;
-
-  @IsOptional()
-  provincia?: string; // Ora è opzionale anche qui
-}
-
-// Definiamo la struttura per il nuovo cliente
-class CreateNuovoClienteDto {
-  nome: string;
-  telefono?: string;
-  email?: string;
-
-  // Qui gestiamo l'array di indirizzi
-  indirizzi?: CreateIndirizzoDto[];
-}
+import {
+  IsNotEmpty,
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsObject,
+} from 'class-validator';
 
 export class CreateAppuntamentoDto {
+  @IsNotEmpty()
+  @IsString()
   nome: string;
+
+  @IsNotEmpty()
+  @IsDateString()
   data_ora: string;
+
+  @IsOptional()
+  @IsString()
   descrizione?: string;
 
-  // Opzione A: Uso un ID esistente
-  @IsOptional()
-  clienteId?: number;
+  @IsNotEmpty()
+  @IsObject()
+  commessa: { id: number }; // Obbligatorio
 
-  // Opzione B: Creo un nuovo cliente (con n indirizzi)
+  // Opzionale: Array di ID collaboratori
   @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateNuovoClienteDto)
-  nuovoCliente?: CreateNuovoClienteDto;
+  collaboratori?: { id: number }[];
 }

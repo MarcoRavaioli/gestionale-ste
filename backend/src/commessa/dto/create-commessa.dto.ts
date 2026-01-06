@@ -1,23 +1,30 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsObject,
+} from 'class-validator';
 
 export class CreateCommessaDto {
-  // Il seriale è obbligatorio (es. "CANT-2025-01")
   @IsNotEmpty()
   @IsString()
   seriale: string;
 
-  // La descrizione è opzionale
   @IsOptional()
   @IsString()
   descrizione?: string;
 
-  // Lo stato è opzionale (se manca, il DB metterà "APERTA")
   @IsOptional()
   @IsString()
   stato?: string;
 
-  // Fondamentale: dobbiamo sapere a quale cliente collegare la commessa
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
-  clienteId: number;
+  valore_totale?: number;
+
+  // CAMBIAMENTO: Ora ci serve l'indirizzo, non il cliente
+  @IsNotEmpty()
+  @IsObject()
+  indirizzo: { id: number };
 }

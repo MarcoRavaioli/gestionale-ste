@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  ManyToMany,
+} from 'typeorm';
 // Assicurati che il percorso sia corretto, altrimenti commenta finché non creiamo il Tracciamento
 import { TracciamentoPersonale } from './tracciamento.entity';
+import { Appuntamento } from './appuntamento.entity';
 
 @Entity()
 export class Collaboratore {
@@ -30,4 +37,7 @@ export class Collaboratore {
 
   @OneToMany(() => TracciamentoPersonale, (traccia) => traccia.collaboratore)
   tracciamenti: TracciamentoPersonale[];
+
+  @ManyToMany(() => Appuntamento, (appuntamento) => appuntamento.collaboratori)
+  appuntamenti: Appuntamento[];
 }

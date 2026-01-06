@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
-import { Cliente } from './cliente.entity';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable, // <--- 1. IMPORTA QUESTO
+} from 'typeorm';
 import { Commessa } from './commessa.entity';
+import { Collaboratore } from './collaboratore.entity';
 
 @Entity()
 export class Appuntamento {
@@ -16,11 +23,18 @@ export class Appuntamento {
   @Column({ type: 'text', nullable: true })
   descrizione: string;
 
-  // Collegato al cliente (per info rapide)
-  @ManyToOne(() => Cliente, (cliente) => cliente.appuntamenti)
-  cliente: Cliente;
-
-  // Collegato alla commessa
-  @ManyToOne(() => Commessa, (commessa) => commessa.appuntamenti)
+  // Collegato alla commessa (OBBLIGATORIO: nullable: false)
+  @ManyToOne(() => Commessa, (commessa) => commessa.appuntamenti, {
+    nullable: false,
+    onDelete: 'CASCADE',
+  })
   commessa: Commessa;
+
+  // Collegato ai collaboratori (Squadra)
+  @ManyToMany(
+    () => Collaboratore,
+    (collaboratore) => collaboratore.appuntamenti,
+  )
+  @JoinTable() // <--- 2. AGGIUNGI QUESTO! Fondamentale.
+  collaboratori: Collaboratore[];
 }

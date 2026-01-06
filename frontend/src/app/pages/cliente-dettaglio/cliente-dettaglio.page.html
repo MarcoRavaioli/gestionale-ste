@@ -72,32 +72,5 @@
     </ion-card-content>
   </ion-card>
 
-  <div class="section-header ion-padding-horizontal ion-margin-top flex-header">
-    <h3>Commesse</h3>
-    <ion-button *ngIf="isAdmin" size="small" fill="clear" (click)="aggiungiCommessa()">
-      <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuova
-    </ion-button>
-  </div>
-
-  <div *ngIf="!cliente.commesse?.length" class="ion-padding-horizontal text-muted">
-    <small>Nessuna commessa attiva.</small>
-  </div>
-
-  <ion-card *ngFor="let commessa of cliente.commesse">
-    <ion-card-header>
-      <ion-card-subtitle>{{ commessa.seriale }}</ion-card-subtitle>
-      <ion-card-title>{{ commessa.descrizione }}</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-chip [color]="commessa.stato === 'APERTA' ? 'success' : 'medium'">
-        {{ commessa.stato }}
-      </ion-chip>
-      
-      <div *ngIf="isAdmin" class="admin-box ion-margin-top">
-        <p><ion-icon name="wallet-outline"></ion-icon> € {{ commessa.valore_totale || '0.00' }}</p>
-      </div>
-    </ion-card-content>
-  </ion-card>
-
   <div class="ion-margin-bottom" style="height: 50px"></div>
 </ion-content>
