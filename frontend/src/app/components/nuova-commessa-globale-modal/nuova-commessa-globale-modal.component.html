@@ -1,0 +1,92 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Nuova Commessa</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">Annulla</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+
+  <div class="section-box">
+    <div class="header-toggle">
+      <h3>
+        <ion-icon name="location-outline"></ion-icon> 
+        {{ modeCantiere === 'esistente' ? 'Seleziona Cantiere' : 'Crea Nuovo Cantiere' }}
+      </h3>
+      <ion-button size="small" fill="outline" (click)="toggleModeCantiere()">
+        {{ modeCantiere === 'esistente' ? '+ Crea Nuovo' : 'Scegli Esistente' }}
+      </ion-button>
+    </div>
+
+    <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
+      <ion-select label="Cantiere di destinazione" label-placement="floating" fill="outline" [(ngModel)]="selectedCantiereId" placeholder="Cerca...">
+        <ion-select-option *ngFor="let c of listaCantieri" [value]="c.id">
+          {{ c.citta }} - {{ c.via }} ({{ c.cliente?.nome }})
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <div *ngIf="modeCantiere === 'nuovo'" class="fade-in form-grid">
+      <ion-input label="Via / Piazza *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.via"></ion-input>
+      
+      <div style="display: flex; gap: 10px;">
+        <ion-input label="Civico" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="nuovoCantiere.civico"></ion-input>
+        <ion-input label="CAP" type="number" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="nuovoCantiere.cap"></ion-input>
+      </div>
+
+      <ion-input label="Città *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.citta"></ion-input>
+      <ion-input label="Provincia" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.provincia"></ion-input>
+
+
+      <div class="nested-box ion-margin-top">
+        <div class="header-toggle">
+          <h4 style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
+            <ion-icon name="person-add-outline"></ion-icon> 
+            {{ modeCliente === 'esistente' ? 'Proprietario Esistente' : 'Nuovo Proprietario' }}
+          </h4>
+          <ion-button size="small" fill="clear" (click)="toggleModeCliente()">
+            {{ modeCliente === 'esistente' ? '+ Crea' : 'Scegli' }}
+          </ion-button>
+        </div>
+
+        <div *ngIf="modeCliente === 'esistente'" class="fade-in">
+          <ion-select label="Seleziona Cliente" label-placement="floating" fill="outline" [(ngModel)]="selectedClienteId">
+            <ion-select-option *ngFor="let cli of listaClienti" [value]="cli.id">{{ cli.nome }}</ion-select-option>
+          </ion-select>
+        </div>
+
+        <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">
+          <ion-input label="Nome Cliente *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
+          <ion-input label="Telefono" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.telefono"></ion-input>
+          <ion-input label="Email" type="email" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.email"></ion-input>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="section-box ion-margin-top">
+    <h3><ion-icon name="documents-outline"></ion-icon> Dati Commessa</h3>
+    
+    <div class="form-grid">
+      <ion-input label="Numero Commessa / Seriale *" label-placement="floating" fill="outline" [(ngModel)]="commessa.seriale"></ion-input>
+      <ion-textarea label="Descrizione" label-placement="floating" fill="outline" rows="2" [(ngModel)]="commessa.descrizione"></ion-textarea>
+      
+      <div style="display: flex; gap: 10px;">
+        <ion-input label="Valore (€)" type="number" label-placement="floating" fill="outline" [(ngModel)]="commessa.valore_totale"></ion-input>
+        <ion-select label="Stato" label-placement="floating" fill="outline" [(ngModel)]="commessa.stato">
+          <ion-select-option value="APERTA">APERTA</ion-select-option>
+          <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
+          <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+  </div>
+
+  <ion-button expand="block" class="ion-margin-top" size="large" (click)="salva()" [disabled]="!isValid()">
+    CREA COMMESSA
+  </ion-button>
+
+</ion-content>

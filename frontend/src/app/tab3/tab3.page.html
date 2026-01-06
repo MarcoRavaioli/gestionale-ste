@@ -1,21 +1,40 @@
 <ion-header [translucent]="true">
   <ion-toolbar color="primary">
-    <div style="display: flex; align-items: center; justify-content: space-between; padding-right: 5px;">
+    <div
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-right: 5px;
+      "
+    >
       <ion-title>Archivio</ion-title>
-      <ion-segment [value]="vistaCorrente" (ionChange)="cambiaVista($event)" style="width: 200px; --background: rgba(255,255,255,0.2);">
-        <ion-segment-button value="clienti"><ion-label>Clienti</ion-label></ion-segment-button>
-        <ion-segment-button value="cantieri"><ion-label>Cantieri</ion-label></ion-segment-button>
+      <ion-segment
+        [value]="vistaCorrente"
+        (ionChange)="cambiaVista($event)"
+        style="width: 300px; --background: rgba(255, 255, 255, 0.2)"
+      >
+        <ion-segment-button value="clienti"
+          ><ion-label>Clienti</ion-label></ion-segment-button
+        >
+        <ion-segment-button value="cantieri"
+          ><ion-label>Cantieri</ion-label></ion-segment-button
+        >
+        <ion-segment-button value="commesse"
+          ><ion-label>Commesse</ion-label></ion-segment-button
+        >
       </ion-segment>
     </div>
   </ion-toolbar>
 
   <ion-toolbar color="primary">
-    <div style="display: flex; align-items: center; padding-right: 10px;">
-      <ion-searchbar 
+    <div style="display: flex; align-items: center; padding-right: 10px">
+      <ion-searchbar
         [placeholder]="vistaCorrente === 'clienti' ? 'Cerca cliente...' : 'Cerca cantiere...'"
-        [(ngModel)]="ricerca" 
+        [(ngModel)]="ricerca"
         (ionInput)="elaboraDati()"
-        animated="true">
+        animated="true"
+      >
       </ion-searchbar>
       <ion-button fill="clear" color="light" (click)="apriImpostazioni($event)">
         <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
@@ -31,54 +50,181 @@
 
   <div *ngIf="vistaCorrente === 'clienti'">
     <ion-list>
-      <ion-item *ngFor="let cliente of clientiVisualizzati" button detail="true" [routerLink]="['/cliente-dettaglio', cliente.id]">
-        <ion-avatar slot="start"><div class="avatar-placeholder">{{ cliente.nome.charAt(0) }}</div></ion-avatar>
+      <ion-item
+        *ngFor="let cliente of clientiVisualizzati"
+        button
+        detail="true"
+        [routerLink]="['/cliente-dettaglio', cliente.id]"
+      >
+        <ion-avatar slot="start"
+          ><div class="avatar-placeholder">
+            {{ cliente.nome.charAt(0) }}
+          </div></ion-avatar
+        >
         <ion-label>
           <h2>{{ cliente.nome }}</h2>
           <p>{{ cliente.email || 'Nessuna email' }}</p>
         </ion-label>
       </ion-item>
     </ion-list>
-    <div *ngIf="clientiVisualizzati.length === 0" class="empty-state"><p>Nessun cliente trovato.</p></div>
+    <div *ngIf="clientiVisualizzati.length === 0" class="empty-state">
+      <p>Nessun cliente trovato.</p>
+    </div>
   </div>
 
-
   <div *ngIf="vistaCorrente === 'cantieri'">
-    
     <ion-list *ngIf="!isCantieriGrouped">
-      <ion-item *ngFor="let cantiere of cantieriLista" button detail="true" [routerLink]="['/cliente-dettaglio', cantiere.cliente?.id]">
-        <ion-icon slot="start" name="location-outline" color="secondary" size="large"></ion-icon>
+      <ion-item
+        *ngFor="let cantiere of cantieriLista"
+        button
+        detail="true"
+        [routerLink]="['/cliente-dettaglio', cantiere.cliente?.id]"
+      >
+        <ion-icon
+          slot="start"
+          name="location-outline"
+          color="secondary"
+          size="large"
+        ></ion-icon>
         <ion-label>
-          <ion-note color="medium" style="font-size: 0.8rem; font-weight: bold;">{{ cantiere.citta | uppercase }}</ion-note>
+          <ion-note color="medium" style="font-size: 0.8rem; font-weight: bold"
+            >{{ cantiere.citta | uppercase }}</ion-note
+          >
           <h2>{{ cantiere.via }} {{ cantiere.civico }}</h2>
-          <p style="color: var(--ion-color-primary);">{{ cantiere.cliente?.nome }}</p>
+          <p style="color: var(--ion-color-primary)">
+            {{ cantiere.cliente?.nome }}
+          </p>
         </ion-label>
       </ion-item>
     </ion-list>
 
     <ion-list *ngIf="isCantieriGrouped">
       <ion-item-group *ngFor="let gruppo of cantieriGruppi">
-        
         <ion-item-divider sticky="true">
           <ion-label>{{ gruppo.nome | uppercase }}</ion-label>
         </ion-item-divider>
 
-        <ion-item *ngFor="let item of gruppo.items" button detail="true" [routerLink]="['/cliente-dettaglio', item.cliente?.id]">
-          <ion-icon slot="start" name="location-outline" color="secondary"></ion-icon>
+        <ion-item
+          *ngFor="let item of gruppo.items"
+          button
+          detail="true"
+          [routerLink]="['/cliente-dettaglio', item.cliente?.id]"
+        >
+          <ion-icon
+            slot="start"
+            name="location-outline"
+            color="secondary"
+          ></ion-icon>
           <ion-label>
             <h2>{{ item.via }} {{ item.civico }}</h2>
             <p>{{ item.cliente?.nome }}</p>
           </ion-label>
         </ion-item>
-
       </ion-item-group>
     </ion-list>
 
-    <div *ngIf="cantieriLista.length === 0 && cantieriGruppi.length === 0" class="empty-state"><p>Nessun cantiere trovato.</p></div>
+    <div
+      *ngIf="cantieriLista.length === 0 && cantieriGruppi.length === 0"
+      class="empty-state"
+    >
+      <p>Nessun cantiere trovato.</p>
+    </div>
+  </div>
+
+  <div *ngIf="vistaCorrente === 'commesse'">
+    <ion-list *ngIf="!isCommesseGrouped">
+      <ion-item
+        *ngFor="let item of commesseLista"
+        button
+        detail="true"
+        [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
+      >
+        <ion-icon
+          slot="start"
+          name="documents-outline"
+          color="tertiary"
+          size="large"
+        ></ion-icon>
+        <ion-label>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 4px;
+            "
+          >
+            <span class="serial-code">{{ item.seriale }}</span>
+            <ion-badge [color]="getColoreStato(item.stato)" class="status-badge"
+              >{{ item.stato }}</ion-badge
+            >
+          </div>
+
+          <h2>{{ item.descrizione || 'Nessuna descrizione' }}</h2>
+          <p>
+            <ion-icon name="person-outline"></ion-icon> {{
+            item.indirizzo?.cliente?.nome }}
+            <span *ngIf="item.indirizzo"> — {{ item.indirizzo.citta }}</span>
+          </p>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <ion-list *ngIf="isCommesseGrouped">
+      <ion-item-group *ngFor="let gruppo of commesseGruppi">
+        <ion-item-divider sticky="true">
+          <ion-label>{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label>
+        </ion-item-divider>
+
+        <ion-item
+          *ngFor="let item of gruppo.items"
+          button
+          detail="true"
+          [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
+        >
+          <ion-icon
+            slot="start"
+            name="documents-outline"
+            color="tertiary"
+          ></ion-icon>
+          <ion-label>
+            <h3>{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
+            <p>{{ item.descrizione }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-item-group>
+    </ion-list>
+
+    <div
+      *ngIf="(isCommesseGrouped ? commesseGruppi.length : commesseLista.length) === 0"
+      class="empty-state"
+    >
+      <p>Nessuna commessa trovata.</p>
+    </div>
   </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button *ngIf="vistaCorrente === 'clienti'" (click)="apriNuovoCliente()"><ion-icon name="person-add-outline"></ion-icon></ion-fab-button>
-    <ion-fab-button *ngIf="vistaCorrente === 'cantieri'" (click)="apriNuovoCantiere()" color="secondary"><ion-icon name="add"></ion-icon></ion-fab-button>
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'clienti'"
+      (click)="apriNuovoCliente()"
+    >
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'cantieri'"
+      (click)="apriNuovoCantiere()"
+      color="secondary"
+    >
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'commesse'"
+      (click)="apriNuovaCommessa()"
+      color="tertiary"
+    >
+      <ion-icon name="documents-outline"></ion-icon>
+    </ion-fab-button>
   </ion-fab>
 </ion-content>

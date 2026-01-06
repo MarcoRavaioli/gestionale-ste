@@ -31,3 +31,19 @@
   margin-top: 40px;
   color: var(--ion-color-medium);
 }
+
+.serial-code {
+  font-weight: 800;
+  font-size: 0.9rem; /* Leggermente più grande per la lista */
+  color: var(--ion-text-color);
+  opacity: 0.9;
+}
+
+/* Stile per il badge stato (es. APERTA) */
+.status-badge {
+  font-size: 0.65rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}

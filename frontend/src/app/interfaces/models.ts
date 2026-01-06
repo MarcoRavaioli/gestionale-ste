@@ -17,8 +17,6 @@ export interface Commessa {
   stato: 'APERTA' | 'CHIUSA' | 'IN_CORSO';
   valore_totale?: number;
   indirizzo?: Indirizzo; 
-  
-  // AGGIUNGI QUESTA RIGA QUI SOTTO:
   appuntamenti?: Appuntamento[]; 
 }
 

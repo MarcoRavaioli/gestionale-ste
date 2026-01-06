@@ -9,10 +9,10 @@ import { ViewSettings } from '../../services/preferences';
   templateUrl: './list-settings-popover.component.html',
   styleUrls: ['./list-settings-popover.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class ListSettingsPopoverComponent {
-  @Input() type: 'clienti' | 'cantieri' = 'clienti';
+  @Input() type: 'clienti' | 'cantieri' | 'commesse' = 'clienti';
   @Input() settings!: ViewSettings;
 
   constructor(private popoverCtrl: PopoverController) {}
