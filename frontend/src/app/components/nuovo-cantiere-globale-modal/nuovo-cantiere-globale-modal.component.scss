@@ -1,0 +1,37 @@
+.section-box {
+  background: var(--ion-card-background);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid var(--ion-color-step-150);
+
+  h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: var(--ion-color-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.header-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

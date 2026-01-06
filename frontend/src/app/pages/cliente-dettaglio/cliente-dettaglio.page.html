@@ -18,6 +18,10 @@
 
   <div class="ion-padding section-header"><h3>Contatti</h3></div>
   <ion-list inset="true">
+    <ion-item *ngIf="isEditing">
+      <ion-icon name="person-outline" slot="start"></ion-icon>
+      <ion-input label="Nome Cliente" label-placement="floating" [(ngModel)]="cliente.nome"></ion-input>
+    </ion-item>
     <ion-item>
       <ion-icon name="mail-outline" slot="start"></ion-icon>
       <ion-label *ngIf="!isEditing"><h3>Email</h3><p>{{ cliente.email || 'Nessuna' }}</p></ion-label>

@@ -23,4 +23,8 @@ export class IndirizzoService {
   delete(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  getAll(): Observable<Indirizzo[]> {
+    return this.http.get<Indirizzo[]>(this.apiUrl);
+  }
 }

@@ -1,0 +1,34 @@
+<ion-list>
+  <ion-list-header>Opzioni Visualizzazione</ion-list-header>
+
+  <ion-item>
+    <ion-select label="Ordina per" label-placement="stacked" [(ngModel)]="settings.orderBy" (ionChange)="applica()">
+      <div *ngIf="type === 'clienti'">
+        <ion-select-option value="nome">Nome</ion-select-option>
+        <ion-select-option value="email">Email</ion-select-option>
+      </div>
+      <div *ngIf="type === 'cantieri'">
+        <ion-select-option value="citta">Città</ion-select-option>
+        <ion-select-option value="via">Via</ion-select-option>
+        <ion-select-option value="cap">CAP</ion-select-option>
+        <ion-select-option value="provincia">Provincia</ion-select-option>
+      </div>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-select label="Direzione" label-placement="stacked" [(ngModel)]="settings.orderDirection" (ionChange)="applica()">
+      <ion-select-option value="asc">Crescente (A-Z)</ion-select-option>
+      <ion-select-option value="desc">Decrescente (Z-A)</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item *ngIf="type === 'cantieri'">
+    <ion-select label="Raggruppa per" label-placement="stacked" [(ngModel)]="settings.groupBy" (ionChange)="applica()">
+      <ion-select-option [value]="null">Nessun Raggruppamento</ion-select-option>
+      <ion-select-option value="citta">Città</ion-select-option>
+      <ion-select-option value="provincia">Provincia</ion-select-option>
+      <ion-select-option value="cap">CAP</ion-select-option>
+    </ion-select>
+  </ion-item>
+</ion-list>
