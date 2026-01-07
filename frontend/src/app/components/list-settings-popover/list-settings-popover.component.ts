@@ -12,7 +12,7 @@ import { ViewSettings } from '../../services/preferences';
   imports: [IonicModule, CommonModule, FormsModule],
 })
 export class ListSettingsPopoverComponent {
-  @Input() type: 'clienti' | 'cantieri' | 'commesse' = 'clienti';
+  @Input() type: 'clienti' | 'cantieri' | 'commesse' | 'appuntamenti' = 'clienti';
   @Input() settings!: ViewSettings;
 
   constructor(private popoverCtrl: PopoverController) {}

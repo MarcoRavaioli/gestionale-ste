@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IndirizzoService } from '../../services/indirizzo';
+import { IndirizzoService } from '../../services/indirizzo.service';
 import { Indirizzo } from '../../interfaces/models';
 
 @Component({

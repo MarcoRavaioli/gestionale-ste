@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { ClienteService } from '../../services/cliente.service';
-import { IndirizzoService } from '../../services/indirizzo';
+import { IndirizzoService } from '../../services/indirizzo.service';
 import { CommessaService } from '../../services/commessa.service';
 import { Cliente, Indirizzo } from '../../interfaces/models';
 import { addIcons } from 'ionicons';

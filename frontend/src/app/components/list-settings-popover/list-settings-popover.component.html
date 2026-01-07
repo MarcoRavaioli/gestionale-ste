@@ -2,7 +2,12 @@
   <ion-list-header>Opzioni Visualizzazione</ion-list-header>
 
   <ion-item>
-    <ion-select label="Ordina per" label-placement="stacked" [(ngModel)]="settings.orderBy" (ionChange)="applica()">
+    <ion-select
+      label="Ordina per"
+      label-placement="stacked"
+      [(ngModel)]="settings.orderBy"
+      (ionChange)="applica()"
+    >
       <div *ngIf="type === 'clienti'">
         <ion-select-option value="id">Data di Creazione</ion-select-option>
         <ion-select-option value="nome">Nome</ion-select-option>
@@ -19,30 +24,58 @@
         <ion-select-option value="id">Data di Creazione</ion-select-option>
         <ion-select-option value="seriale">Codice/Seriale</ion-select-option>
         <ion-select-option value="stato">Stato</ion-select-option>
-        <ion-select-option value="valore_totale">Valore Economico</ion-select-option>
+        <ion-select-option value="valore_totale"
+          >Valore Economico</ion-select-option
+        >
+      </div>
+      <div *ngIf="type === 'appuntamenti'">
+        <ion-select-option value="data_ora">Data e Ora</ion-select-option>
+        <ion-select-option value="nome">Titolo</ion-select-option>
+        <ion-select-option value="commessa.indirizzo.cliente.nome"
+          >Cliente</ion-select-option
+        >
       </div>
     </ion-select>
   </ion-item>
 
   <ion-item>
-    <ion-select label="Direzione" label-placement="stacked" [(ngModel)]="settings.orderDirection" (ionChange)="applica()">
+    <ion-select
+      label="Direzione"
+      label-placement="stacked"
+      [(ngModel)]="settings.orderDirection"
+      (ionChange)="applica()"
+    >
       <ion-select-option value="asc">Crescente (A-Z)</ion-select-option>
       <ion-select-option value="desc">Decrescente (Z-A)</ion-select-option>
     </ion-select>
   </ion-item>
 
-  <ion-item *ngIf="type !== 'clienti'"> <ion-select label="Raggruppa per" label-placement="stacked" [(ngModel)]="settings.groupBy" (ionChange)="applica()">
+  <ion-item *ngIf="type !== 'clienti'">
+    <ion-select label="Raggruppa per" label-placement="stacked" [(ngModel)]="settings.groupBy" (ionChange)="applica()">
       <ion-select-option [value]="null">Nessun Raggruppamento</ion-select-option>
       
       <div *ngIf="type === 'cantieri'">
         <ion-select-option value="citta">Città</ion-select-option>
         <ion-select-option value="provincia">Provincia</ion-select-option>
+        <ion-select-option value="cliente">Cliente</ion-select-option>
       </div>
 
       <div *ngIf="type === 'commesse'">
         <ion-select-option value="stato">Stato (Aperta/Chiusa)</ion-select-option>
-        </div>
+        <ion-select-option value="cantiere">Cantiere</ion-select-option>
+        <ion-select-option value="cliente">Cliente</ion-select-option>
+      </div>
+
+      <div *ngIf="type === 'appuntamenti'">
+        <ion-select-option value="giorno">Giorno</ion-select-option>
+        <ion-select-option value="settimana">Settimana</ion-select-option>
+        <ion-select-option value="mese">Mese</ion-select-option>
+        <ion-select-option value="anno">Anno</ion-select-option>
+        <ion-select-option value="commessa">Commessa</ion-select-option>
+        <ion-select-option value="cantiere">Cantiere</ion-select-option>
+        <ion-select-option value="cliente">Cliente</ion-select-option>
+      </div>
+
     </ion-select>
   </ion-item>
-  
 </ion-list>

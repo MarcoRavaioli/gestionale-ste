@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 
 // Services & Models
 import { ClienteService } from '../../services/cliente.service';
-import { IndirizzoService } from 'src/app/services/indirizzo';
+import { IndirizzoService } from 'src/app/services/indirizzo.service';
 import { CommessaService } from 'src/app/services/commessa.service';
 import { AuthService } from '../../services/auth.service';
 import { Cliente, Indirizzo, Commessa } from '../../interfaces/models';
