@@ -18,3 +18,29 @@
   border-radius: 8px;
   border: 1px dashed var(--ion-color-warning);
 }
+
+/* ... mantieni flex-header, text-muted, admin-box come sono ... */
+
+/* --- EVIDENZIAZIONE CANTIERE --- */
+@keyframes flashHighlight {
+  0% {
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+  }
+  20% {
+    --background: rgba(var(--ion-color-warning-rgb), 0.5) !important; /* Giallo */
+  }
+  100% {
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+  }
+}
+
+.highlight-item {
+  /* Nessun ritardo */
+  animation: flashHighlight 3s ease-out forwards;
+  
+  border-left: 5px solid var(--ion-color-warning);
+  
+  /* Forza la trasparenza iniziale */
+  --background: transparent !important;
+  transition: --background 0.3s;
+}

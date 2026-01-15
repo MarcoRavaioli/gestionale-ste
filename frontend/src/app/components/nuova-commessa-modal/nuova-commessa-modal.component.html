@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Nuova Commessa</ion-title>
+    <ion-title>{{ commessaEsistente ? 'Modifica Commessa' : 'Nuova Commessa' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">Annulla</ion-button>
     </ion-buttons>
@@ -9,17 +9,45 @@
 
 <ion-content class="ion-padding">
   <div class="form-grid">
-    <ion-input label="Seriale (es. A123456) *" label-placement="floating" fill="outline" [(ngModel)]="commessa.seriale"></ion-input>
-    <ion-textarea label="Descrizione" label-placement="floating" fill="outline" rows="4" [(ngModel)]="commessa.descrizione"></ion-textarea>
     
-    <ion-select label="Stato" label-placement="floating" fill="outline" [(ngModel)]="commessa.stato">
-      <ion-select-option value="APERTA">APERTA</ion-select-option>
-      <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
-      <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
-    </ion-select>
+    <ion-input 
+      label="Seriale (es. A123456) *" 
+      label-placement="floating" 
+      fill="outline" 
+      [(ngModel)]="commessa.seriale">
+    </ion-input>
+
+    <ion-textarea 
+      label="Descrizione" 
+      label-placement="floating" 
+      fill="outline" 
+      rows="4" 
+      [(ngModel)]="commessa.descrizione">
+    </ion-textarea>
+    
+    <div style="display: flex; gap: 10px;">
+      <ion-input 
+        label="Valore (€)" 
+        type="number" 
+        label-placement="floating" 
+        fill="outline" 
+        [(ngModel)]="commessa.valore_totale">
+      </ion-input>
+
+      <ion-select 
+        label="Stato" 
+        label-placement="floating" 
+        fill="outline" 
+        [(ngModel)]="commessa.stato">
+        <ion-select-option value="APERTA">APERTA</ion-select-option>
+        <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
+        <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
+      </ion-select>
+    </div>
+
   </div>
 
   <ion-button expand="block" class="ion-margin-top" (click)="salva()" [disabled]="!commessa.seriale">
-    CREA COMMESSA
+    {{ commessaEsistente ? 'AGGIORNA' : 'CREA COMMESSA' }}
   </ion-button>
 </ion-content>

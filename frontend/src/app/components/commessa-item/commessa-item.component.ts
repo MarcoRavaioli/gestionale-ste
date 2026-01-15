@@ -1,45 +1,43 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input, ElementRef, OnChanges, SimpleChanges } from '@angular/core'; // <--- Aggiungi ElementRef, OnChanges, SimpleChanges
 import { CommonModule } from '@angular/common';
 import { IonicModule } from '@ionic/angular';
 import { Commessa } from '../../interfaces/models';
 import { addIcons } from 'ionicons';
-import { pencilOutline, trashOutline, calendarOutline } from 'ionicons/icons';
+import { calendarOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-commessa-item',
   templateUrl: './commessa-item.component.html',
   styleUrls: ['./commessa-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule]
+  imports: [CommonModule, IonicModule],
 })
-export class CommessaItemComponent {
+export class CommessaItemComponent implements OnChanges { // <--- Implementa OnChanges
   @Input() commessa!: Commessa;
   @Input() isAdmin: boolean = false;
+  @Input() targetAppuntamentoId: number | null = null; 
 
-  // Eventi che mandiamo al padre quando si clicca
-  @Output() onEdit = new EventEmitter<Commessa>();
-  @Output() onDelete = new EventEmitter<Commessa>();
-
-  constructor() {
-    addIcons({ pencilOutline, trashOutline, calendarOutline });
+  // Inietta ElementRef per poter manipolare il DOM e scrollare
+  constructor(private el: ElementRef) {
+    addIcons({ calendarOutline });
   }
 
-  handleEdit(event: Event) {
-    event.stopPropagation();
-    this.onEdit.emit(this.commessa);
-  }
-
-  handleDelete(event: Event) {
-    event.stopPropagation();
-    this.onDelete.emit(this.commessa);
-  }
-
-  getColoreStato(stato: string): string {
-    switch (stato) {
-      case 'APERTA': return 'success';
-      case 'IN_CORSO': return 'warning';
-      case 'CHIUSA': return 'medium';
-      default: return 'primary';
+  // Quando cambia l'input (arriva l'ID target)...
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.targetAppuntamentoId && this.commessa.appuntamenti) {
+      // Controlliamo se l'appuntamento da cercare è in questa lista (usa ==)
+      const found = this.commessa.appuntamenti.some(a => a.id == this.targetAppuntamentoId);
+      
+      if (found) {
+        // Aspettiamo 600ms (tempo che l'accordion si apra) e poi scrolliamo
+        setTimeout(() => {
+          // Cerchiamo l'elemento con la classe .highlight-item DENTRO questo componente
+          const highlightedElement = this.el.nativeElement.querySelector('.highlight-item');
+          if (highlightedElement) {
+            highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 600);
+      }
     }
   }
 }

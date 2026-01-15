@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController, ToastController, AlertController, NavController, IonicSafeString } from '@ionic/angular';
+import { IonicModule, ModalController, ToastController, AlertController, NavController, IonicSafeString, AnimationController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 // Services & Models
@@ -35,7 +35,12 @@ export class ClienteDettaglioPage implements OnInit {
   originalData: Partial<Cliente> = {};
   
   // Per l'accordion multiplo
-  indirizziAperti: number[] = [];
+  indirizziAperti: string[] = [];
+
+  // VARIABILI PER IL DEEP LINKING
+  targetCantiereId: number | null = null;
+  targetCommessaId: number | null = null;
+  targetAppuntamentoId: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -46,7 +51,8 @@ export class ClienteDettaglioPage implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
-    private navCtrl: NavController
+    private navCtrl: NavController,
+    private animationCtrl: AnimationController
   ) {
     addIcons({ mailOutline, callOutline, pencilOutline, closeOutline, saveOutline, trashOutline, addCircleOutline });
   }
@@ -54,6 +60,14 @@ export class ClienteDettaglioPage implements OnInit {
   ngOnInit() {
     this.isAdmin = this.authService.isAdmin;
     const id = this.route.snapshot.paramMap.get('id');
+
+    // 1. LEGGIAMO I PARAMETRI DALL'URL
+    this.route.queryParams.subscribe(params => {
+      this.targetCantiereId = params['cantiereId'] ? +params['cantiereId'] : null;
+      this.targetCommessaId = params['commessaId'] ? +params['commessaId'] : null;
+      this.targetAppuntamentoId = params['appuntamentoId'] ? +params['appuntamentoId'] : null;
+    });
+
     if (id) this.caricaDati(+id);
   }
 
@@ -61,12 +75,46 @@ export class ClienteDettaglioPage implements OnInit {
     this.clienteService.getOne(id).subscribe({
       next: (data) => {
         this.cliente = data;
-        if (this.cliente.indirizzi) {
-          this.indirizziAperti = this.cliente.indirizzi.map((ind) => ind.id);
-        }
+        
+        // Timeout aumentato a 600ms per garantire che la pagina sia renderizzata
+        setTimeout(() => {
+          if (this.targetCantiereId) {
+            this.indirizziAperti = [this.targetCantiereId.toString()];
+            
+            const elementId = 'cantiere-header-' + this.targetCantiereId;
+            const element = document.getElementById(elementId);
+            
+            console.log('Cerco Cantiere:', elementId, 'Trovato?', !!element); // DEBUG
+
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              
+              // Lampeggia solo se NON stiamo andando verso una commessa specifica
+              if (!this.targetCommessaId) {
+                this.flashElement(element);
+              }
+            }
+
+          } else if (this.cliente?.indirizzi) {
+            this.indirizziAperti = this.cliente.indirizzi.map((ind) => ind.id.toString());
+          }
+        }, 600); // <--- AUMENTATO A 600ms
       },
       error: (err) => console.error(err),
     });
+  }
+
+  flashElement(element: HTMLElement) {
+    const animation = this.animationCtrl.create()
+      .addElement(element)
+      .duration(2000)
+      .iterations(1)
+      .keyframes([
+        { offset: 0, '--background': 'rgba(var(--ion-color-warning-rgb), 0)' },
+        { offset: 0.2, '--background': 'rgba(var(--ion-color-warning-rgb), 0.5)' }, // Flash Giallo
+        { offset: 1, '--background': 'rgba(var(--ion-color-warning-rgb), 0)' }
+      ]);
+    animation.play();
   }
 
   // --- GESTIONE CLIENTE ---

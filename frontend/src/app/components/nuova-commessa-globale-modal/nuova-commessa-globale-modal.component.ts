@@ -5,6 +5,7 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { CommessaService } from '../../services/commessa.service';
+import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
 import { Cliente, Indirizzo } from '../../interfaces/models';
 import { addIcons } from 'ionicons';
 import { 
@@ -22,7 +23,7 @@ import {
   templateUrl: './nuova-commessa-globale-modal.component.html',
   styleUrls: ['./nuova-commessa-globale-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, GenericSelectorComponent],
 })
 export class NuovaCommessaGlobaleModalComponent implements OnInit {
 

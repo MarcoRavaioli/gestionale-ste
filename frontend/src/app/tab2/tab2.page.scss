@@ -1,27 +1,265 @@
-/* Rende il calendario alto abbastanza da riempire lo schermo */
-.calendar-wrapper {
-  height: 100%;
+/* --- HEADER NAVIGAZIONE --- */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 5px;
+
+  h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    /* Su toolbar primary il testo bianco va bene sempre */
+    color: white; 
+  }
+}
+
+/* --- WEEK STRIP --- */
+.week-strip {
+  background: var(--ion-color-primary);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 5px 20px 5px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.day-column {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 45px;
+  cursor: pointer;
+
+  .day-name { font-size: 0.7rem; font-weight: 500; }
+
+  .day-number-container {
+    position: relative;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .day-number { font-size: 1rem; font-weight: 600; color: white; }
+
+  .dot {
+    position: absolute; bottom: 4px;
+    width: 4px; height: 4px;
+    background-color: var(--ion-color-warning);
+    border-radius: 50%;
+  }
+
+  &.selected {
+    .day-name { color: white; font-weight: 700; }
+    .day-number-container {
+      background: white;
+      transform: scale(1.1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .day-number { color: var(--ion-color-primary); }
+    .dot { bottom: 2px; }
+  }
+
+  &.today:not(.selected) .day-number-container {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
 }
 
-full-calendar {
-  height: 100%;
-  width: 100%;
+/* --- TIMELINE --- */
+ion-content {
+  /* USA IL COLORE DI SISTEMA (Bianco in Light, Nero in Dark) */
+  --background: var(--ion-background-color); 
+}
+
+.timeline-container {
+  padding: 20px 16px;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.time-col {
+  width: 50px;
+  display: flex; flex-direction: column; align-items: center; padding-top: 10px;
+
+  .start-time {
+    font-weight: 700; font-size: 0.85rem;
+    /* Testo che si adatta automaticamente (Nero/Bianco) */
+    color: var(--ion-text-color); 
+  }
+  .line {
+    flex: 1; width: 2px;
+    background: var(--ion-color-step-200, #e0e0e0); /* Grigio adattivo */
+    margin-top: 5px; margin-bottom: -20px;
+  }
+}
+
+/* --- CARD EVENTO (Adattiva) --- */
+.event-card {
+  flex: 1;
+  /* Sfondo Card che cambia (Bianco / Grigio Scuro) */
+  background: var(--ion-card-background); 
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid var(--ion-color-warning);
+  transition: all 0.3s ease;
+
+  &.expanded {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.card-main {
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+
+.main-info {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1rem; font-weight: 700;
+    color: var(--ion-text-color); /* Titolo adattivo */
+  }
+
+  .info-row {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.85rem;
+    color: var(--ion-color-medium); /* Grigio medio adattivo */
+    margin-bottom: 4px;
+    
+    ion-icon { color: inherit; }
+
+    &.primary-text {
+      color: var(--ion-color-primary);
+      font-weight: 500;
+    }
+  }
+
+  /* FIX BADGE: Rimosso il colore forzato */
+  .commessa-badge {
+    margin-top: 8px;
+    display: inline-flex; align-items: center;
+    font-weight: 600; letter-spacing: 0.02em;
+    border-radius: 4px;
+    padding: 4px 8px;
+    
+    /* Nessun colore forzato qui! 
+       Lasciamo che color="light" faccia il suo lavoro:
+       - Light Mode: Sfondo Grigio Chiaro, Testo Scuro
+       - Dark Mode: Sfondo Grigio Scuro, Testo Chiaro 
+    */
+  }
+}
+
+/* FIX BUTTON: Rimosso colore forzato */
+.expand-action {
+  margin-left: 10px; margin-top: -5px;
   
-  /* Personalizzazione colori eventi (opzionale) */
-  --fc-event-bg-color: var(--ion-color-primary);
-  --fc-event-border-color: var(--ion-color-primary);
-  --fc-today-bg-color: rgba(var(--ion-color-secondary-rgb), 0.1);
+  ion-button {
+    --color: var(--ion-color-medium); /* Freccia grigia visibile ovunque */
+  }
 }
 
-/* Migliora la leggibilità del titolo su mobile */
-::ng-deep .fc-toolbar-title {
-  font-size: 1.2rem !important;
+/* --- EXPANDED CONTENT --- */
+.expanded-content {
+  margin-top: 10px;
+  animation: slideDown 0.2s ease-out;
 }
 
-/* Ingrandisce un po' i bottoni */
-::ng-deep .fc-button {
-  font-size: 0.8rem !important;
-  text-transform: capitalize;
+.separator {
+  border: 0; 
+  border-top: 1px dashed var(--ion-color-step-200); /* Bordo adattivo */
+  margin: 10px 0;
+}
+
+.description-label {
+  font-size: 0.7rem; font-weight: 800;
+  color: var(--ion-color-medium); 
+  margin-bottom: 4px;
+  &.text-warning { color: var(--ion-color-warning); }
+}
+
+.description-text {
+  font-size: 0.9rem;
+  color: var(--ion-text-color); /* Testo adattivo */
+  line-height: 1.4; margin: 0;
+}
+
+.admin-details {
+  background: rgba(var(--ion-color-warning-rgb), 0.1);
+  padding: 10px; border-radius: 8px; margin-top: 10px;
+  p { 
+    margin: 4px 0; font-size: 0.85rem; 
+    color: var(--ion-text-color); /* Testo adattivo */
+  }
+}
+
+/* --- DATE SELECTOR (Mese) --- */
+.date-selector {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 12px; border-radius: 20px;
+  cursor: pointer; transition: background 0.2s;
+
+  &:active { background: rgba(255, 255, 255, 0.3); }
+
+  h2 { margin: 0; font-size: 1rem; font-weight: 600; color: white; letter-spacing: 0.5px; }
+  ion-icon { color: white; font-size: 1rem; opacity: 0.9; }
+}
+
+/* --- MONTH GRID --- */
+.month-grid-container {
+  background: var(--ion-color-primary);
+  padding: 10px 10px 20px 10px;
+  animation: slideDown 0.2s ease-out;
+}
+
+.grid-header-row {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  text-align: center; margin-bottom: 10px;
+  span { color: rgba(255,255,255,0.6); font-size: 0.75rem; font-weight: 600; }
+}
+
+.grid-days {
+  display: grid; grid-template-columns: repeat(7, 1fr); row-gap: 10px;
+}
+
+.grid-day-cell {
+  display: flex; justify-content: center; align-items: center; height: 40px; cursor: pointer;
+
+  .day-circle {
+    width: 34px; height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; position: relative;
+    font-size: 0.9rem; font-weight: 500; color: white;
+  }
+
+  .grid-dot {
+    position: absolute; bottom: 3px;
+    width: 4px; height: 4px;
+    background-color: var(--ion-color-warning);
+    border-radius: 50%;
+  }
+
+  &.other-month .day-circle { color: rgba(255,255,255,0.3); }
+
+  &.selected .day-circle {
+    background: white; color: var(--ion-color-primary);
+    font-weight: 700; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  &.today:not(.selected) .day-circle {
+    border: 1px solid rgba(255,255,255,0.6);
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

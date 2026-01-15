@@ -176,9 +176,10 @@ export class Tab3Page implements OnInit {
     });
   }
 
-  cambiaVista(event: any) {
-    this.vistaCorrente = event.detail.value;
+  cambiaVista(nuovaVista: any) {
+    this.vistaCorrente = nuovaVista;
     this.elaboraDati();
+    //this.content.scrollToTop(300);
   }
 
   elaboraDati() {
@@ -234,25 +235,30 @@ export class Tab3Page implements OnInit {
     const term = this.ricerca.toLowerCase();
 
     if (term) {
-      dati = dati.filter(i => 
-        i.via.toLowerCase().includes(term) || 
-        i.citta.toLowerCase().includes(term) ||
-        i.cliente?.nome.toLowerCase().includes(term)
+      dati = dati.filter(
+        (i) =>
+          i.via.toLowerCase().includes(term) ||
+          i.citta.toLowerCase().includes(term) ||
+          i.cliente?.nome.toLowerCase().includes(term)
       );
     }
 
-    dati = this.ordinaLista(dati, this.settingsCantieri.orderBy, this.settingsCantieri.orderDirection);
+    dati = this.ordinaLista(
+      dati,
+      this.settingsCantieri.orderBy,
+      this.settingsCantieri.orderDirection
+    );
 
     // RAGGRUPPAMENTO AGGIORNATO
     if (this.settingsCantieri.groupBy) {
       this.isCantieriGrouped = true;
       const field = this.settingsCantieri.groupBy;
-      
-      const gruppi: {[key: string]: Indirizzo[]} = {};
-      
-      dati.forEach(item => {
+
+      const gruppi: { [key: string]: Indirizzo[] } = {};
+
+      dati.forEach((item) => {
         let key = 'Altro';
-        
+
         // Gestione specifica per campi complessi
         if (field === 'cliente') {
           key = item.cliente?.nome || 'Nessun Cliente';
@@ -268,12 +274,13 @@ export class Tab3Page implements OnInit {
         gruppi[key].push(item);
       });
 
-      this.cantieriGruppi = Object.keys(gruppi).sort().map(key => ({
-        nome: key,
-        items: gruppi[key]
-      }));
+      this.cantieriGruppi = Object.keys(gruppi)
+        .sort()
+        .map((key) => ({
+          nome: key,
+          items: gruppi[key],
+        }));
       this.cantieriLista = [];
-
     } else {
       this.isCantieriGrouped = false;
       this.cantieriLista = dati;
@@ -286,33 +293,40 @@ export class Tab3Page implements OnInit {
     const term = this.ricerca.toLowerCase();
 
     if (term) {
-      dati = dati.filter(c => 
-        c.seriale.toLowerCase().includes(term) || 
-        c.descrizione?.toLowerCase().includes(term) ||
-        c.indirizzo?.cliente?.nome.toLowerCase().includes(term)
+      dati = dati.filter(
+        (c) =>
+          c.seriale.toLowerCase().includes(term) ||
+          c.descrizione?.toLowerCase().includes(term) ||
+          c.indirizzo?.cliente?.nome.toLowerCase().includes(term)
       );
     }
 
-    dati = this.ordinaLista(dati, this.settingsCommesse.orderBy, this.settingsCommesse.orderDirection);
+    dati = this.ordinaLista(
+      dati,
+      this.settingsCommesse.orderBy,
+      this.settingsCommesse.orderDirection
+    );
 
     // RAGGRUPPAMENTO AGGIORNATO
     if (this.settingsCommesse.groupBy) {
       this.isCommesseGrouped = true;
       const field = this.settingsCommesse.groupBy;
-      
-      const gruppi: {[key: string]: Commessa[]} = {};
-      
-      dati.forEach(item => {
+
+      const gruppi: { [key: string]: Commessa[] } = {};
+
+      dati.forEach((item) => {
         let key = 'Altro';
 
         // Switch per gestire i raggruppamenti complessi
-        switch(field) {
+        switch (field) {
           case 'stato':
             key = item.stato;
             break;
           case 'cantiere':
             // Raggruppa per "Città, Via"
-            key = item.indirizzo ? `${item.indirizzo.citta}, ${item.indirizzo.via}` : 'Nessun Cantiere';
+            key = item.indirizzo
+              ? `${item.indirizzo.citta}, ${item.indirizzo.via}`
+              : 'Nessun Cantiere';
             break;
           case 'cliente':
             // Raggruppa per Nome Cliente
@@ -326,10 +340,12 @@ export class Tab3Page implements OnInit {
         gruppi[key].push(item);
       });
 
-      this.commesseGruppi = Object.keys(gruppi).sort().map(key => ({
-        nome: key,
-        items: gruppi[key]
-      }));
+      this.commesseGruppi = Object.keys(gruppi)
+        .sort()
+        .map((key) => ({
+          nome: key,
+          items: gruppi[key],
+        }));
       this.commesseLista = [];
     } else {
       this.isCommesseGrouped = false;
@@ -344,51 +360,71 @@ export class Tab3Page implements OnInit {
 
     // 1. Filtro
     if (term) {
-      dati = dati.filter(a => 
-        a.nome.toLowerCase().includes(term) ||
-        a.commessa?.indirizzo?.cliente?.nome.toLowerCase().includes(term) ||
-        a.commessa?.indirizzo?.citta.toLowerCase().includes(term)
+      dati = dati.filter(
+        (a) =>
+          a.nome.toLowerCase().includes(term) ||
+          a.commessa?.indirizzo?.cliente?.nome.toLowerCase().includes(term) ||
+          a.commessa?.indirizzo?.citta.toLowerCase().includes(term)
       );
     }
 
     // 2. Ordinamento (Sempre necessario prima di raggruppare)
-    dati = this.ordinaLista(dati, this.settingsAppuntamenti.orderBy, this.settingsAppuntamenti.orderDirection);
+    dati = this.ordinaLista(
+      dati,
+      this.settingsAppuntamenti.orderBy,
+      this.settingsAppuntamenti.orderDirection
+    );
 
     // 3. Raggruppamento
     if (this.settingsAppuntamenti.groupBy) {
       this.isAppuntamentiGrouped = true;
       const field = this.settingsAppuntamenti.groupBy;
-      
+
       // Usiamo una Map per mantenere l'ordine di inserimento (che segue l'ordinamento dei dati)
       const gruppiMap = new Map<string, Appuntamento[]>();
 
-      dati.forEach(app => {
+      dati.forEach((app) => {
         let key = 'Altro';
         const dataObj = new Date(app.data_ora);
 
         // Calcolo della chiave in base al tipo di raggruppamento
         switch (field) {
           case 'giorno':
-            key = dataObj.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+            key = dataObj.toLocaleDateString('it-IT', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            });
             break;
           case 'settimana':
             // Calcolo approssimativo settimana
             const onejan = new Date(dataObj.getFullYear(), 0, 1);
-            const week = Math.ceil((((dataObj.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+            const week = Math.ceil(
+              ((dataObj.getTime() - onejan.getTime()) / 86400000 +
+                onejan.getDay() +
+                1) /
+                7
+            );
             key = `Settimana ${week} - ${dataObj.getFullYear()}`;
             break;
           case 'mese':
-            key = dataObj.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+            key = dataObj.toLocaleDateString('it-IT', {
+              month: 'long',
+              year: 'numeric',
+            });
             break;
           case 'anno':
             key = dataObj.getFullYear().toString();
             break;
           case 'commessa':
             key = app.commessa ? `${app.commessa.seriale}` : 'Nessuna Commessa';
-            if (app.commessa?.descrizione) key += ` - ${app.commessa.descrizione}`;
+            if (app.commessa?.descrizione)
+              key += ` - ${app.commessa.descrizione}`;
             break;
           case 'cantiere':
-            key = app.commessa?.indirizzo ? `${app.commessa.indirizzo.citta}, ${app.commessa.indirizzo.via}` : 'Nessun Cantiere';
+            key = app.commessa?.indirizzo
+              ? `${app.commessa.indirizzo.citta}, ${app.commessa.indirizzo.via}`
+              : 'Nessun Cantiere';
             break;
           case 'cliente':
             key = app.commessa?.indirizzo?.cliente?.nome || 'Nessun Cliente';
@@ -405,13 +441,12 @@ export class Tab3Page implements OnInit {
       });
 
       // Trasforma la Map in Array per l'HTML
-      this.appuntamentiGruppi = Array.from(gruppiMap.keys()).map(k => ({
+      this.appuntamentiGruppi = Array.from(gruppiMap.keys()).map((k) => ({
         nome: k,
-        items: gruppiMap.get(k)!
+        items: gruppiMap.get(k)!,
       }));
-      
-      this.appuntamentiLista = []; // Pulisce lista piatta
 
+      this.appuntamentiLista = []; // Pulisce lista piatta
     } else {
       this.isAppuntamentiGrouped = false;
       this.appuntamentiLista = dati;
@@ -516,6 +551,21 @@ export class Tab3Page implements OnInit {
         return 'medium'; // Grigio
       default:
         return 'primary';
+    }
+  }
+
+  getPlaceholder(): string {
+    switch (this.vistaCorrente) {
+      case 'clienti':
+        return 'Cerca cliente...';
+      case 'cantieri':
+        return 'Cerca cantiere...';
+      case 'commesse':
+        return 'Cerca commessa...';
+      case 'appuntamenti':
+        return 'Cerca appuntamento...';
+      default:
+        return 'Cerca...';
     }
   }
 }

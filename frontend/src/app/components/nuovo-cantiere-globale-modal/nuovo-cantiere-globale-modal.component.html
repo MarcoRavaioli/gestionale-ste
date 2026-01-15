@@ -22,11 +22,12 @@
     </div>
 
     <div *ngIf="mode === 'esistente'" class="fade-in">
-      <ion-select label="Cliente di riferimento" label-placement="floating" fill="outline" [(ngModel)]="clienteSelezionatoId" placeholder="Seleziona dalla lista">
-        <ion-select-option *ngFor="let c of listaClienti" [value]="c.id">
-          {{ c.nome }}
-        </ion-select-option>
-      </ion-select>
+      <app-generic-selector 
+        label="Cliente di riferimento"
+        type="cliente"
+        [items]="listaClienti"
+        [(selectedId)]="clienteSelezionatoId">
+      </app-generic-selector>
     </div>
 
     <div *ngIf="mode === 'nuovo'" class="fade-in form-grid">

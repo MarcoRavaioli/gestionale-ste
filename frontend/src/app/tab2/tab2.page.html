@@ -1,15 +1,251 @@
-<ion-header [translucent]="true">
+<ion-header class="ion-no-border">
   <ion-toolbar color="primary">
-    <ion-title>
-      Calendario
-    </ion-title>
-  </ion-toolbar>
-</ion-header>
+    <div class="calendar-header">
+      <ion-button
+        *ngIf="viewMode === 'week'"
+        fill="clear"
+        color="light"
+        (click)="settimanaPrecedente()"
+      >
+        <ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon>
+      </ion-button>
 
-<ion-content [fullscreen]="true">
-  
-  <div class="calendar-wrapper ion-padding">
-    <full-calendar [options]="calendarOptions"></full-calendar>
+      <div class="date-selector" id="open-month-modal">
+        <h2>{{ getHeaderTitle() | titlecase }}</h2>
+        <ion-icon name="chevron-down-outline"></ion-icon>
+      </div>
+
+      <div style="display: flex">
+        <ion-button fill="clear" color="light" (click)="vaiAOggi()">
+          <ion-icon slot="icon-only" name="today-outline"></ion-icon>
+        </ion-button>
+
+        <ion-button fill="clear" color="light" (click)="toggleVista()">
+          <ion-icon
+            slot="icon-only"
+            [name]="viewMode === 'week' ? 'grid-outline' : 'calendar-number-outline'"
+          ></ion-icon>
+        </ion-button>
+
+        <ion-button fill="clear" color="light" (click)="setExportModal(true)">
+          <ion-icon slot="icon-only" name="share-social-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <ion-button
+        *ngIf="viewMode === 'week'"
+        fill="clear"
+        color="light"
+        (click)="settimanaSuccessiva()"
+      >
+        <ion-icon slot="icon-only" name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    </div>
+  </ion-toolbar>
+
+  <div class="week-strip" *ngIf="viewMode === 'week'">
+    <div
+      class="day-column"
+      *ngFor="let giorno of giorniSettimana"
+      [class.selected]="isSelected(giorno)"
+      [class.today]="isTodayCheck(giorno)"
+      (click)="selezionaGiorno(giorno)"
+    >
+      <span class="day-name">{{ getNomeGiorno(giorno) }}</span>
+      <div class="day-number-container">
+        <span class="day-number">{{ getNumeroGiorno(giorno) }}</span>
+        <div class="dot" *ngIf="hasEvents(giorno)"></div>
+      </div>
+    </div>
   </div>
 
+  <div class="month-grid-container" *ngIf="viewMode === 'month'">
+    <div class="grid-header-row">
+      <span *ngFor="let d of ['L','M','M','G','V','S','D']">{{ d }}</span>
+    </div>
+
+    <div class="grid-days">
+      <div
+        class="grid-day-cell"
+        *ngFor="let giorno of giorniMese"
+        [class.selected]="isSelected(giorno)"
+        [class.today]="isTodayCheck(giorno)"
+        [class.other-month]="giorno.getMonth() !== dataCorrente.getMonth()"
+        (click)="selezionaGiorno(giorno)"
+      >
+        <div class="day-circle">
+          <span>{{ getNumeroGiorno(giorno) }}</span>
+          <div class="grid-dot" *ngIf="hasEvents(giorno)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="light-bg">
+  <div class="timeline-container">
+    <div *ngIf="appuntamentiDelGiorno.length === 0" class="empty-state">
+      <p>Nessun impegno per questo giorno.</p>
+    </div>
+
+    <div class="timeline-item" *ngFor="let app of appuntamentiDelGiorno">
+      <div class="time-col">
+        <span class="start-time">{{ app.data_ora | date:'HH:mm' }}</span>
+        <div class="line"></div>
+      </div>
+
+      <div
+        class="event-card"
+        [class.expanded]="expandedAppointmentId === app.id"
+      >
+        <div class="card-main">
+          <div class="main-info">
+            <h3>{{ app.nome }}</h3>
+
+            <div class="info-row primary-text">
+              <ion-icon name="person-outline"></ion-icon>
+              <span
+                >{{ app.commessa?.indirizzo?.cliente?.nome || 'Cliente N.D.'
+                }}</span
+              >
+            </div>
+
+            <div class="info-row" *ngIf="app.commessa?.indirizzo">
+              <ion-icon name="location-outline"></ion-icon>
+              <span
+                >{{ app.commessa?.indirizzo?.via }}, {{
+                app.commessa?.indirizzo?.citta }}</span
+              >
+            </div>
+
+            <div class="chip-row">
+              <ion-badge color="light" class="commessa-badge">
+                <ion-icon
+                  name="documents-outline"
+                  style="font-size: 0.8rem; margin-right: 4px"
+                ></ion-icon>
+                {{ app.commessa?.seriale || 'Nessuna Commessa' }}
+              </ion-badge>
+            </div>
+          </div>
+
+          <div class="expand-action">
+            <ion-button
+              fill="clear"
+              size="small"
+              (click)="toggleDettagli(app.id)"
+            >
+              <ion-icon
+                slot="icon-only"
+                [name]="expandedAppointmentId === app.id ? 'chevron-up-outline' : 'chevron-down-outline'"
+              ></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
+        <div class="expanded-content" *ngIf="expandedAppointmentId === app.id">
+          <hr class="separator" />
+
+          <p class="description-label">NOTE</p>
+          <p class="description-text">
+            {{ app.descrizione || 'Nessuna nota inserita.' }}
+          </p>
+
+          <div *ngIf="isAdmin" class="admin-details">
+            <p class="description-label text-warning">INFO AMMINISTRATIVE</p>
+            <p>
+              <strong>Valore Commessa:</strong> € {{ app.commessa?.valore_totale
+              || '0' }}
+            </p>
+            <p><strong>Stato Commessa:</strong> {{ app.commessa?.stato }}</p>
+            <p>
+              <strong>Email Cliente:</strong> {{
+              app.commessa?.indirizzo?.cliente?.email || 'Nessuna email
+              inserita.' }}
+            </p>
+            <p>
+              <strong>Telefono Cliente:</strong> {{
+              app.commessa?.indirizzo?.cliente?.telefono || 'Nessun numero di
+              telefono inserito.' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="apriNuovoAppuntamento()" color="warning">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-modal
+    trigger="open-month-modal"
+    [initialBreakpoint]="0.5"
+    [breakpoints]="[0, 0.5]"
+  >
+    <ng-template>
+      <ion-content class="ion-padding">
+        <ion-datetime
+          presentation="month-year"
+          [value]="dataCorrente.toISOString()"
+          (ionChange)="cambiaMeseSelezionato($event)"
+          color="primary"
+          size="cover"
+        >
+        </ion-datetime>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal [isOpen]="isExportModalOpen" (didDismiss)="setExportModal(false)" [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6]">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Esporta Calendario</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="setExportModal(false)">Chiudi</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        
+        <p class="ion-text-center ion-text-muted" style="font-size: 0.9rem; margin-bottom: 20px;">
+          Seleziona il periodo da esportare. Verrà generato un file <b>.ics</b> compatibile con Google Calendar, Outlook e Apple.
+        </p>
+
+        <ion-item lines="full">
+          <ion-label position="stacked">Data Inizio</ion-label>
+          <ion-datetime-button datetime="datetime-start"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="datetime-start" presentation="date" [(ngModel)]="exportDateStart"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-item lines="full" class="ion-margin-top">
+          <ion-label position="stacked">Data Fine</ion-label>
+          <ion-datetime-button datetime="datetime-end"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime id="datetime-end" presentation="date" [(ngModel)]="exportDateEnd"></ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </ion-item>
+
+        <ion-button expand="block" class="ion-margin-top" (click)="esportaAppuntamenti('download')" color="secondary" size="large">
+          <ion-icon slot="start" name="download-outline"></ion-icon>
+          SCARICA SUL DISPOSITIVO
+        </ion-button>
+
+        <ion-button expand="block" class="ion-margin-top" (click)="esportaAppuntamenti('share')" size="large">
+          <ion-icon slot="start" name="share-social-outline"></ion-icon>
+          CONDIVIDI FILE
+        </ion-button>
+
+      </ion-content>
+    </ng-template>
+  </ion-modal>
 </ion-content>

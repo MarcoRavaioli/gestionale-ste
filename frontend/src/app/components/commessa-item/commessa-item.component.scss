@@ -1,54 +1,48 @@
-.commessa-accordion {
-  border: 1px solid var(--ion-color-step-200);
-  border-radius: 8px;
-  margin-bottom: 10px;
-  background: var(--ion-card-background); 
-  overflow: hidden;
-}
-
-.commessa-header-item {
-  --padding-start: 0;
-  --inner-padding-end: 0;
-  --background: transparent; 
-  --min-height: auto;
-}
-
-.commessa-row-grid {
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-  padding: 12px;
-  gap: 12px;
-}
-
-/* Colonne */
-.col-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  min-width: 75px;
-
-  .status-badge { font-size: 0.65rem; padding: 4px 8px; }
-  .serial-code { font-weight: 800; font-size: 0.8rem; color: var(--ion-text-color); opacity: 0.8; }
-}
-
-.col-info {
-  flex: 1;
-  white-space: normal;
-  
-  .descrizione { margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 500; color: var(--ion-text-color); line-height: 1.4; }
-  .meta-info { display: flex; gap: 10px; align-items: center; }
-  .price-tag { font-size: 0.85rem; font-weight: bold; color: var(--ion-color-success); background: rgba(var(--ion-color-success-rgb), 0.1); padding: 2px 6px; border-radius: 4px; }
-}
-
-.col-actions { display: flex; align-items: center; justify-content: flex-end; }
-
-/* Appuntamenti */
+/* Stili esistenti per la lista appuntamenti */
 .appuntamenti-content {
   background-color: var(--ion-item-background);
   padding: 10px;
   border-top: 1px dashed var(--ion-color-step-200);
 }
-.appuntamenti-label { font-size: 0.75rem; font-weight: 800; color: var(--ion-color-medium); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-.no-appuntamenti { font-size: 0.85rem; color: var(--ion-color-medium); font-style: italic; padding: 10px; text-align: center; }
+
+.appuntamenti-label { 
+  font-size: 0.75rem; 
+  font-weight: 800; 
+  color: var(--ion-color-medium); 
+  margin-bottom: 8px; 
+  display: flex; 
+  align-items: center; 
+  gap: 5px; 
+}
+
+.no-appuntamenti { 
+  font-size: 0.85rem; 
+  color: var(--ion-color-medium); 
+  font-style: italic; 
+  padding: 10px; 
+  text-align: center; 
+}
+
+/* --- NUOVA EVIDENZIAZIONE --- */
+@keyframes flashHighlight {
+  0% {
+    --background: rgba(var(--ion-color-warning-rgb), 0);
+  }
+  20% {
+    --background: rgba(var(--ion-color-warning-rgb), 0.5); /* Giallo intenso */
+  }
+  100% {
+    --background: rgba(var(--ion-color-warning-rgb), 0); /* Torna normale */
+  }
+}
+
+.highlight-item {
+  /* Ritardo di 0.5s per aspettare che l'accordion si apra, dura 3s */
+  animation: flashHighlight 3s ease-out 0.5s forwards;
+  
+  /* Bordo laterale giallo fisso per indicare "è questo qui" */
+  border-left: 5px solid var(--ion-color-warning);
+  
+  --background: transparent;
+  transition: --background 0.3s;
+}

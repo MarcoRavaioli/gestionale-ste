@@ -1,28 +1,71 @@
-.avatar-placeholder {
-  width: 40px;
-  height: 40px;
-  background-color: var(--ion-color-secondary);
-  color: white;
-  border-radius: 50%;
+/* --- STILE BARRA CATEGORIE (SCORREVOLE) --- */
+.categories-header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  text-transform: uppercase;
+  overflow-x: auto;      /* Scorrimento orizzontale attivo */
+  white-space: nowrap;   /* Impedisce di andare a capo */
+  padding: 0 10px 10px 10px; /* Padding sotto per staccare dalla searchbar */
+  background: var(--ion-color-primary); /* Sfondo blu */
+  gap: 8px;              /* Spazio tra le chips */
+  
+  /* Nascondi scrollbar (Chrome/Safari/Webkit) */
+  &::-webkit-scrollbar { display: none; }
+  /* Nascondi scrollbar (Firefox/IE) */
+  -ms-overflow-style: none;  
+  scrollbar-width: none;  
 }
 
+/* --- STILE DELLE CHIPS --- */
+ion-chip {
+  margin: 0;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  
+  /* --- RAGGRUPPAMENTO E LARGHEZZA FISSA --- */
+  flex: 0 0 auto;    /* Non schiacciarti, non allargarti: resta fisso */
+  width: 115px;      /* Larghezza fissa (simile a "Cantieri") */
+  justify-content: center; /* Centra il contenuto (icona + testo) */
+  padding-inline: 10px;    /* Spazio interno laterale */
+
+  /* COLORI DEFAULT (Inattivo su sfondo blu) */
+  --background: rgba(255, 255, 255, 0.2); 
+  --color: rgba(255, 255, 255, 0.9);
+  
+  /* STATO ATTIVO (Selezionato) */
+  &.chip-active {
+    --background: #ffffff; 
+    --color: var(--ion-color-primary); 
+    transform: scale(1.05); 
+    font-weight: 700;
+  }
+
+  /* ICONA DENTRO LA CHIP */
+  ion-icon {
+    flex-shrink: 0; /* L'icona non deve mai rimpicciolirsi */
+    margin-right: 5px;
+  }
+
+  /* TESTO DENTRO LA CHIP (Troncamento) */
+  ion-label {
+    white-space: nowrap;       /* Niente a capo */
+    overflow: hidden;          /* Nascondi l'eccedenza */
+    text-overflow: ellipsis;   /* Aggiungi i tre puntini "..." */
+    font-size: 0.85rem;        /* Leggermente più piccolo per farci stare più testo */
+    font-weight: 500;
+  }
+}
+
+/* --- ALTRI STILI (Avatar, Empty State, Badge) --- */
 .avatar-placeholder {
-  width: 40px;
+  width: 40px; 
   height: 40px;
-  background-color: var(--ion-color-secondary);
+  background-color: var(--ion-color-secondary); 
   color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+  font-weight: bold; 
+  font-size: 1.2rem; 
   text-transform: uppercase;
 }
 
@@ -34,12 +77,11 @@
 
 .serial-code {
   font-weight: 800;
-  font-size: 0.9rem; /* Leggermente più grande per la lista */
+  font-size: 0.9rem;
   color: var(--ion-text-color);
   opacity: 0.9;
 }
 
-/* Stile per il badge stato (es. APERTA) */
 .status-badge {
   font-size: 0.65rem;
   padding: 4px 8px;

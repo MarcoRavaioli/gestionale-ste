@@ -1,44 +1,64 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Archivio</ion-title>
+  </ion-toolbar>
+
+  <div class="categories-header">
+    <ion-chip
+      [class.chip-active]="vistaCorrente === 'clienti'"
+      (click)="cambiaVista('clienti')"
+    >
+      <ion-label>Clienti</ion-label>
+    </ion-chip>
+
+    <ion-chip
+      [class.chip-active]="vistaCorrente === 'cantieri'"
+      (click)="cambiaVista('cantieri')"
+    >
+      <ion-label>Cantieri</ion-label>
+    </ion-chip>
+
+    <ion-chip
+      [class.chip-active]="vistaCorrente === 'commesse'"
+      (click)="cambiaVista('commesse')"
+    >
+      <ion-label>Commesse</ion-label>
+    </ion-chip>
+
+    <ion-chip
+      [class.chip-active]="vistaCorrente === 'appuntamenti'"
+      (click)="cambiaVista('appuntamenti')"
+    >
+      <ion-label>Appuntamenti</ion-label>
+    </ion-chip>
+  </div>
+
   <ion-toolbar color="primary">
     <div
       style="
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding-right: 5px;
+        padding-right: 10px;
+        width: 100%;
       "
     >
-      <ion-title>Archivio</ion-title>
-      <ion-segment
-        [value]="vistaCorrente"
-        (ionChange)="cambiaVista($event)"
-        style="width: 300px; --background: rgba(255, 255, 255, 0.2)"
-      >
-        <ion-segment-button value="clienti"
-          ><ion-label>Clienti</ion-label></ion-segment-button
-        >
-        <ion-segment-button value="cantieri"
-          ><ion-label>Cantieri</ion-label></ion-segment-button
-        >
-        <ion-segment-button value="commesse"
-          ><ion-label>Commesse</ion-label></ion-segment-button
-        >
-        <ion-segment-button value="appuntamenti"
-          ><ion-label>Appuntamenti</ion-label></ion-segment-button
-        >
-      </ion-segment>
-    </div>
-  </ion-toolbar>
-
-  <ion-toolbar color="primary">
-    <div style="display: flex; align-items: center; padding-right: 10px">
       <ion-searchbar
-        [placeholder]="vistaCorrente === 'clienti' ? 'Cerca cliente...' : (vistaCorrente === 'cantieri' ? 'Cerca cantiere...' : (vistaCorrente === 'commesse' ? 'Cerca commessa...' : 'Cerca appuntamento...'))"
+        [placeholder]="getPlaceholder()"
         [(ngModel)]="ricerca"
         (ionInput)="elaboraDati()"
         animated="true"
+        style="
+          --box-shadow: none;
+          --background: rgba(255, 255, 255, 0.2);
+          --color: white;
+          --placeholder-color: rgba(255, 255, 255, 0.7);
+          --icon-color: white;
+          --clear-button-color: white;
+          border-radius: 8px;
+        "
       >
       </ion-searchbar>
+
       <ion-button fill="clear" color="light" (click)="apriImpostazioni($event)">
         <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
       </ion-button>
@@ -82,6 +102,7 @@
         button
         detail="true"
         [routerLink]="['/cliente-dettaglio', cantiere.cliente?.id]"
+        [queryParams]="{ cantiereId: cantiere.id }"
       >
         <ion-icon
           slot="start"
@@ -103,10 +124,11 @@
 
     <ion-list *ngIf="isCantieriGrouped">
       <ion-item-group *ngFor="let gruppo of cantieriGruppi">
-        <ion-item-divider sticky="true">
-          <ion-label>{{ gruppo.nome | uppercase }}</ion-label>
-        </ion-item-divider>
-
+        <ion-item-divider sticky="true"
+          ><ion-label
+            >{{ gruppo.nome | uppercase }}</ion-label
+          ></ion-item-divider
+        >
         <ion-item
           *ngFor="let item of gruppo.items"
           button
@@ -118,14 +140,13 @@
             name="location-outline"
             color="secondary"
           ></ion-icon>
-          <ion-label>
-            <h2>{{ item.via }} {{ item.civico }}</h2>
-            <p>{{ item.cliente?.nome }}</p>
-          </ion-label>
+          <ion-label
+            ><h2>{{ item.via }} {{ item.civico }}</h2>
+            <p>{{ item.cliente?.nome }}</p></ion-label
+          >
         </ion-item>
       </ion-item-group>
     </ion-list>
-
     <div
       *ngIf="cantieriLista.length === 0 && cantieriGruppi.length === 0"
       class="empty-state"
@@ -141,6 +162,7 @@
         button
         detail="true"
         [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
+        [queryParams]="{ cantiereId: item.indirizzo?.id, commessaId: item.id }"
       >
         <ion-icon
           slot="start"
@@ -162,7 +184,6 @@
               >{{ item.stato }}</ion-badge
             >
           </div>
-
           <h2>{{ item.descrizione || 'Nessuna descrizione' }}</h2>
           <p>
             <ion-icon name="person-outline"></ion-icon> {{
@@ -175,10 +196,11 @@
 
     <ion-list *ngIf="isCommesseGrouped">
       <ion-item-group *ngFor="let gruppo of commesseGruppi">
-        <ion-item-divider sticky="true">
-          <ion-label>{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label>
-        </ion-item-divider>
-
+        <ion-item-divider sticky="true"
+          ><ion-label
+            >{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label
+          ></ion-item-divider
+        >
         <ion-item
           *ngFor="let item of gruppo.items"
           button
@@ -190,14 +212,13 @@
             name="documents-outline"
             color="tertiary"
           ></ion-icon>
-          <ion-label>
-            <h3>{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
-            <p>{{ item.descrizione }}</p>
-          </ion-label>
+          <ion-label
+            ><h3>{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
+            <p>{{ item.descrizione }}</p></ion-label
+          >
         </ion-item>
       </ion-item-group>
     </ion-list>
-
     <div
       *ngIf="(isCommesseGrouped ? commesseGruppi.length : commesseLista.length) === 0"
       class="empty-state"
@@ -207,19 +228,40 @@
   </div>
 
   <div *ngIf="vistaCorrente === 'appuntamenti'">
-    
     <ion-list *ngIf="!isAppuntamentiGrouped">
-      <ion-item *ngFor="let app of appuntamentiLista" button detail="true" [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]">
-        <ion-icon slot="start" name="calendar-outline" color="warning" size="large"></ion-icon>
+      <ion-item
+        *ngFor="let app of appuntamentiLista"
+        button
+        detail="true"
+        [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
+        [queryParams]="{ 
+    cantiereId: app.commessa?.indirizzo?.id, 
+    commessaId: app.commessa?.id, 
+    appuntamentoId: app.id 
+  }"
+      >
+        <ion-icon
+          slot="start"
+          name="calendar-outline"
+          color="warning"
+          size="large"
+        ></ion-icon>
         <ion-label>
-          <ion-note color="dark" style="font-weight: bold; font-size: 0.9rem;">
-            {{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}
-          </ion-note>
+          <ion-note color="dark" style="font-weight: bold; font-size: 0.9rem"
+            >{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</ion-note
+          >
           <h2>{{ app.nome }}</h2>
-          <p style="font-size: 0.8rem; margin-top: 4px;">
-            <ion-icon name="documents-outline" style="vertical-align: middle;"></ion-icon> {{ app.commessa?.seriale }}
-            <br>
-            <ion-icon name="person-outline" style="vertical-align: middle;"></ion-icon> {{ app.commessa?.indirizzo?.cliente?.nome }}
+          <p style="font-size: 0.8rem; margin-top: 4px">
+            <ion-icon
+              name="documents-outline"
+              style="vertical-align: middle"
+            ></ion-icon>
+            {{ app.commessa?.seriale }} <br />
+            <ion-icon
+              name="person-outline"
+              style="vertical-align: middle"
+            ></ion-icon>
+            {{ app.commessa?.indirizzo?.cliente?.nome }}
           </p>
         </ion-label>
       </ion-item>
@@ -227,26 +269,43 @@
 
     <ion-list *ngIf="isAppuntamentiGrouped">
       <ion-item-group *ngFor="let gruppo of appuntamentiGruppi">
-        
-        <ion-item-divider sticky="true">
-          <ion-label>{{ gruppo.nome }} <span style="font-weight: normal; font-size: 0.8em;">({{ gruppo.items.length }})</span></ion-label>
-        </ion-item-divider>
-
-        <ion-item *ngFor="let app of gruppo.items" button detail="true" [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]">
-          <ion-icon slot="start" name="calendar-outline" color="warning"></ion-icon>
+        <ion-item-divider sticky="true"
+          ><ion-label
+            >{{ gruppo.nome }}
+            <span style="font-weight: normal; font-size: 0.8em"
+              >({{ gruppo.items.length }})</span
+            ></ion-label
+          ></ion-item-divider
+        >
+        <ion-item
+          *ngFor="let app of gruppo.items"
+          button
+          detail="true"
+          [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
+        >
+          <ion-icon
+            slot="start"
+            name="calendar-outline"
+            color="warning"
+          ></ion-icon>
           <ion-label>
-            <ion-note color="dark" style="font-weight: bold;">
-              {{ app.data_ora | date: (settingsAppuntamenti.groupBy === 'giorno' ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}
-            </ion-note>
+            <ion-note color="dark" style="font-weight: bold"
+              >{{ app.data_ora | date: (settingsAppuntamenti.groupBy ===
+              'giorno' ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}</ion-note
+            >
             <h3>{{ app.nome }}</h3>
-            <p>{{ app.commessa?.indirizzo?.cliente?.nome }} - {{ app.commessa?.seriale }}</p>
+            <p>
+              {{ app.commessa?.indirizzo?.cliente?.nome }} - {{
+              app.commessa?.seriale }}
+            </p>
           </ion-label>
         </ion-item>
-
       </ion-item-group>
     </ion-list>
-
-    <div *ngIf="(isAppuntamentiGrouped ? appuntamentiGruppi.length : appuntamentiLista.length) === 0" class="empty-state">
+    <div
+      *ngIf="(isAppuntamentiGrouped ? appuntamentiGruppi.length : appuntamentiLista.length) === 0"
+      class="empty-state"
+    >
       <p>Nessun appuntamento trovato.</p>
     </div>
   </div>
@@ -255,28 +314,25 @@
     <ion-fab-button
       *ngIf="vistaCorrente === 'clienti'"
       (click)="apriNuovoCliente()"
-    >
-      <ion-icon name="person-add-outline"></ion-icon>
-    </ion-fab-button>
-
+      ><ion-icon name="person-add-outline"></ion-icon
+    ></ion-fab-button>
     <ion-fab-button
       *ngIf="vistaCorrente === 'cantieri'"
       (click)="apriNuovoCantiere()"
       color="secondary"
-    >
-      <ion-icon name="add"></ion-icon>
-    </ion-fab-button>
-
+      ><ion-icon name="add"></ion-icon
+    ></ion-fab-button>
     <ion-fab-button
       *ngIf="vistaCorrente === 'commesse'"
       (click)="apriNuovaCommessa()"
       color="tertiary"
-    >
-      <ion-icon name="documents-outline"></ion-icon>
-    </ion-fab-button>
-
-    <ion-fab-button *ngIf="vistaCorrente === 'appuntamenti'" (click)="apriNuovoAppuntamento()" color="warning">
-      <ion-icon name="calendar-outline"></ion-icon>
-    </ion-fab-button>
+      ><ion-icon name="documents-outline"></ion-icon
+    ></ion-fab-button>
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'appuntamenti'"
+      (click)="apriNuovoAppuntamento()"
+      color="warning"
+      ><ion-icon name="calendar-outline"></ion-icon
+    ></ion-fab-button>
   </ion-fab>
 </ion-content>

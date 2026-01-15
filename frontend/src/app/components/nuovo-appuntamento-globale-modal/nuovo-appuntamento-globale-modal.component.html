@@ -1,37 +1,32 @@
 <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Nuovo Appuntamento</ion-title>
-    <ion-buttons slot="end"
-      ><ion-button (click)="chiudi()">Annulla</ion-button></ion-buttons
-    >
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">Annulla</ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
+  
   <div class="section-box">
     <div class="header-toggle">
       <h3>
         <ion-icon name="documents-outline"></ion-icon>
-        {{
-          modeCommessa === "esistente" ? "Seleziona Commessa" : "Nuova Commessa"
-        }}
+        {{ modeCommessa === "esistente" ? "Seleziona Commessa" : "Nuova Commessa" }}
       </h3>
-      <ion-button size="small" fill="outline" (click)="toggleModeCommessa()">{{
-        modeCommessa === "esistente" ? "+ Nuova" : "Scegli"
-      }}</ion-button>
+      <ion-button size="small" fill="outline" (click)="toggleModeCommessa()">
+        {{ modeCommessa === "esistente" ? "+ Nuova" : "Scegli" }}
+      </ion-button>
     </div>
 
     <div *ngIf="modeCommessa === 'esistente'" class="fade-in">
-      <ion-select
+      <app-generic-selector 
         label="Commessa di riferimento"
-        label-placement="floating"
-        fill="outline"
-        [(ngModel)]="selectedCommessaId"
-      >
-        <ion-select-option *ngFor="let c of listaCommesse" [value]="c.id"
-          >{{ c.seriale }} - {{ c.descrizione }}</ion-select-option
-        >
-      </ion-select>
+        type="commessa"
+        [items]="listaCommesse"
+        [(selectedId)]="selectedCommessaId">
+      </app-generic-selector>
     </div>
 
     <div *ngIf="modeCommessa === 'nuova'" class="fade-in form-grid">
@@ -69,33 +64,25 @@
           <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
         </ion-select>
       </div>
+
       <div class="nested-box ion-margin-top">
         <div class="header-toggle">
           <h4>
             <ion-icon name="location-outline"></ion-icon>
             {{ modeCantiere === "esistente" ? "Cantiere" : "Nuovo Cantiere" }}
           </h4>
-          <ion-button
-            size="small"
-            fill="clear"
-            (click)="toggleModeCantiere()"
-            >{{
-              modeCantiere === "esistente" ? "+ Nuovo" : "Scegli"
-            }}</ion-button
-          >
+          <ion-button size="small" fill="clear" (click)="toggleModeCantiere()">
+            {{ modeCantiere === "esistente" ? "+ Nuovo" : "Scegli" }}
+          </ion-button>
         </div>
 
         <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
-          <ion-select
-            label="Scegli Cantiere"
-            label-placement="floating"
-            fill="outline"
-            [(ngModel)]="selectedCantiereId"
-          >
-            <ion-select-option *ngFor="let i of listaCantieri" [value]="i.id"
-              >{{ i.citta }} - {{ i.via }}</ion-select-option
-            >
-          </ion-select>
+          <app-generic-selector 
+            label="Seleziona Cantiere"
+            type="cantiere"
+            [items]="listaCantieri"
+            [(selectedId)]="selectedCantiereId">
+          </app-generic-selector>
         </div>
 
         <div *ngIf="modeCantiere === 'nuovo'" class="fade-in form-grid">
@@ -139,33 +126,20 @@
             <div class="header-toggle">
               <h4>
                 <ion-icon name="person-add-outline"></ion-icon>
-                {{
-                  modeCliente === "esistente" ? "Proprietario" : "Nuovo Cliente"
-                }}
+                {{ modeCliente === "esistente" ? "Proprietario" : "Nuovo Cliente" }}
               </h4>
-              <ion-button
-                size="small"
-                fill="clear"
-                (click)="toggleModeCliente()"
-                >{{
-                  modeCliente === "esistente" ? "+ Nuovo" : "Scegli"
-                }}</ion-button
-              >
+              <ion-button size="small" fill="clear" (click)="toggleModeCliente()">
+                {{ modeCliente === "esistente" ? "+ Nuovo" : "Scegli" }}
+              </ion-button>
             </div>
 
             <div *ngIf="modeCliente === 'esistente'" class="fade-in">
-              <ion-select
-                label="Scegli Cliente"
-                label-placement="floating"
-                fill="outline"
-                [(ngModel)]="selectedClienteId"
-              >
-                <ion-select-option
-                  *ngFor="let cli of listaClienti"
-                  [value]="cli.id"
-                  >{{ cli.nome }}</ion-select-option
-                >
-              </ion-select>
+              <app-generic-selector 
+                label="Seleziona Cliente"
+                type="cliente"
+                [items]="listaClienti"
+                [(selectedId)]="selectedClienteId">
+              </app-generic-selector>
             </div>
 
             <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">

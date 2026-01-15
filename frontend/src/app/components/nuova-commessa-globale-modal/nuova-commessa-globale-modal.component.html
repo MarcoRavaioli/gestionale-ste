@@ -21,11 +21,12 @@
     </div>
 
     <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
-      <ion-select label="Cantiere di destinazione" label-placement="floating" fill="outline" [(ngModel)]="selectedCantiereId" placeholder="Cerca...">
-        <ion-select-option *ngFor="let c of listaCantieri" [value]="c.id">
-          {{ c.citta }} - {{ c.via }} ({{ c.cliente?.nome }})
-        </ion-select-option>
-      </ion-select>
+      <app-generic-selector 
+        label="Cantiere di destinazione"
+        type="cantiere"
+        [items]="listaCantieri"
+        [(selectedId)]="selectedCantiereId">
+      </app-generic-selector>
     </div>
 
     <div *ngIf="modeCantiere === 'nuovo'" class="fade-in form-grid">
@@ -52,9 +53,12 @@
         </div>
 
         <div *ngIf="modeCliente === 'esistente'" class="fade-in">
-          <ion-select label="Seleziona Cliente" label-placement="floating" fill="outline" [(ngModel)]="selectedClienteId">
-            <ion-select-option *ngFor="let cli of listaClienti" [value]="cli.id">{{ cli.nome }}</ion-select-option>
-          </ion-select>
+          <app-generic-selector 
+            label="Seleziona Cliente"
+            type="cliente"
+            [items]="listaClienti"
+            [(selectedId)]="selectedClienteId">
+          </app-generic-selector>
         </div>
 
         <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">
