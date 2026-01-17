@@ -58,7 +58,7 @@ export class ClienteDettaglioPage implements OnInit {
   }
 
   ngOnInit() {
-    this.isAdmin = this.authService.isAdmin;
+    this.isAdmin = this.authService.isAdmin();
     const id = this.route.snapshot.paramMap.get('id');
 
     // 1. LEGGIAMO I PARAMETRI DALL'URL

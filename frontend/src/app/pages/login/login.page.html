@@ -1,47 +1,47 @@
-<ion-content [fullscreen]="true" class="ion-padding">
-  
+<ion-content class="ion-padding login-bg">
   <div class="login-container">
     
-    <div class="header-section">
-      <h1 class="app-title">GS POSE</h1>
-      <p class="app-subtitle">Gestionale Cantieri & Infissi</p>
+    <div class="logo-area">
+      <ion-icon name="business" style="font-size: 60px; color: var(--ion-color-primary);"></ion-icon>
+      <h1>Gestionale</h1>
+      <p>Accedi al tuo account</p>
     </div>
 
-    <div class="form-section">
+    <form (ngSubmit)="eseguiLogin()">
       
-      <ion-input
-        class="custom-input"
-        label="Email"
-        label-placement="floating"
-        fill="outline"
-        type="email"
-        placeholder="nome@esempio.com"
-        [(ngModel)]="email">
-      </ion-input>
+      <div class="input-group">
+        <ion-item lines="none" class="custom-input">
+          <ion-icon name="person-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="text" 
+            placeholder="Nickname" 
+            [(ngModel)]="credentials.nickname" 
+            name="nickname"
+            required>
+          </ion-input>
+        </ion-item>
 
-      <ion-input
-        class="custom-input ion-margin-top"
-        label="Password"
-        label-placement="floating"
-        fill="outline"
-        type="password"
-        [(ngModel)]="password">
-      </ion-input>
+        <ion-item lines="none" class="custom-input">
+          <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
+          <ion-input 
+            type="password" 
+            placeholder="Password" 
+            [(ngModel)]="credentials.password" 
+            name="password"
+            required>
+          </ion-input>
+        </ion-item>
+      </div>
 
-      <ion-button 
-        expand="block" 
-        class="ion-margin-top login-btn" 
-        size="large"
-        (click)="login()">
-        ACCEDI
+      <ion-button expand="block" type="submit" class="login-btn" [disabled]="isLoading">
+        <span *ngIf="!isLoading">ACCEDI</span>
+        <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
       </ion-button>
 
-    </div>
+      <div class="error-msg" *ngIf="errorMessage">
+        <ion-icon name="alert-circle"></ion-icon> {{ errorMessage }}
+      </div>
 
-    <div class="footer-section">
-      <p class="version">v1.0.0</p>
-    </div>
-
+    </form>
   </div>
-
 </ion-content>

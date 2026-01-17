@@ -10,6 +10,7 @@ import {
   UploadedFile,
   ParseFilePipe,
   MaxFileSizeValidator,
+  UseGuards,
 } from '@nestjs/common';
 import { FatturaService } from './fattura.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -17,8 +18,13 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { DeepPartial } from 'typeorm';
 import { Fattura } from '../entities/fattura.entity';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('fattura')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('MANAGER', 'ADMIN')
 export class FatturaController {
   constructor(private readonly fatturaService: FatturaService) {}
 
@@ -86,13 +92,11 @@ export class FatturaController {
     return this.fatturaService.updateWithAttachment(+id, fatturaData, file);
   }
 
-  // CANCELLAZIONE
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.fatturaService.remove(+id);
   }
 
-  // Helper per convertire le stringhe del FormData in tipi corretti
   private parseBody(body: any): DeepPartial<Fattura> {
     return {
       numero_fattura: body.numero_fattura,

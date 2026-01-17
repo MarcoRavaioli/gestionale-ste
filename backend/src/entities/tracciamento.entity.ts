@@ -1,31 +1,26 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Collaboratore } from './collaboratore.entity';
-import { Commessa } from './commessa.entity'; // <--- AGGIUNTA FONDAMENTALE
 
 @Entity()
 export class TracciamentoPersonale {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'date' })
-  giorno: string; // YYYY-MM-DD
+  @Column({ type: 'date' }) // YYYY-MM-DD
+  giorno: string;
 
-  @Column({ type: 'float' })
-  ore_lavorate: number; // Es: 4.5
-
-  @Column({ type: 'text', nullable: true })
-  descrizione: string; // Es: "Posa falsi telai piano terra"
+  @Column('float')
+  ore_lavorate: number;
 
   @Column({ default: false })
-  pasto_rimborsato: boolean;
+  buono_pasto: boolean; // True se ha mangiato
 
-  // CHI ha lavorato?
-  @ManyToOne(() => Collaboratore, (collab) => collab.tracciamenti, {
+  @Column({ nullable: true })
+  descrizione: string; // Opzionale: "Montaggio infissi cantiere X"
+
+  // Relazione: Un tracciamento appartiene a UN collaboratore
+  @ManyToOne(() => Collaboratore, (col) => col.tracciamenti, {
     onDelete: 'CASCADE',
   })
   collaboratore: Collaboratore;
-
-  // DOVE ha lavorato?
-  @ManyToOne(() => Commessa, { nullable: true }) // Nullable true se lavorano in magazzino/generico
-  commessa: Commessa | null;
 }

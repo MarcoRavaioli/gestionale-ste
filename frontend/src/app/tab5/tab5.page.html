@@ -1,0 +1,255 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <div class="header-content">
+        <span>{{ isManager ? 'Gestione Team' : 'Le Mie Ore' }}</span>
+      </div>
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+
+  <div *ngIf="isManager" class="view-container">
+    
+    <div class="controls-card">
+      <div class="control-row">
+        
+        <div class="control-group">
+          <label>Periodo</label>
+          <div class="picker-wrapper">
+            <ion-datetime-button datetime="monthpicker"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime 
+                  id="monthpicker" 
+                  presentation="month-year" 
+                  [(ngModel)]="meseSelezionato"
+                  (ionChange)="cambiaMese($event)">
+                </ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </div>
+        </div>
+
+        <div class="control-group right">
+          <label>Valore Pasto</label>
+          <div class="value-badge" (click)="impostaCostoPasto()">
+            <span>€ {{ costoPasto | number:'1.2-2' }}</span>
+            <ion-icon name="pencil-outline"></ion-icon>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="total-stripe">
+        <span>Totale Stimato Azienda</span>
+        <strong>€ {{ totaleSpesaAzienda | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+
+    <div class="team-list">
+      <div *ngFor="let col of reportTeam" class="employee-card">
+        
+        <div class="card-top">
+          <div class="avatar-circle">{{ col.nome.charAt(0) }}</div>
+          <h2>{{ col.nome }} {{ col.cognome }}</h2>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-box purple">
+            <ion-icon name="briefcase-outline"></ion-icon>
+            <div class="kpi-val">
+              <strong>{{ col.giorniLavorati }}</strong>
+              <small>Giorni</small>
+            </div>
+          </div>
+          <div class="kpi-box blue">
+            <ion-icon name="time-outline"></ion-icon>
+            <div class="kpi-val">
+              <strong>{{ col.totaleOre }}</strong>
+              <small>Ore</small>
+            </div>
+          </div>
+          <div class="kpi-box orange">
+            <ion-icon name="fast-food-outline"></ion-icon>
+            <div class="kpi-val">
+              <strong>{{ col.totaleBuoni }}</strong>
+              <small>Pasti</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="financial-section">
+          
+          <div class="fin-row">
+            <div class="fin-input-grp">
+              <ion-icon name="cash-outline" color="primary"></ion-icon>
+              <div class="input-wrapper">
+                <span class="currency">€/h</span>
+                <input 
+                  type="number" 
+                  [(ngModel)]="col.tariffaOraria" 
+                  (change)="aggiornaTariffa(col)"
+                  placeholder="0">
+              </div>
+            </div>
+            <div class="fin-calc">
+              <small>{{ col.totaleOre }}h x {{ col.tariffaOraria }}€</small>
+              <span class="subtotal">€ {{ col.parzialeOre | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="fin-row">
+            <div class="fin-static-grp">
+              <ion-icon name="restaurant-outline" color="warning"></ion-icon>
+              <span>Rimborso Pasti</span>
+            </div>
+            <div class="fin-calc">
+              <small>{{ col.totaleBuoni }} x {{ costoPasto }}€</small>
+              <span class="subtotal">€ {{ col.parzialeBuoni | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="fin-total-row">
+            <span>TOTALE DA PAGARE</span>
+            <strong class="grand-total">€ {{ col.totaleDaPagare | number:'1.2-2' }}</strong>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <div *ngIf="reportTeam.length === 0" class="empty-state">
+      <p>Nessun dato per questo mese.</p>
+    </div>
+  </div>
+
+
+  <div *ngIf="!isManager" class="view-container ion-padding">
+    
+    <ion-card class="input-card">
+      <ion-card-header>
+        <ion-card-subtitle>{{ editingId ? 'Modifica Inserimento' : 'Nuovo Inserimento' }}</ion-card-subtitle>
+        <ion-card-title>{{ editingId ? 'Aggiorna Dati' : 'Compila Rapporto' }}</ion-card-title>
+      </ion-card-header>
+      
+      <ion-card-content>
+        <div class="date-row">
+          <ion-datetime-button datetime="daypicker"></ion-datetime-button>
+          <ion-modal [keepContentsMounted]="true">
+            <ng-template>
+              <ion-datetime 
+                id="daypicker" 
+                presentation="date" 
+                [(ngModel)]="nuovoRapportino.giorno"
+                [max]="maxDate" 
+                [isDateEnabled]="isDateEnabled"> 
+              </ion-datetime>
+            </ng-template>
+          </ion-modal>
+        </div>
+
+        <div class="form-grid">
+          <ion-input 
+            label="Ore Lavorate" 
+            label-placement="stacked" 
+            type="number" 
+            fill="outline" 
+            [(ngModel)]="nuovoRapportino.ore_lavorate"
+            placeholder="Es. 8">
+          </ion-input>
+          
+          <div class="toggle-box">
+            <ion-label>Buono Pasto?</ion-label>
+            <ion-toggle [(ngModel)]="nuovoRapportino.buono_pasto" color="success"></ion-toggle>
+          </div>
+        </div>
+
+        <ion-textarea 
+          label="Note (Opzionale)" 
+          label-placement="stacked" 
+          fill="outline" 
+          rows="2" 
+          [(ngModel)]="nuovoRapportino.descrizione"
+          placeholder="Cantiere, attività...">
+        </ion-textarea>
+
+        <div class="action-buttons">
+          <ion-button *ngIf="editingId" expand="block" color="medium" (click)="annullaModifica()">
+            <ion-icon name="close-circle-outline" slot="start"></ion-icon>
+            Annulla
+          </ion-button>
+
+          <ion-button *ngIf="editingId" expand="block" color="danger" (click)="eliminaRapportino()">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>
+            Elimina
+          </ion-button>
+
+          <ion-button expand="block" class="save-btn" (click)="salvaRapportino()" [color]="editingId ? 'warning' : 'primary'">
+            <ion-icon [name]="editingId ? 'save-outline' : 'add-circle-outline'" slot="start"></ion-icon>
+            {{ editingId ? 'AGGIORNA' : 'REGISTRA' }}
+          </ion-button>
+        </div>
+
+      </ion-card-content>
+    </ion-card>
+
+    <div class="my-stats">
+      <div class="stat-card purple">
+        <ion-icon name="briefcase-outline"></ion-icon>
+        <div class="txt">
+          <span>Giorni</span>
+          <strong>{{ statsMese.giorni }}</strong>
+        </div>
+      </div>
+      <div class="stat-card blue">
+        <ion-icon name="time-outline"></ion-icon>
+        <div class="txt">
+          <span>Ore Tot</span>
+          <strong>{{ statsMese.ore }}</strong>
+        </div>
+      </div>
+      <div class="stat-card orange">
+        <ion-icon name="fast-food-outline"></ion-icon>
+        <div class="txt">
+          <span>Pasti</span>
+          <strong>{{ statsMese.buoni }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="history-title">Ultimi Inserimenti</h4>
+    
+    <div class="history-list">
+      <div class="history-item" *ngFor="let rap of mieiRapportini" [class.has-food]="rap.buono_pasto">
+        
+        <div class="date-box">
+          <span class="day">{{ rap.giorno | date:'dd' }}</span>
+          <span class="mth">{{ rap.giorno | date:'MMM' }}</span>
+        </div>
+        
+        <div class="info-box">
+          <span class="hours">{{ rap.ore_lavorate }} Ore</span>
+          <span class="desc">{{ rap.descrizione || 'Nessuna nota' }}</span>
+        </div>
+        
+        <div class="actions">
+          <div class="icon-badge food" *ngIf="rap.buono_pasto">
+            <ion-icon name="fast-food-outline"></ion-icon>
+          </div>
+          
+          <div class="icon-badge edit" (click)="avviaModifica(rap)">
+            <ion-icon name="pencil-outline"></ion-icon>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</ion-content>

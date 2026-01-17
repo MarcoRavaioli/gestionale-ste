@@ -1,23 +1,35 @@
 <ion-tabs>
   <ion-tab-bar slot="bottom">
+    
     <ion-tab-button tab="tab1" href="/tabs/tab1">
-      <ion-icon aria-hidden="true" name="home"></ion-icon>
+      <ion-icon name="home"></ion-icon>
       <ion-label>Dashboard</ion-label>
     </ion-tab-button>
 
     <ion-tab-button tab="tab2" href="/tabs/tab2">
-      <ion-icon aria-hidden="true" name="calendar"></ion-icon>
+      <ion-icon name="calendar"></ion-icon>
       <ion-label>Agenda</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="tab3" href="/tabs/tab3">
-      <ion-icon aria-hidden="true" name="file-tray-full"></ion-icon>
+    <ion-tab-button tab="tab3" href="/tabs/tab3" *ngIf="showManagerTabs">
+      <ion-icon name="file-tray-full"></ion-icon>
       <ion-label>Archivio</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="tab4" href="/tabs/tab4">
-      <ion-icon aria-hidden="true" name="receipt"></ion-icon>
+    <ion-tab-button tab="tab5" href="/tabs/tab5" *ngIf="showCollaboratorTabs">
+      <ion-icon name="timer"></ion-icon>
+      <ion-label>Le Mie Ore</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="tab4" href="/tabs/tab4" *ngIf="showManagerTabs">
+      <ion-icon name="receipt"></ion-icon>
       <ion-label>Fatture</ion-label>
     </ion-tab-button>
+
+    <ion-tab-button tab="tab5" href="/tabs/tab5" *ngIf="showManagerTabs">
+      <ion-icon name="people"></ion-icon>
+      <ion-label>Team</ion-label>
+    </ion-tab-button>
+
   </ion-tab-bar>
 </ion-tabs>

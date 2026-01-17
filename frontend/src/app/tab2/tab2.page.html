@@ -54,7 +54,10 @@
       <span class="day-name">{{ getNomeGiorno(giorno) }}</span>
       <div class="day-number-container">
         <span class="day-number">{{ getNumeroGiorno(giorno) }}</span>
+
         <div class="dot" *ngIf="hasEvents(giorno)"></div>
+
+        <div class="dot-green" *ngIf="isTeamCompleto(giorno)"></div>
       </div>
     </div>
   </div>
@@ -75,7 +78,10 @@
       >
         <div class="day-circle">
           <span>{{ getNumeroGiorno(giorno) }}</span>
+
           <div class="grid-dot" *ngIf="hasEvents(giorno)"></div>
+
+          <div class="grid-dot-green" *ngIf="isTeamCompleto(giorno)"></div>
         </div>
       </div>
     </div>
@@ -174,7 +180,7 @@
     </div>
   </div>
 
-  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="isManager">
     <ion-fab-button (click)="apriNuovoAppuntamento()" color="warning">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
@@ -199,7 +205,12 @@
     </ng-template>
   </ion-modal>
 
-  <ion-modal [isOpen]="isExportModalOpen" (didDismiss)="setExportModal(false)" [initialBreakpoint]="0.6" [breakpoints]="[0, 0.6]">
+  <ion-modal
+    [isOpen]="isExportModalOpen"
+    (didDismiss)="setExportModal(false)"
+    [initialBreakpoint]="0.6"
+    [breakpoints]="[0, 0.6]"
+  >
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -210,9 +221,12 @@
         </ion-toolbar>
       </ion-header>
       <ion-content class="ion-padding">
-        
-        <p class="ion-text-center ion-text-muted" style="font-size: 0.9rem; margin-bottom: 20px;">
-          Seleziona il periodo da esportare. Verrà generato un file <b>.ics</b> compatibile con Google Calendar, Outlook e Apple.
+        <p
+          class="ion-text-center ion-text-muted"
+          style="font-size: 0.9rem; margin-bottom: 20px"
+        >
+          Seleziona il periodo da esportare. Verrà generato un file
+          <b>.ics</b> compatibile con Google Calendar, Outlook e Apple.
         </p>
 
         <ion-item lines="full">
@@ -220,7 +234,11 @@
           <ion-datetime-button datetime="datetime-start"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime id="datetime-start" presentation="date" [(ngModel)]="exportDateStart"></ion-datetime>
+              <ion-datetime
+                id="datetime-start"
+                presentation="date"
+                [(ngModel)]="exportDateStart"
+              ></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>
@@ -230,21 +248,35 @@
           <ion-datetime-button datetime="datetime-end"></ion-datetime-button>
           <ion-modal [keepContentsMounted]="true">
             <ng-template>
-              <ion-datetime id="datetime-end" presentation="date" [(ngModel)]="exportDateEnd"></ion-datetime>
+              <ion-datetime
+                id="datetime-end"
+                presentation="date"
+                [(ngModel)]="exportDateEnd"
+              ></ion-datetime>
             </ng-template>
           </ion-modal>
         </ion-item>
 
-        <ion-button expand="block" class="ion-margin-top" (click)="esportaAppuntamenti('download')" color="secondary" size="large">
+        <ion-button
+          expand="block"
+          class="ion-margin-top"
+          (click)="esportaAppuntamenti('download')"
+          color="secondary"
+          size="large"
+        >
           <ion-icon slot="start" name="download-outline"></ion-icon>
           SCARICA SUL DISPOSITIVO
         </ion-button>
 
-        <ion-button expand="block" class="ion-margin-top" (click)="esportaAppuntamenti('share')" size="large">
+        <ion-button
+          expand="block"
+          class="ion-margin-top"
+          (click)="esportaAppuntamenti('share')"
+          size="large"
+        >
           <ion-icon slot="start" name="share-social-outline"></ion-icon>
           CONDIVIDI FILE
         </ion-button>
-
       </ion-content>
     </ng-template>
   </ion-modal>

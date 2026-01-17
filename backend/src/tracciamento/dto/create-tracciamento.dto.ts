@@ -1,34 +1,26 @@
 import {
-  IsNotEmpty,
+  IsBoolean,
   IsDateString,
   IsNumber,
-  IsBoolean,
   IsOptional,
   IsString,
+  Min,
+  Max,
 } from 'class-validator';
 
 export class CreateTracciamentoDto {
-  @IsNotEmpty()
   @IsDateString()
   giorno: string;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(0) // Non puoi lavorare ore negative
+  @Max(24) // Non puoi lavorare più di 24 ore
   ore_lavorate: number;
+
+  @IsBoolean()
+  buono_pasto: boolean;
 
   @IsOptional()
   @IsString()
   descrizione?: string;
-
-  @IsOptional()
-  @IsBoolean()
-  pasto_rimborsato?: boolean;
-
-  @IsNotEmpty()
-  @IsNumber()
-  collaboratoreId: number;
-
-  @IsOptional() // Opzionale se fa lavoro generico in sede
-  @IsNumber()
-  commessaId?: number;
 }

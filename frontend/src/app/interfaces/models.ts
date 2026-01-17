@@ -1,3 +1,26 @@
+export type RuoloUtente = 'ADMIN' | 'MANAGER' | 'COLLABORATORE';
+
+export interface Utente {
+  id: number;
+  nickname: string; // Usiamo nickname, non email
+  nome: string;
+  cognome: string;
+  email: string;
+  password: string;
+  ruolo: RuoloUtente;
+  avatar?: string;
+  // Altri campi che il backend ti manda nel token/profilo
+}
+
+// Interfaccia per il payload del token JWT
+export interface TokenPayload {
+  sub: string;       // Solitamente l'ID o il nickname
+  nickname: string;
+  nome: string;
+  ruolo: RuoloUtente;
+  exp: number;       // Scadenza
+}
+
 export interface Indirizzo {
   id: number;
   via: string;

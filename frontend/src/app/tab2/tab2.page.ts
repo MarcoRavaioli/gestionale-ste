@@ -2,14 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import {
   IonicModule,
   ModalController,
-  ToastController, // <--- AGGIUNGI
+  ToastController,
   Platform,
 } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { AppuntamentoService } from '../services/appuntamento.service';
-import { AuthService } from '../services/auth.service'; // Per sapere se è admin
+import { AuthService } from '../services/auth.service';
 import { Appuntamento } from '../interfaces/models';
+import { environment } from 'src/environments/environment';
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { NuovoAppuntamentoGlobaleModalComponent } from '../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
@@ -69,16 +71,21 @@ export class Tab2Page implements OnInit {
   tuttiAppuntamenti: Appuntamento[] = [];
   appuntamentiDelGiorno: Appuntamento[] = [];
 
+  // NUOVO: Array per i giorni in cui il team è completo
+  giorniTeamCompleti: string[] = [];
+
   // STATO UI
-  isAdmin: boolean = false;
-  expandedAppointmentId: number | null = null; // Traccia quale card è aperta
+  isAdmin: boolean = false; // Solo per 'ADMIN'
+  isManager: boolean = false; // Per 'ADMIN' e 'MANAGER'
+  expandedAppointmentId: number | null = null;
 
   constructor(
     private appService: AppuntamentoService,
     private authService: AuthService,
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
-    private platform: Platform
+    private platform: Platform,
+    private http: HttpClient
   ) {
     addIcons({
       chevronBackOutline,
@@ -100,12 +107,26 @@ export class Tab2Page implements OnInit {
   }
 
   ngOnInit() {
-    this.isAdmin = this.authService.isAdmin;
+    // --- MODIFICA: Sottoscrizione per aggiornare i permessi in tempo reale ---
+    this.authService.currentUser$.subscribe((user) => {
+      this.isAdmin = this.authService.isAdmin();
+      this.isManager = this.authService.hasManagerAccess(); // Admin + Manager
+
+      // Se l'utente è cambiato e ha i permessi, ricarichiamo i pallini verdi
+      if (this.isManager) {
+        this.caricaStatoTeam();
+      }
+    });
+
     this.generaSettimana();
   }
 
   ionViewWillEnter() {
     this.caricaDati();
+    // Se è Manager (o Admin), carica anche lo stato del team
+    if (this.isManager) {
+      this.caricaStatoTeam();
+    }
   }
 
   caricaDati() {
@@ -115,9 +136,40 @@ export class Tab2Page implements OnInit {
     });
   }
 
+  // --- Carica i pallini verdi dal Backend ---
+  caricaStatoTeam() {
+    // Evita la chiamata se non sei manager
+    if (!this.isManager) return;
+
+    const anno = this.dataCorrente.getFullYear();
+    const mese = this.dataCorrente.getMonth() + 1;
+
+    this.http
+      .get<string[]>(
+        `${environment.apiUrl}/tracciamento/completamento?anno=${anno}&mese=${mese}`
+      )
+      .subscribe({
+        next: (dates) => {
+          this.giorniTeamCompleti = dates;
+        },
+        error: (err) => console.error('Err completamento team', err),
+      });
+  }
+
+  // --- Verifica per l'HTML ---
+  isTeamCompleto(date: Date): boolean {
+    if (!this.isManager) return false; // Usa isManager per coerenza
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+
+    return this.giorniTeamCompleti.includes(dateString);
+  }
+
   // --- LOGICA CALENDARIO ---
   generaMese() {
-    // Calcoliamo l'inizio e la fine della griglia (che deve includere i giorni "cuscinetto" del mese prima/dopo per riempire le righe)
     const start = startOfWeek(startOfMonth(this.dataCorrente), {
       weekStartsOn: 1,
     });
@@ -127,7 +179,7 @@ export class Tab2Page implements OnInit {
   }
 
   generaSettimana() {
-    const start = startOfWeek(this.dataCorrente, { weekStartsOn: 1 }); // Lunedì
+    const start = startOfWeek(this.dataCorrente, { weekStartsOn: 1 });
     const end = endOfWeek(this.dataCorrente, { weekStartsOn: 1 });
     this.giorniSettimana = eachDayOfInterval({ start, end });
   }
@@ -135,16 +187,18 @@ export class Tab2Page implements OnInit {
   settimanaPrecedente() {
     this.dataCorrente = subWeeks(this.dataCorrente, 1);
     this.generaSettimana();
+    if (this.isManager) this.caricaStatoTeam();
   }
 
   settimanaSuccessiva() {
     this.dataCorrente = addWeeks(this.dataCorrente, 1);
     this.generaSettimana();
+    if (this.isManager) this.caricaStatoTeam();
   }
 
   vaiAOggi() {
-    this.dataCorrente = new Date(); // Torna alla data odierna
-    this.giornoSelezionato = new Date(); // Seleziona oggi
+    this.dataCorrente = new Date();
+    this.giornoSelezionato = new Date();
 
     if (this.viewMode === 'week') {
       this.generaSettimana();
@@ -152,17 +206,16 @@ export class Tab2Page implements OnInit {
       this.generaMese();
     }
 
-    this.filtraAppuntamentiGiorno(); // Aggiorna la lista sotto
+    if (this.isManager) this.caricaStatoTeam();
+    this.filtraAppuntamentiGiorno();
   }
 
   selezionaGiorno(giorno: Date) {
     this.giornoSelezionato = giorno;
-    this.dataCorrente = giorno; // Aggiorna anche il puntatore corrente
+    this.dataCorrente = giorno;
     this.filtraAppuntamentiGiorno();
     this.expandedAppointmentId = null;
 
-    // UX: Se sono in modalità mese e clicco un giorno, torno alla settimana?
-    // Di solito sì, per dare spazio alla lista.
     if (this.viewMode === 'month') {
       this.viewMode = 'week';
       this.generaSettimana();
@@ -173,32 +226,29 @@ export class Tab2Page implements OnInit {
     this.appuntamentiDelGiorno = this.tuttiAppuntamenti.filter((app) => {
       return isSameDay(new Date(app.data_ora), this.giornoSelezionato);
     });
-    // Ordina per orario
     this.appuntamentiDelGiorno.sort(
       (a, b) => new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime()
     );
   }
 
-  // --- GESTIONE CARD ---
   toggleDettagli(id: number) {
     if (this.expandedAppointmentId === id) {
-      this.expandedAppointmentId = null; // Chiudi se già aperto
+      this.expandedAppointmentId = null;
     } else {
-      this.expandedAppointmentId = id; // Apri questo
+      this.expandedAppointmentId = id;
     }
   }
 
   toggleVista() {
     if (this.viewMode === 'week') {
       this.viewMode = 'month';
-      this.generaMese(); // Genera i dati solo se serve
+      this.generaMese();
     } else {
       this.viewMode = 'week';
-      this.generaSettimana(); // Torna alla striscia
+      this.generaSettimana();
     }
   }
 
-  // --- UTILS HTML ---
   getHeaderTitle(): string {
     return format(this.dataCorrente, 'MMMM yyyy', { locale: it });
   }
@@ -225,15 +275,11 @@ export class Tab2Page implements OnInit {
     );
   }
 
-  // --- MODALE ---
   async apriNuovoAppuntamento() {
-    // Calcoliamo la data di default basata sul giorno selezionato
-    // Usiamo il giorno selezionato ma l'ora attuale (perché se pianifico oggi, lo faccio per adesso o più tardi)
     const now = new Date();
     const defaultDate = new Date(this.giornoSelezionato);
     defaultDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
 
-    // Convertiamo in stringa ISO locale per il campo datetime-local (YYYY-MM-DDTHH:mm)
     const localIso = new Date(
       defaultDate.getTime() - defaultDate.getTimezoneOffset() * 60000
     )
@@ -243,7 +289,7 @@ export class Tab2Page implements OnInit {
     const modal = await this.modalCtrl.create({
       component: NuovoAppuntamentoGlobaleModalComponent,
       componentProps: {
-        dataIniziale: localIso, // PASSAGGIO PARAMETRO
+        dataIniziale: localIso,
       },
     });
 
@@ -255,26 +301,18 @@ export class Tab2Page implements OnInit {
   cambiaMeseSelezionato(ev: any) {
     const nuovaDataISO = ev.detail.value;
     if (nuovaDataISO) {
-      // Aggiorna la data corrente al mese selezionato
       this.dataCorrente = new Date(nuovaDataISO);
-
-      // Resetta la selezione al primo giorno del nuovo mese (o mantieni lo stesso giorno se preferisci)
       this.giornoSelezionato = new Date(this.dataCorrente);
-
-      // Rigenera la striscia settimanale
       this.generaSettimana();
-
-      // Ricarica gli appuntamenti
       this.filtraAppuntamentiGiorno();
-
-      // Chiudi la modale (opzionale, ion-modal col breakpoint si chiude trascinando,
-      // ma possiamo chiuderla programmaticamente se vuoi)
+      if (this.isManager) this.caricaStatoTeam();
       this.modalCtrl.dismiss();
     }
   }
+
+  // ... Resto del codice (setExportModal, esportaAppuntamenti, ecc.) invariato ...
   setExportModal(open: boolean) {
     this.isExportModalOpen = open;
-    // Reset date quando apro: default oggi -> tra una settimana
     if (open) {
       const now = new Date();
       this.exportDateStart = now.toISOString();
@@ -288,7 +326,6 @@ export class Tab2Page implements OnInit {
     const start = new Date(this.exportDateStart);
     const end = new Date(this.exportDateEnd);
 
-    // 1. Filtra Appuntamenti
     const appuntamentiDaEsportare = this.tuttiAppuntamenti.filter((app) => {
       const dataApp = new Date(app.data_ora);
       return dataApp >= start && dataApp <= end;
@@ -299,7 +336,6 @@ export class Tab2Page implements OnInit {
       return;
     }
 
-    // 2. Genera Contenuto .ICS
     let icsContent = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//GestioneCantieri//App//IT
@@ -311,7 +347,6 @@ METHOD:PUBLISH
       const startDate = new Date(app.data_ora);
       const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
       const now = new Date();
-      // Helper formattazione ISO pulita
       const formatICS = (d: Date) =>
         d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
@@ -334,7 +369,6 @@ END:VEVENT
 
     icsContent += `END:VCALENDAR`;
 
-    // 3. Esegui Azione (Share o Download)
     const fileName = `calendario_${format(start, 'yyyyMMdd')}_${format(
       end,
       'yyyyMMdd'
@@ -342,11 +376,10 @@ END:VEVENT
 
     try {
       if (azione === 'share') {
-        // --- LOGICA CONDIVISIONE (Cache) ---
         const result = await Filesystem.writeFile({
           path: fileName,
           data: icsContent,
-          directory: Directory.Cache, // Cache per condivisione temporanea
+          directory: Directory.Cache,
           encoding: Encoding.UTF8,
         });
 
@@ -356,19 +389,15 @@ END:VEVENT
           dialogTitle: 'Condividi file .ics',
         });
       } else {
-        // --- LOGICA DOWNLOAD (Documents) ---
-
-        // Se siamo su Web (Browser PC), usiamo un trucco per scaricare il file
         if (!this.platform.is('hybrid')) {
           this.downloadWeb(icsContent, fileName);
           return;
         }
 
-        // Se siamo su Mobile (App), salviamo in Documenti
         const result = await Filesystem.writeFile({
           path: fileName,
           data: icsContent,
-          directory: Directory.Documents, // Cartella persistente
+          directory: Directory.Documents,
           encoding: Encoding.UTF8,
         });
 
@@ -392,7 +421,6 @@ END:VEVENT
     toast.present();
   }
 
-  // Helper per scaricare da Browser (PC)
   downloadWeb(content: string, fileName: string) {
     const blob = new Blob([content], { type: 'text/calendar' });
     const url = window.URL.createObjectURL(blob);

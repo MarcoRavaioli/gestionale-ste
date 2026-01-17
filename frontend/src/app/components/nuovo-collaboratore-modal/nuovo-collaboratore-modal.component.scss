@@ -1,0 +1,29 @@
+.row {
+  display: flex; gap: 10px;
+  ion-input { flex: 1; }
+}
+
+.intro-text {
+  color: var(--ion-color-medium);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ion-color-primary);
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.password-wrapper {
+  position: relative;
+  .eye-btn {
+    position: absolute;
+    right: 0;
+    top: 5px;
+    z-index: 10;
+  }
+}

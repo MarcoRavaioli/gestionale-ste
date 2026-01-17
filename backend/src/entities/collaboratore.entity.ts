@@ -5,7 +5,6 @@ import {
   OneToMany,
   ManyToMany,
 } from 'typeorm';
-// Assicurati che il percorso sia corretto, altrimenti commenta finché non creiamo il Tracciamento
 import { TracciamentoPersonale } from './tracciamento.entity';
 import { Appuntamento } from './appuntamento.entity';
 
@@ -17,23 +16,25 @@ export class Collaboratore {
   @Column()
   nome: string;
 
-  @Column()
+  @Column({ nullable: true })
   cognome: string;
 
-  // CRITICITÀ RISOLTA: Contatti per il cantiere
   @Column({ nullable: true })
   telefono: string;
 
-  // CRITICITÀ RISOLTA: Credenziali per il Login (Auth)
+  // NUOVO CAMPO PRINCIPALE PER LOGIN
   @Column({ unique: true })
+  nickname: string;
+
+  // Email diventa opzionale
+  @Column({ nullable: true })
   email: string;
 
-  @Column({ select: false }) // select: false impedisce di restituire la password nelle GET per sicurezza
+  @Column({ select: false })
   password: string;
 
-  // CRITICITÀ RISOLTA: Chi è?
   @Column({ default: 'COLLABORATORE' })
-  ruolo: string; // Es: ADMIN, COLLABORATORE, COMMERCIALE
+  ruolo: string; // 'ADMIN', 'MANAGER', 'COLLABORATORE'
 
   @OneToMany(() => TracciamentoPersonale, (traccia) => traccia.collaboratore)
   tracciamenti: TracciamentoPersonale[];

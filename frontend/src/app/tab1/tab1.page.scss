@@ -459,3 +459,70 @@ ion-content {
     opacity: 0.8;
   }
 }
+
+/* ... TUTTO IL CSS PRECEDENTE RIMANE UGUALE ... */
+
+/* AGGIUNTA: STILI RESOCONTO TEAM */
+.team-summary-card {
+  background: var(--ion-color-tertiary); /* Viola scuro per distinguere */
+  color: white;
+  border-radius: 16px;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  box-shadow: var(--card-shadow);
+
+  .summary-left {
+    display: flex; align-items: center; gap: 12px;
+    ion-icon { 
+      font-size: 2rem; 
+      background: rgba(255,255,255,0.2); 
+      padding: 8px; border-radius: 50%; 
+    }
+    .sum-text {
+      display: flex; flex-direction: column;
+      span { font-size: 0.8rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; }
+      strong { font-size: 1.4rem; font-weight: 700; }
+    }
+  }
+  .summary-right {
+    text-align: center;
+    background: rgba(0,0,0,0.1);
+    padding: 8px 12px; border-radius: 12px;
+    .count { display: block; font-size: 1.2rem; font-weight: 800; line-height: 1; }
+    small { font-size: 0.65rem; opacity: 0.8; text-transform: uppercase;}
+  }
+}
+
+.mini-team-list {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 5px 15px;
+  box-shadow: var(--card-shadow);
+  
+  .mini-collab-row {
+    display: flex; align-items: center; padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    &:last-child { border-bottom: none; }
+
+    .avatar-mini {
+      width: 32px; height: 32px;
+      background: var(--ion-color-light);
+      color: var(--ion-color-dark);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem;
+      margin-right: 12px;
+    }
+    .col-info {
+      flex: 1; display: flex; flex-direction: column;
+      .name { font-weight: 700; font-size: 0.9rem; color: var(--ion-text-color); }
+      .hours { font-size: 0.75rem; color: var(--ion-color-medium); }
+    }
+    .col-cost {
+      font-weight: 600; color: var(--ion-color-tertiary);
+    }
+  }
+}

@@ -1,0 +1,67 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Il Mio Profilo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">Chiudi</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <div class="avatar-section">
+    <div class="avatar-circle">{{ utente?.nome?.charAt(0) }}</div>
+    <h2>{{ utente?.nome }} {{ utente?.cognome }}</h2>
+    <span class="role-badge">{{ utente?.ruolo }}</span>
+  </div>
+
+  <form #f="ngForm" (ngSubmit)="salva()">
+    
+    <ion-list lines="full">
+      <ion-item>
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label position="stacked">Nickname (Login)</ion-label>
+        <ion-input [value]="utente.nickname" type="text" disabled style="opacity: 0.7;"></ion-input>
+        <ion-note slot="helper">Il nickname non si può cambiare</ion-note>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon name="text-outline" slot="start"></ion-icon>
+        <ion-label position="stacked">Nome</ion-label>
+        <ion-input [(ngModel)]="utente.nome" name="nome" type="text" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-icon name="text-outline" slot="start"></ion-icon>
+        <ion-label position="stacked">Cognome</ion-label>
+        <ion-input [(ngModel)]="utente.cognome" name="cognome" type="text" required></ion-input>
+      </ion-item>
+
+      <div class="divider">Modifica Password</div>
+
+      <ion-item>
+        <ion-icon name="key-outline" slot="start"></ion-icon>
+        <ion-label position="stacked">Nuova Password</ion-label>
+        <ion-input [(ngModel)]="passwordForm.new" name="newPass" type="password" placeholder="Lascia vuoto per non cambiare"></ion-input>
+      </ion-item>
+
+      <ion-item *ngIf="passwordForm.new">
+        <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+        <ion-label position="stacked">Conferma Password</ion-label>
+        <ion-input [(ngModel)]="passwordForm.confirm" name="confPass" type="password"></ion-input>
+      </ion-item>
+
+      <ion-text color="danger" *ngIf="passwordForm.new && passwordForm.new !== passwordForm.confirm" class="ion-padding-start">
+        <p style="font-size: 0.8rem; margin-top: 5px;">Le password non coincidono</p>
+      </ion-text>
+
+    </ion-list>
+
+    <div class="ion-padding-top">
+      <ion-button expand="block" type="submit" [disabled]="!f.valid || (passwordForm.new && passwordForm.new !== passwordForm.confirm)">
+        Salva Modifiche
+      </ion-button>
+    </div>
+
+  </form>
+</ion-content>

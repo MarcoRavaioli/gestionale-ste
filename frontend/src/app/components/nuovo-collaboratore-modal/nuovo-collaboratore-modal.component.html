@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Nuovo Utente</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="chiudi()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  
+  <div class="form-section">
+    <p class="intro-text">
+      Crea un nuovo account per accedere all'app.
+    </p>
+
+    <ion-item lines="full" class="ion-margin-bottom">
+      <ion-select label="Ruolo Aziendale" label-placement="stacked" [(ngModel)]="nuovoUtente.ruolo">
+        <ion-select-option value="COLLABORATORE">Collaboratore</ion-select-option>
+        <ion-select-option value="MANAGER">Manager</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <div class="row">
+      <ion-input label="Nome *" label-placement="floating" fill="outline" [(ngModel)]="nuovoUtente.nome"></ion-input>
+      <ion-input label="Cognome *" label-placement="floating" fill="outline" [(ngModel)]="nuovoUtente.cognome"></ion-input>
+    </div>
+
+    <ion-input class="ion-margin-top" label="Telefono" type="tel" label-placement="floating" fill="outline" [(ngModel)]="nuovoUtente.telefono"></ion-input>
+    <ion-input class="ion-margin-top" label="Email (Opzionale)" type="email" label-placement="floating" fill="outline" [(ngModel)]="nuovoUtente.email"></ion-input>
+
+    <h3 class="ion-margin-top">Credenziali Accesso</h3>
+    
+    <ion-input label="Nickname (Login) *" label-placement="floating" fill="outline" [(ngModel)]="nuovoUtente.nickname" placeholder="Es. marco123"></ion-input>
+    
+    <div class="password-wrapper ion-margin-top">
+      <ion-input 
+        [type]="showPassword ? 'text' : 'password'" 
+        label="Password *" 
+        label-placement="floating" 
+        fill="outline" 
+        [(ngModel)]="nuovoUtente.password">
+      </ion-input>
+      <ion-button fill="clear" slot="end" class="eye-btn" (click)="togglePassword()">
+        <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+      </ion-button>
+    </div>
+
+  </div>
+
+  <ion-button expand="block" size="large" class="ion-margin-top" (click)="salva()" [disabled]="!isValid()">
+    <ion-icon name="person-add-outline" slot="start"></ion-icon>
+    CREA UTENTE
+  </ion-button>
+
+</ion-content>

@@ -263,3 +263,39 @@ ion-content {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* --- STILE PALLINO VERDE (TEAM) --- */
+
+/* Nella vista Settimanale */
+.day-number-container {
+  /* ... stile base ... */
+  
+  .dot-green {
+    /* Posizione: In alto a destra */
+    position: absolute; 
+    top: 2px; 
+    right: 2px;
+    width: 6px; 
+    height: 6px;
+    background-color: var(--ion-color-success); /* Verde */
+    border-radius: 50%;
+    /* Bordo per contrasto sullo sfondo blu dell'header */
+    border: 1px solid var(--ion-color-primary); 
+  }
+}
+
+/* Nella vista Mensile */
+.grid-day-cell {
+  /* ... stile base ... */
+
+  .grid-dot-green {
+    position: absolute; 
+    top: 2px; 
+    right: 3px;
+    width: 6px; 
+    height: 6px;
+    background-color: var(--ion-color-success);
+    border-radius: 50%;
+    border: 1px solid var(--ion-color-primary);
+  }
+}
