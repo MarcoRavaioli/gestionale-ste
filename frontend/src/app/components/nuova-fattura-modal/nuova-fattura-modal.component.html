@@ -1,0 +1,138 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Nuova Fattura</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="close" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="light-bg">
+  <form [formGroup]="form" class="ion-padding">
+
+    <div class="segment-wrapper">
+      <ion-segment formControlName="tipo" mode="ios">
+        <ion-segment-button value="entrata">
+          <ion-label color="success">ENTRATA</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="uscita">
+          <ion-label color="danger">USCITA</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <div class="form-card">
+      <ion-item lines="none" class="custom-input">
+        <ion-icon name="document-text-outline" slot="start" color="medium"></ion-icon>
+        <ion-input label="Numero Fattura" labelPlacement="stacked" formControlName="numero_fattura" placeholder="Es. 104/2025"></ion-input>
+      </ion-item>
+      <div class="error-text" *ngIf="form.get('numero_fattura')?.touched && form.get('numero_fattura')?.invalid">
+        Numero richiesto
+      </div>
+
+      <ion-item lines="none" class="custom-input">
+        <ion-icon name="wallet-outline" slot="start" color="medium"></ion-icon>
+        <ion-input label="Importo Totale (€)" labelPlacement="stacked" type="number" formControlName="totale" placeholder="0.00"></ion-input>
+      </ion-item>
+      <div class="error-text" *ngIf="form.get('totale')?.touched && form.get('totale')?.invalid">
+        Importo richiesto
+      </div>
+    </div>
+
+    <div class="form-card">
+      <ion-row>
+        <ion-col size="6">
+          <ion-item lines="none" class="custom-input">
+            <ion-label position="stacked" color="medium">Emissione</ion-label>
+            <ion-datetime-button datetime="date-emi"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime id="date-emi" presentation="date" formControlName="data_emissione"></ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        </ion-col>
+        <ion-col size="6">
+          <ion-item lines="none" class="custom-input">
+            <ion-label position="stacked" color="medium">Scadenza</ion-label>
+            <ion-datetime-button datetime="date-scad"></ion-datetime-button>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime id="date-scad" presentation="date" formControlName="data_scadenza"></ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+        </ion-col>
+      </ion-row>
+    </div>
+
+    <div class="form-card">
+      
+      <div style="display: flex; align-items: flex-end; gap: 8px;">
+        <ion-item lines="none" class="custom-input" style="flex: 1;">
+          <ion-icon name="business-outline" slot="start" color="medium"></ion-icon>
+          <ion-select label="Cliente" labelPlacement="stacked" formControlName="clienteId" placeholder="Seleziona..." interface="popover">
+            <ion-select-option *ngFor="let c of clienti" [value]="c.id">{{ c.nome }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+
+        <ion-button fill="outline" shape="round" class="add-client-btn" (click)="apriNuovoCliente()">
+          <ion-icon name="person-add-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+
+      <ion-item lines="none" class="custom-input" *ngIf="commesseFiltrate.length > 0">
+        <ion-select label="Commessa Collegata" labelPlacement="stacked" formControlName="commessaId" placeholder="Opzionale" interface="popover">
+          <ion-select-option [value]="null">Nessuna</ion-select-option>
+          <ion-select-option *ngFor="let com of commesseFiltrate" [value]="com.id">{{ com.seriale }}</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item lines="none" class="custom-input">
+        <ion-textarea label="Descrizione / Note" labelPlacement="stacked" formControlName="descrizione" rows="3"></ion-textarea>
+      </ion-item>
+    </div>
+
+    <div class="form-card toggle-wrapper">
+      <ion-item lines="none">
+        <ion-label>
+          <h3>Stato Pagamento</h3>
+          <p>{{ form.get('incassata')?.value ? 'Già Incassata/Pagata' : 'In attesa' }}</p>
+        </ion-label>
+        <ion-toggle formControlName="incassata" color="success"></ion-toggle>
+      </ion-item>
+    </div>
+
+    <div class="upload-area" (click)="fileInput.click()" [class.has-file]="fileSelezionato">
+      <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none" accept=".pdf,.jpg,.jpeg,.png">
+      
+      <div *ngIf="!fileSelezionato" class="placeholder">
+        <div class="icon-circle">
+          <ion-icon name="cloud-upload-outline"></ion-icon>
+        </div>
+        <h4>Carica Allegato</h4>
+        <p>Tocca per caricare PDF o Foto</p>
+      </div>
+
+      <div *ngIf="fileSelezionato" class="preview">
+        <ion-icon name="attach-outline" class="attach-icon"></ion-icon>
+        <span class="filename">{{ fileSelezionato.name }}</span>
+        <ion-button fill="clear" color="danger" (click)="rimuoviFile(); $event.stopPropagation()">
+          <ion-icon name="close" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="ion-padding-horizontal ion-padding-bottom">
+    <ion-button expand="block" (click)="salva()" [disabled]="form.invalid || isLoading" class="save-btn" size="large">
+      <span *ngIf="!isLoading">SALVA FATTURA</span>
+      <ion-spinner *ngIf="isLoading" name="crescent"></ion-spinner>
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

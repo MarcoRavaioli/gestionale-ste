@@ -1,0 +1,218 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Contabilità</ion-title>
+  </ion-toolbar>
+
+  <div class="summary-card ion-margin-horizontal ion-margin-top">
+    <div class="card-header-row">
+      <div class="balance-label">
+        {{ mostraSoloIncassati ? 'CASSA REALE' : 'BILANCIO TEORICO' }}
+      </div>
+      <div class="toggle-container">
+        <span>Incassato</span>
+        <ion-toggle
+          mode="ios"
+          [(ngModel)]="mostraSoloIncassati"
+          (ionChange)="onToggleIncassatiChange()"
+          color="light"
+        >
+        </ion-toggle>
+      </div>
+    </div>
+
+    <div class="balance-value">€ {{ bilancio | number:'1.2-2' }}</div>
+
+    <div class="stats-row">
+      <div class="stat-item in">
+        <ion-icon name="arrow-up-circle"></ion-icon>
+        <div class="stat-text">
+          <span class="label">Entrate</span>
+          <span class="value">€ {{ totaleEntrate | number:'1.0-0' }}</span>
+        </div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item out">
+        <ion-icon name="arrow-down-circle"></ion-icon>
+        <div class="stat-text">
+          <span class="label">Uscite</span>
+          <span class="value">€ {{ totaleUscite | number:'1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters-row ion-padding-horizontal">
+    <div class="search-container">
+      <ion-searchbar
+        mode="ios"
+        placeholder="Cerca..."
+        (ionInput)="onSearchChange($event)"
+        class="mini-searchbar"
+      >
+      </ion-searchbar>
+    </div>
+
+    <div class="date-container">
+      
+      <div class="date-btn-wrapper" [class.active]="isFiltroDataAttivo">
+        
+        <ion-button 
+          id="trigger-date-popover" 
+          fill="clear" 
+          class="main-date-btn"
+          [class.has-clear]="isFiltroDataAttivo">
+          
+          <ion-icon [name]="isFiltroDataAttivo ? 'calendar' : 'calendar-outline'" slot="start"></ion-icon>
+          {{ labelFiltroData }}
+        </ion-button>
+
+        <ion-button 
+          *ngIf="isFiltroDataAttivo" 
+          fill="clear" 
+          class="clear-date-btn" 
+          (click)="resetDate()">
+          <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+        </ion-button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <ion-toolbar class="segment-toolbar">
+    <ion-segment
+      [value]="filtroCorrente"
+      (ionChange)="cambiaFiltro($event)"
+      scrollable="true"
+      mode="ios"
+    >
+      <ion-segment-button value="tutte">Tutte</ion-segment-button>
+      <ion-segment-button value="entrata">Entrate</ion-segment-button>
+      <ion-segment-button value="uscita">Uscite</ion-segment-button>
+      <ion-segment-button value="scadute">
+        <ion-label color="danger">Scadute</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-popover
+  trigger="trigger-date-popover"
+  [dismissOnSelect]="false"
+  class="date-popover"
+>
+  <ng-template>
+    <div class="popover-content">
+      <p class="popover-title">Seleziona Periodo</p>
+
+      <div class="date-input-group">
+        <ion-label>Dal</ion-label>
+        <ion-datetime-button datetime="dt-start"></ion-datetime-button>
+      </div>
+
+      <div class="date-input-group">
+        <ion-label>Al</ion-label>
+        <ion-datetime-button datetime="dt-end"></ion-datetime-button>
+      </div>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="dt-start"
+            presentation="date"
+            [(ngModel)]="filtroDataInizio"
+            (ionChange)="onDateChange()"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="dt-end"
+            presentation="date"
+            [(ngModel)]="filtroDataFine"
+            (ionChange)="onDateChange()"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+  </ng-template>
+</ion-popover>
+
+<ion-content [fullscreen]="true" class="light-bg">
+  <ion-refresher slot="fixed" (ionRefresh)="caricaDati($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-list class="invoice-list">
+    <ng-container *ngFor="let gruppo of gruppiFatture">
+      <div class="group-header">
+        {{ gruppo.titolo }}
+        <span class="count">({{ gruppo.fatture.length }})</span>
+      </div>
+
+      <ion-item
+        *ngFor="let f of gruppo.fatture"
+        button
+        detail="false"
+        lines="none"
+        class="invoice-item"
+        (click)="apriDettaglio(f)"
+      >
+        <div slot="start" class="icon-box" [class.out]="f.tipo === 'uscita'">
+          <ion-icon
+            [name]="f.tipo === 'entrata' ? 'arrow-up-circle' : 'arrow-down-circle'"
+          ></ion-icon>
+        </div>
+
+        <ion-label>
+          <div class="top-row">
+            <h3>{{ f.cliente?.nome || f.descrizione || 'Fattura N.D.' }}</h3>
+            <span class="amount" [class.negative]="f.tipo === 'uscita'">
+              {{ f.tipo === 'uscita' ? '-' : '+' }} € {{ f.totale |
+              number:'1.2-2' }}
+            </span>
+          </div>
+
+          <div class="bottom-row">
+            <p>
+              N. {{ f.numero_fattura }} • {{ f.data_emissione | date:'dd MMM
+              yyyy' }}
+            </p>
+
+            <ion-badge *ngIf="f.incassata" color="success" class="mini-badge">
+              <ion-icon name="checkmark-circle-outline"></ion-icon> {{ f.tipo
+              === 'uscita' ? 'Pagata' : 'Incassata' }}
+            </ion-badge>
+
+            <ion-badge
+              *ngIf="!f.incassata && isScaduta(f)"
+              color="danger"
+              class="mini-badge"
+            >
+              <ion-icon name="alert-circle-outline"></ion-icon> Scaduta
+            </ion-badge>
+
+            <ion-badge
+              *ngIf="!f.incassata && !isScaduta(f)"
+              color="medium"
+              class="mini-badge"
+            >
+              <ion-icon name="time-outline"></ion-icon> Attesa
+            </ion-badge>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+  </ion-list>
+
+  <div *ngIf="gruppiFatture.length === 0" class="empty-state">
+    <p>Nessuna fattura trovata.</p>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="apriNuovaFattura()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

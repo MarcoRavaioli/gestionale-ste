@@ -1,34 +1,113 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+} from '@nestjs/common';
 import { FatturaService } from './fattura.service';
-import { CreateFatturaDto } from './dto/create-fattura.dto';
-import { UpdateFatturaDto } from './dto/update-fattura.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { DeepPartial } from 'typeorm';
+import { Fattura } from '../entities/fattura.entity';
 
 @Controller('fattura')
 export class FatturaController {
   constructor(private readonly fatturaService: FatturaService) {}
-
-  @Post()
-  create(@Body() createFatturaDto: CreateFatturaDto) {
-    return this.fatturaService.create(createFatturaDto);
-  }
 
   @Get()
   findAll() {
     return this.fatturaService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fatturaService.findOne(+id);
+  // CREAZIONE
+  @Post()
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/fatture',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `fattura-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  create(
+    @Body() body: any,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })],
+      }),
+    )
+    file?: Express.Multer.File,
+  ) {
+    const fatturaData = this.parseBody(body);
+    return this.fatturaService.createWithAttachment(fatturaData, file);
   }
 
+  // MODIFICA (PATCH)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateFatturaDto: UpdateFatturaDto) {
-    return this.fatturaService.update(+id, updateFatturaDto);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/fatture',
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `fattura-${uniqueSuffix}${ext}`);
+        },
+      }),
+    }),
+  )
+  update(
+    @Param('id') id: string,
+    @Body() body: any,
+    @UploadedFile(
+      new ParseFilePipe({
+        fileIsRequired: false,
+        validators: [new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 })],
+      }),
+    )
+    file?: Express.Multer.File,
+  ) {
+    const fatturaData = this.parseBody(body);
+    return this.fatturaService.updateWithAttachment(+id, fatturaData, file);
   }
 
+  // CANCELLAZIONE
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.fatturaService.remove(+id);
+  }
+
+  // Helper per convertire le stringhe del FormData in tipi corretti
+  private parseBody(body: any): DeepPartial<Fattura> {
+    return {
+      numero_fattura: body.numero_fattura,
+      data_emissione: body.data_emissione
+        ? new Date(body.data_emissione)
+        : undefined,
+      totale: body.totale ? parseFloat(body.totale) : undefined,
+      tipo: body.tipo,
+      incassata: body.incassata === 'true',
+      descrizione: body.descrizione,
+      data_scadenza: body.data_scadenza
+        ? new Date(body.data_scadenza)
+        : undefined,
+      cliente: body.clienteId ? { id: parseInt(body.clienteId) } : null,
+      commessa: body.commessaId ? { id: parseInt(body.commessaId) } : null,
+    };
   }
 }

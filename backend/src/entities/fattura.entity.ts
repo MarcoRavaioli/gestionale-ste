@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Cliente } from './cliente.entity';
 import { Commessa } from './commessa.entity';
+import { Allegato } from './allegato.entity';
 
 export enum TipoFattura {
   ENTRATA = 'entrata', // Fattura emessa al cliente
@@ -44,4 +51,10 @@ export class Fattura {
 
   @ManyToOne(() => Commessa, (commessa) => commessa.fatture, { nullable: true })
   commessa: Commessa | null;
+
+  @OneToMany(() => Allegato, (allegato) => allegato.fattura, {
+    cascade: true,
+    nullable: true,
+  })
+  allegati: Allegato[] | null;
 }

@@ -68,8 +68,8 @@
       <div slot="content">
         <app-commessa-item
           [commessa]="c"
-          [isAdmin]="isAdmin"
           [targetAppuntamentoId]="targetAppuntamentoId"
+          (refreshReq)="onRefresh.emit()"
         >
         </app-commessa-item>
       </div>

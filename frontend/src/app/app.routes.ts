@@ -29,4 +29,8 @@ export const routes: Routes = [
         (m) => m.ClienteDettaglioPage
       ),
   },
+  {
+    path: 'tab4',
+    loadComponent: () => import('./tab4/tab4.page').then( m => m.Tab4Page)
+  },
 ];

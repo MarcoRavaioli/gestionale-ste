@@ -16,6 +16,16 @@
         <h3>{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</h3>
         <p>{{ app.nome }}</p>
       </ion-label>
+
+      <ion-buttons slot="end">
+        <ion-button color="medium" (click)="modificaApp(app); $event.stopPropagation()">
+          <ion-icon name="pencil" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button color="danger" (click)="eliminaApp(app); $event.stopPropagation()">
+          <ion-icon name="trash" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+
     </ion-item>
   </ion-list>
 </div>

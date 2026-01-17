@@ -1,6 +1,7 @@
+/* backend/src/fattura/fattura.service.ts */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm'; // <--- Importa DeepPartial
 import { CreateFatturaDto } from './dto/create-fattura.dto';
 import { UpdateFatturaDto } from './dto/update-fattura.dto';
 import { Fattura } from '../entities/fattura.entity';
@@ -18,10 +19,10 @@ export class FatturaService {
     private readonly commessaRepository: Repository<Commessa>,
   ) {}
 
-  async create(createDto: CreateFatturaDto) {
-    // FIX: Diciamo esplicitamente a TS che questa variabile può contenere un Cliente oppure null
-    let cliente: Cliente | null = null;
+  // ... (gli altri metodi create, findAll, etc. rimangono uguali)
 
+  async create(createDto: CreateFatturaDto) {
+    let cliente: Cliente | null = null;
     if (createDto.clienteId) {
       cliente = await this.clienteRepository.findOneBy({
         id: createDto.clienteId,
@@ -33,9 +34,7 @@ export class FatturaService {
       }
     }
 
-    // FIX: Idem per la commessa
     let commessa: Commessa | null = null;
-
     if (createDto.commessaId) {
       commessa = await this.commessaRepository.findOneBy({
         id: createDto.commessaId,
@@ -47,11 +46,10 @@ export class FatturaService {
       }
     }
 
-    // 3. Creazione Fattura
     const nuovaFattura = this.fatturaRepository.create({
-      ...createDto, // Copia i campi semplici (numero, data, totale...)
-      cliente: cliente, // Assegna l'oggetto Cliente (o null)
-      commessa: commessa, // Assegna l'oggetto Commessa (o null)
+      ...createDto,
+      cliente: cliente,
+      commessa: commessa,
     });
 
     return this.fatturaRepository.save(nuovaFattura);
@@ -59,7 +57,8 @@ export class FatturaService {
 
   findAll() {
     return this.fatturaRepository.find({
-      relations: ['cliente', 'commessa'], // Scarichiamo anche i dati collegati
+      relations: ['cliente', 'commessa', 'allegati'],
+      order: { data_emissione: 'DESC' },
     });
   }
 
@@ -76,5 +75,51 @@ export class FatturaService {
 
   remove(id: number) {
     return this.fatturaRepository.delete(id);
+  }
+
+  // --- CORREZIONE QUI SOTTO ---
+  createWithAttachment(
+    fatturaData: DeepPartial<Fattura>, // TIPAGGIO FORTE QUI
+    file?: Express.Multer.File,
+  ) {
+    // Ora TypeORM sa che fatturaData è UN oggetto, quindi nuovaFattura è UNA Fattura
+    const nuovaFattura = this.fatturaRepository.create(fatturaData);
+
+    if (file) {
+      // TypeScript ora sa che nuovaFattura è un oggetto singolo e ha la proprietà allegati
+      nuovaFattura.allegati = [
+        // @ts-ignore (Se Allegato entity si aspetta un oggetto completo, ignoriamo per brevità, o meglio: crea istanza Allegato)
+        { nome_file: file.filename, percorso: file.path },
+      ] as any;
+    }
+
+    return this.fatturaRepository.save(nuovaFattura);
+  }
+
+  async updateWithAttachment(
+    id: number,
+    fatturaData: any,
+    file?: Express.Multer.File,
+  ) {
+    const fatturaEsistente = await this.fatturaRepository.findOne({
+      where: { id },
+      relations: ['allegati'],
+    });
+
+    if (!fatturaEsistente) throw new NotFoundException('Fattura non trovata');
+
+    const fatturaAggiornata = this.fatturaRepository.merge(
+      fatturaEsistente,
+      fatturaData,
+    );
+
+    if (file) {
+      // Nota: assicurati che la proprietà 'allegati' esista e sia gestita
+      fatturaAggiornata.allegati = [
+        { nome_file: file.filename, percorso: file.path } as any,
+      ];
+    }
+
+    return this.fatturaRepository.save(fatturaAggiornata);
   }
 }

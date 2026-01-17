@@ -44,3 +44,30 @@ export interface User {
   email: string;
   ruolo: 'ADMIN' | 'POSATORE' | 'COMMERCIALE';
 }
+
+export enum TipoFattura {
+  ENTRATA = 'entrata',
+  USCITA = 'uscita',
+}
+
+export interface Allegato {
+  id: number;
+  nome_file: string;
+  percorso: string;
+  tipo_file?: string;
+  data_caricamento: string;
+}
+
+export interface Fattura {
+  id: number;
+  numero_fattura: string;
+  data_emissione: string;
+  descrizione?: string;
+  totale: number;
+  tipo: TipoFattura;
+  data_scadenza?: string;
+  incassata: boolean;
+  cliente?: Cliente;
+  commessa?: Commessa;
+  allegati?: Allegato[];
+}

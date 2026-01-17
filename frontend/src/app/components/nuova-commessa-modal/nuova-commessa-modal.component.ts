@@ -3,7 +3,6 @@ import { IonicModule, ModalController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommessaService } from '../../services/commessa.service';
-import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
 import { Commessa } from '../../interfaces/models';
 
 @Component({
@@ -11,7 +10,7 @@ import { Commessa } from '../../interfaces/models';
   templateUrl: './nuova-commessa-modal.component.html',
   styleUrls: ['./nuova-commessa-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, GenericSelectorComponent],
+  imports: [IonicModule, CommonModule, FormsModule],
 })
 export class NuovaCommessaModalComponent {
   // CORREZIONE 1: Non riceviamo più clienteId, ma indirizzoId

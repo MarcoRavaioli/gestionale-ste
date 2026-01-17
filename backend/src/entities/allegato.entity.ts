@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Commessa } from './commessa.entity';
+import { Fattura } from './fattura.entity';
 
 @Entity()
 export class Allegato {
@@ -22,4 +23,10 @@ export class Allegato {
     onDelete: 'CASCADE',
   })
   commessa: Commessa;
+
+  @ManyToOne(() => Fattura, (fattura) => fattura.allegati, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  fattura: Fattura;
 }

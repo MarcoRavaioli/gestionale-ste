@@ -18,7 +18,7 @@ import {
   pencilOutline,
   trashOutline,
   calendarOutline,
-} from 'ionicons/icons'; // Aggiungi icone che servono nell'HTML
+} from 'ionicons/icons'; 
 
 @Component({
   selector: 'app-indirizzo-accordion',
@@ -37,11 +37,13 @@ export class IndirizzoAccordionComponent implements OnChanges {
   @Output() onAddCommessa = new EventEmitter<number>();
   @Output() onEditCommessa = new EventEmitter<Commessa>();
   @Output() onDeleteCommessa = new EventEmitter<Commessa>();
+  
+  // NUOVO: Evento per propagare la richiesta di refresh al padre (ClienteDettaglioPage)
+  @Output() onRefresh = new EventEmitter<void>();
 
   commesseAperte: string[] = [];
 
   constructor(private el: ElementRef, private animationCtrl: AnimationController) {
-    // Registra tutte le icone necessarie per l'intestazione che sposteremo qui
     addIcons({
       add,
       locationOutline,
@@ -59,29 +61,21 @@ export class IndirizzoAccordionComponent implements OnChanges {
 
   apriCommessaTarget() {
     if (this.targetCommessaId && this.indirizzo?.commesse) {
-      // Usa == per sicurezza (stringa vs numero)
       const found = this.indirizzo.commesse.find(c => c.id == this.targetCommessaId);
       
       if (found) {
         this.commesseAperte = ['commessa-' + this.targetCommessaId];
 
-        // Se NON cerchiamo un appuntamento, evidenziamo la commessa
         if (!this.targetAppuntamentoId) {
-          
-          // Timeout aumentato a 800ms: deve aspettare che si apra il Cantiere (padre)
           setTimeout(() => {
             const headerId = 'commessa-header-' + this.targetCommessaId;
             const element = document.getElementById(headerId); 
             
-            console.log('Cerco Commessa:', headerId, 'Trovato?', !!element); // DEBUG
-
             if (element) {
               element.scrollIntoView({ behavior: 'smooth', block: 'center' });
               this.flashElement(element);
-            } else {
-              console.warn('Elemento commessa non trovato nel DOM (forse accordion chiuso?)');
             }
-          }, 800); // <--- AUMENTATO A 800ms
+          }, 800);
         }
       }
     }
@@ -104,17 +98,12 @@ export class IndirizzoAccordionComponent implements OnChanges {
     this.onAddCommessa.emit(this.indirizzo.id);
   }
 
-  // --- SPOSTATA DAL FIGLIO ---
   getColoreStato(stato: string): string {
     switch (stato) {
-      case 'APERTA':
-        return 'success';
-      case 'IN_CORSO':
-        return 'warning';
-      case 'CHIUSA':
-        return 'medium';
-      default:
-        return 'primary';
+      case 'APERTA': return 'success';
+      case 'IN_CORSO': return 'warning';
+      case 'CHIUSA': return 'medium';
+      default: return 'primary';
     }
   }
 }
