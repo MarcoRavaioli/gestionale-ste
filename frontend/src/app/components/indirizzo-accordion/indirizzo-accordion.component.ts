@@ -29,7 +29,7 @@ import {
 })
 export class IndirizzoAccordionComponent implements OnChanges {
   @Input() indirizzo!: Indirizzo;
-  @Input() isAdmin: boolean = false;
+  @Input() hasManagerAccess: boolean = false;
 
   @Input() targetCommessaId: number | null = null;
   @Input() targetAppuntamentoId: number | null = null;
@@ -37,8 +37,6 @@ export class IndirizzoAccordionComponent implements OnChanges {
   @Output() onAddCommessa = new EventEmitter<number>();
   @Output() onEditCommessa = new EventEmitter<Commessa>();
   @Output() onDeleteCommessa = new EventEmitter<Commessa>();
-  
-  // NUOVO: Evento per propagare la richiesta di refresh al padre (ClienteDettaglioPage)
   @Output() onRefresh = new EventEmitter<void>();
 
   commesseAperte: string[] = [];
@@ -59,39 +57,63 @@ export class IndirizzoAccordionComponent implements OnChanges {
     }
   }
 
+  isCommessaAperta(id: number): boolean {
+    const idStr = 'commessa-' + id;
+    if (!this.commesseAperte) return false;
+    
+    if (Array.isArray(this.commesseAperte)) {
+      return this.commesseAperte.includes(idStr);
+    } else {
+      return this.commesseAperte === idStr;
+    }
+  }
+
+  accordionChange(ev: any) {
+    this.commesseAperte = ev.detail.value;
+  }
+
   apriCommessaTarget() {
     if (this.targetCommessaId && this.indirizzo?.commesse) {
       const found = this.indirizzo.commesse.find(c => c.id == this.targetCommessaId);
       
       if (found) {
+        // Apri l'accordion
         this.commesseAperte = ['commessa-' + this.targetCommessaId];
 
+        // Se dobbiamo fermarci qui (no appuntamento target), scrolliamo ed evidenziamo
         if (!this.targetAppuntamentoId) {
+          // Aspettiamo che l'accordion genitore (cantiere) si apra completamente
           setTimeout(() => {
-            const headerId = 'commessa-header-' + this.targetCommessaId;
-            const element = document.getElementById(headerId); 
-            
-            if (element) {
-              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              this.flashElement(element);
-            }
-          }, 800);
+            this.trovaEScorriCommessa(this.targetCommessaId!);
+          }, 600);
         }
       }
     }
   }
 
+  trovaEScorriCommessa(id: number, attempts = 0) {
+    if (attempts > 20) return;
+
+    const headerId = 'commessa-header-' + id;
+    const element = document.getElementById(headerId); 
+    
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      this.flashElement(element);
+    } else {
+      setTimeout(() => this.trovaEScorriCommessa(id, attempts + 1), 100);
+    }
+  }
+
   flashElement(element: HTMLElement) {
-    const animation = this.animationCtrl.create()
-      .addElement(element)
-      .duration(2000)
-      .iterations(1)
-      .keyframes([
-        { offset: 0, '--background': 'rgba(var(--ion-color-warning-rgb), 0)' },
-        { offset: 0.2, '--background': 'rgba(var(--ion-color-warning-rgb), 0.5)' },
-        { offset: 1, '--background': 'rgba(var(--ion-color-warning-rgb), 0)' }
-      ]);
-    animation.play();
+    // Usiamo una classe CSS per l'animazione per evitare conflitti JS
+    element.classList.remove('flash-highlight-target');
+    void element.offsetWidth; // Force reflow
+    element.classList.add('flash-highlight-target');
+    
+    setTimeout(() => {
+      element.classList.remove('flash-highlight-target');
+    }, 3000);
   }
 
   handleAddCommessa() {

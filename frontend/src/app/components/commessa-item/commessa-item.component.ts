@@ -1,11 +1,23 @@
-import { Component, Input, Output, EventEmitter, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController, AlertController } from '@ionic/angular';
-import { Commessa, Appuntamento } from '../../interfaces/models'; // Assicurati di importare Appuntamento
-import { AppuntamentoService } from 'src/app/services/appuntamento.service'; // Importa il service
-import { NuovoAppuntamentoGlobaleModalComponent } from '../nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component'; // Importa il modale di modifica
+import { Commessa, Appuntamento } from '../../interfaces/models';
+import { AppuntamentoService } from 'src/app/services/appuntamento.service';
+import { NuovoAppuntamentoGlobaleModalComponent } from '../nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 import { addIcons } from 'ionicons';
-import { calendarOutline, pencil, trash } from 'ionicons/icons'; // Aggiungi pencil e trash
+import { calendarOutline, pencil, trash, add, timeOutline } from 'ionicons/icons';
+
+// --- IMPORT DATE-FNS PER ITALIANO ---
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
 
 @Component({
   selector: 'app-commessa-item',
@@ -16,10 +28,8 @@ import { calendarOutline, pencil, trash } from 'ionicons/icons'; // Aggiungi pen
 })
 export class CommessaItemComponent implements OnChanges {
   @Input() commessa!: Commessa;
-  @Input() isAdmin: boolean = false;
+  @Input() hasManagerAccess: boolean = false;
   @Input() targetAppuntamentoId: number | null = null;
-  
-  // Evento per dire al padre di ricaricare i dati
   @Output() refreshReq = new EventEmitter<void>();
 
   constructor(
@@ -28,59 +38,97 @@ export class CommessaItemComponent implements OnChanges {
     private alertCtrl: AlertController,
     private appService: AppuntamentoService
   ) {
-    addIcons({ calendarOutline, pencil, trash });
+    addIcons({ calendarOutline, pencil, trash, add, timeOutline });
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (this.targetAppuntamentoId && this.commessa.appuntamenti) {
-      const found = this.commessa.appuntamenti.some(a => a.id == this.targetAppuntamentoId);
-      
+      const found = this.commessa.appuntamenti.some(
+        (a) => a.id == this.targetAppuntamentoId
+      );
       if (found) {
         setTimeout(() => {
-          const highlightedElement = this.el.nativeElement.querySelector('.highlight-item');
+          const highlightedElement =
+            this.el.nativeElement.querySelector('.highlight-item');
           if (highlightedElement) {
-            highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightedElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
           }
         }, 600);
       }
     }
   }
 
-  // --- LOGICA MODIFICA ---
-  async modificaApp(app: Appuntamento) {
+  // --- FORMATTAZIONE DATE (Italiano) ---
+  getGiorno(isoString: string): string {
+    if (!isoString) return '-';
+    return format(new Date(isoString), 'dd');
+  }
+
+  getMese(isoString: string): string {
+    if (!isoString) return '-';
+    // 'MMM' restituisce 'gen', 'feb'. Lo rendiamo maiuscolo nell'HTML.
+    return format(new Date(isoString), 'MMM', { locale: it });
+  }
+
+  getAnno(isoString: string): string {
+    if (!isoString) return '-';
+    return format(new Date(isoString), 'yyyy');
+  }
+
+  getOra(isoString: string): string {
+    if (!isoString) return '--:--';
+    return format(new Date(isoString), 'HH:mm');
+  }
+
+  // --- AZIONI ---
+  async nuovoAppuntamento() {
     const modal = await this.modalCtrl.create({
       component: NuovoAppuntamentoGlobaleModalComponent,
-      componentProps: { 
-        appuntamento: app, // Passiamo l'appuntamento esistente per la modifica
-        commessaId: this.commessa.id // Manteniamo il riferimento alla commessa
-      }
+      componentProps: {
+        commessaId: this.commessa.id,
+      },
     });
-    
     await modal.present();
-    
     const { data } = await modal.onWillDismiss();
-    if (data && data.creato) { // O 'aggiornato', dipende da come gestisci il ritorno nel modale
-      this.refreshReq.emit(); // Chiediamo al padre di ricaricare
+    if (data && data.creato) {
+      this.refreshReq.emit();
     }
   }
 
-  // --- LOGICA ELIMINAZIONE ---
+  async modificaApp(app: Appuntamento) {
+    const modal = await this.modalCtrl.create({
+      component: NuovoAppuntamentoGlobaleModalComponent,
+      componentProps: {
+        appuntamento: app,
+        commessaId: this.commessa.id,
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato) {
+      this.refreshReq.emit();
+    }
+  }
+
   async eliminaApp(app: Appuntamento) {
     const alert = await this.alertCtrl.create({
       header: 'Elimina Appuntamento',
       message: 'Sei sicuro di voler eliminare questo appuntamento?',
       buttons: [
         { text: 'Annulla', role: 'cancel' },
-        { 
-          text: 'Elimina', 
+        {
+          text: 'Elimina',
           role: 'destructive',
           handler: () => {
             this.appService.delete(app.id).subscribe(() => {
-              this.refreshReq.emit(); // Ricarichiamo i dati dopo l'eliminazione
+              this.refreshReq.emit();
             });
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
     await alert.present();
   }

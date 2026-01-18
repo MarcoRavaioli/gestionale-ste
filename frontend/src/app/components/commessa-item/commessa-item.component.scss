@@ -1,48 +1,106 @@
-/* Stili esistenti per la lista appuntamenti */
-.appuntamenti-content {
+.appuntamenti-wrapper {
   background-color: var(--ion-item-background);
-  padding: 10px;
+  padding: 10px 16px 16px 16px;
   border-top: 1px dashed var(--ion-color-step-200);
 }
 
-.appuntamenti-label { 
-  font-size: 0.75rem; 
-  font-weight: 800; 
-  color: var(--ion-color-medium); 
-  margin-bottom: 8px; 
-  display: flex; 
-  align-items: center; 
-  gap: 5px; 
+/* HEADER */
+.appuntamenti-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+
+  .label-container {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 800; color: var(--ion-color-medium);
+    letter-spacing: 0.5px;
+  }
 }
 
-.no-appuntamenti { 
-  font-size: 0.85rem; 
-  color: var(--ion-color-medium); 
-  font-style: italic; 
-  padding: 10px; 
-  text-align: center; 
+.no-appuntamenti {
+  font-size: 0.85rem; color: var(--ion-color-medium);
+  font-style: italic; text-align: center; padding: 10px;
 }
 
-/* --- NUOVA EVIDENZIAZIONE --- */
+/* APP CARD STYLE */
+.app-list {
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.app-card {
+  display: flex;
+  background: var(--ion-background-color); // Sfondo leggermente diverso rispetto all'accordion
+  border: 1px solid var(--ion-color-step-150);
+  border-radius: 10px;
+  padding: 10px;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* DATA BOX (Stile Calendario) */
+.date-box {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 55px;
+  background: rgba(var(--ion-color-primary-rgb), 0.08);
+  border-radius: 8px;
+  padding: 5px;
+  color: var(--ion-color-primary);
+
+  .day { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+  .month { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+  .year { font-size: 0.6rem; opacity: 0.7; }
+}
+
+/* INFO CENTRALI */
+.info-box {
+  flex: 1;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 6px;
+
+  .time-row {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--ion-text-color);
+    
+    ion-icon { color: var(--ion-color-medium); font-size: 1rem; }
+    
+    .time { font-weight: 700; font-size: 1.1rem; }
+    
+    .title-separator { color: var(--ion-color-medium); opacity: 0.5; }
+    
+    .app-title { font-weight: 600; font-size: 1rem; }
+  }
+
+  .notes-box {
+    background: var(--ion-color-step-50);
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--ion-color-step-600);
+    line-height: 1.4;
+    white-space: pre-wrap; /* Mantiene a capo */
+    word-break: break-word; /* Evita sforamenti */
+    border-left: 3px solid var(--ion-color-step-300);
+  }
+}
+
+/* AZIONI */
+.actions-box {
+  display: flex; flex-direction: column; justify-content: center; gap: 5px;
+  border-left: 1px solid var(--ion-color-step-150);
+  padding-left: 5px;
+  
+  ion-button { height: 30px; width: 30px; margin: 0; }
+}
+
+/* ANIMAZIONE HIGHLIGHT */
 @keyframes flashHighlight {
-  0% {
-    --background: rgba(var(--ion-color-warning-rgb), 0);
-  }
-  20% {
-    --background: rgba(var(--ion-color-warning-rgb), 0.5); /* Giallo intenso */
-  }
-  100% {
-    --background: rgba(var(--ion-color-warning-rgb), 0); /* Torna normale */
-  }
+  0% { --background: rgba(var(--ion-color-warning-rgb), 0); }
+  20% { --background: rgba(var(--ion-color-warning-rgb), 0.5); }
+  100% { --background: rgba(var(--ion-color-warning-rgb), 0); }
 }
 
 .highlight-item {
-  /* Ritardo di 0.5s per aspettare che l'accordion si apra, dura 3s */
   animation: flashHighlight 3s ease-out 0.5s forwards;
-  
-  /* Bordo laterale giallo fisso per indicare "è questo qui" */
-  border-left: 5px solid var(--ion-color-warning);
-  
-  --background: transparent;
-  transition: --background 0.3s;
+  border: 2px solid var(--ion-color-warning); /* Bordo evidente */
 }

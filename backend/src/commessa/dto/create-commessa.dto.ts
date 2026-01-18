@@ -1,30 +1,27 @@
 import {
-  IsNotEmpty,
   IsString,
+  IsNotEmpty,
   IsOptional,
   IsNumber,
-  IsObject,
 } from 'class-validator';
 
 export class CreateCommessaDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   seriale: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   descrizione?: string;
 
-  @IsOptional()
-  @IsString()
-  stato?: string;
-
-  @IsOptional()
   @IsNumber()
-  valore_totale?: number;
+  @IsOptional()
+  valore_totale?: number; // <--- Fondamentale
 
-  // CAMBIAMENTO: Ora ci serve l'indirizzo, non il cliente
-  @IsNotEmpty()
-  @IsObject()
-  indirizzo: { id: number };
+  @IsString()
+  @IsOptional()
+  stato?: string; // <--- Fondamentale (APERTA/CHIUSA...)
+
+  @IsOptional()
+  indirizzo?: any;
 }

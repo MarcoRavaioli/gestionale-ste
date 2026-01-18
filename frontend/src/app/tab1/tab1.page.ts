@@ -41,6 +41,9 @@ import {
   peopleOutline, // <--- NUOVA
   walletOutline, // <--- NUOVA
   personCircleOutline,
+  time,
+  briefcaseOutline,
+  location,
 } from 'ionicons/icons';
 import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal.component';
 
@@ -99,6 +102,9 @@ export class Tab1Page implements OnInit {
       peopleOutline,
       walletOutline,
       personCircleOutline,
+      time,
+      briefcaseOutline,
+      location,
     });
   }
 
@@ -323,4 +329,5 @@ export class Tab1Page implements OnInit {
     });
     await modal.present();
   }
+  
 }

@@ -34,28 +34,13 @@
   </div>
 
   <ion-toolbar color="primary">
-    <div
-      style="
-        display: flex;
-        align-items: center;
-        padding-right: 10px;
-        width: 100%;
-      "
-    >
+    <div class="search-container">
       <ion-searchbar
         [placeholder]="getPlaceholder()"
         [(ngModel)]="ricerca"
         (ionInput)="elaboraDati()"
         animated="true"
-        style="
-          --box-shadow: none;
-          --background: rgba(255, 255, 255, 0.2);
-          --color: white;
-          --placeholder-color: rgba(255, 255, 255, 0.7);
-          --icon-color: white;
-          --clear-button-color: white;
-          border-radius: 8px;
-        "
+        class="custom-searchbar"
       >
       </ion-searchbar>
 
@@ -72,78 +57,75 @@
   </ion-refresher>
 
   <div *ngIf="vistaCorrente === 'clienti'">
-    <ion-list>
+    <ion-list lines="none" class="custom-list">
       <ion-item
         *ngFor="let cliente of clientiVisualizzati"
         button
-        detail="true"
+        detail="false"
         [routerLink]="['/cliente-dettaglio', cliente.id]"
+        class="list-item"
       >
-        <ion-avatar slot="start"
-          ><div class="avatar-placeholder">
+        <ion-avatar slot="start" class="item-avatar">
+          <div class="avatar-placeholder">
             {{ cliente.nome.charAt(0) }}
-          </div></ion-avatar
-        >
+          </div>
+        </ion-avatar>
         <ion-label>
-          <h2>{{ cliente.nome }}</h2>
-          <p>{{ cliente.email || 'Nessuna email' }}</p>
+          <h2 class="item-title">{{ cliente.nome }}</h2>
+          <p class="item-subtitle">{{ cliente.email || 'Nessuna email' }}</p>
         </ion-label>
+        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
       </ion-item>
     </ion-list>
     <div *ngIf="clientiVisualizzati.length === 0" class="empty-state">
+      <ion-icon name="people-outline"></ion-icon>
       <p>Nessun cliente trovato.</p>
     </div>
   </div>
 
   <div *ngIf="vistaCorrente === 'cantieri'">
-    <ion-list *ngIf="!isCantieriGrouped">
+    <ion-list lines="none" class="custom-list" *ngIf="!isCantieriGrouped">
       <ion-item
         *ngFor="let cantiere of cantieriLista"
         button
-        detail="true"
+        detail="false"
         [routerLink]="['/cliente-dettaglio', cantiere.cliente?.id]"
         [queryParams]="{ cantiereId: cantiere.id }"
+        class="list-item"
       >
-        <ion-icon
-          slot="start"
-          name="location-outline"
-          color="secondary"
-          size="large"
-        ></ion-icon>
+        <div slot="start" class="list-icon-box box-secondary">
+          <ion-icon name="location"></ion-icon>
+        </div>
         <ion-label>
-          <ion-note color="medium" style="font-size: 0.8rem; font-weight: bold"
-            >{{ cantiere.citta | uppercase }}</ion-note
-          >
-          <h2>{{ cantiere.via }} {{ cantiere.civico }}</h2>
-          <p style="color: var(--ion-color-primary)">
+          <ion-note class="mini-tag">{{ cantiere.citta | uppercase }}</ion-note>
+          <h2 class="item-title">{{ cantiere.via }} {{ cantiere.civico }}</h2>
+          <p class="item-subtitle highlight-text">
             {{ cantiere.cliente?.nome }}
           </p>
         </ion-label>
+        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
       </ion-item>
     </ion-list>
 
-    <ion-list *ngIf="isCantieriGrouped">
+    <ion-list lines="none" class="custom-list" *ngIf="isCantieriGrouped">
       <ion-item-group *ngFor="let gruppo of cantieriGruppi">
-        <ion-item-divider sticky="true"
-          ><ion-label
-            >{{ gruppo.nome | uppercase }}</ion-label
-          ></ion-item-divider
-        >
+        <ion-item-divider sticky="true" class="custom-divider">
+          <ion-label>{{ gruppo.nome | uppercase }}</ion-label>
+        </ion-item-divider>
         <ion-item
           *ngFor="let item of gruppo.items"
           button
-          detail="true"
+          detail="false"
           [routerLink]="['/cliente-dettaglio', item.cliente?.id]"
+          class="list-item"
         >
-          <ion-icon
-            slot="start"
-            name="location-outline"
-            color="secondary"
-          ></ion-icon>
-          <ion-label
-            ><h2>{{ item.via }} {{ item.civico }}</h2>
-            <p>{{ item.cliente?.nome }}</p></ion-label
-          >
+          <div slot="start" class="list-icon-box box-secondary">
+            <ion-icon name="location"></ion-icon>
+          </div>
+          <ion-label>
+            <h2 class="item-title">{{ item.via }} {{ item.civico }}</h2>
+            <p class="item-subtitle">{{ item.cliente?.nome }}</p>
+          </ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>
@@ -151,188 +133,172 @@
       *ngIf="cantieriLista.length === 0 && cantieriGruppi.length === 0"
       class="empty-state"
     >
+      <ion-icon name="business-outline"></ion-icon>
       <p>Nessun cantiere trovato.</p>
     </div>
   </div>
 
   <div *ngIf="vistaCorrente === 'commesse'">
-    <ion-list *ngIf="!isCommesseGrouped">
+    <ion-list lines="none" class="custom-list" *ngIf="!isCommesseGrouped">
       <ion-item
         *ngFor="let item of commesseLista"
         button
-        detail="true"
+        detail="false"
         [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
         [queryParams]="{ cantiereId: item.indirizzo?.id, commessaId: item.id }"
+        class="list-item"
       >
-        <ion-icon
-          slot="start"
-          name="documents-outline"
-          color="tertiary"
-          size="large"
-        ></ion-icon>
+        <div slot="start" class="list-icon-box box-tertiary">
+          <ion-icon name="documents"></ion-icon>
+        </div>
         <ion-label>
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 4px;
-            "
-          >
+          <div class="meta-row">
             <span class="serial-code">{{ item.seriale }}</span>
-            <ion-badge [color]="getColoreStato(item.stato)" class="status-badge"
-              >{{ item.stato }}</ion-badge
-            >
+            <ion-badge [color]="getColoreStato(item.stato)" class="status-badge">
+              {{ item.stato }}
+            </ion-badge>
           </div>
-          <h2>{{ item.descrizione || 'Nessuna descrizione' }}</h2>
-          <p>
-            <ion-icon name="person-outline"></ion-icon> {{
-            item.indirizzo?.cliente?.nome }}
-            <span *ngIf="item.indirizzo"> — {{ item.indirizzo.citta }}</span>
+          <h2 class="item-title">{{ item.descrizione || 'Nessuna descrizione' }}</h2>
+          <p class="item-subtitle icon-text">
+            <ion-icon name="person-outline"></ion-icon> 
+            {{ item.indirizzo?.cliente?.nome }}
+            <span *ngIf="item.indirizzo" class="sub-location"> • {{ item.indirizzo.citta }}</span>
           </p>
         </ion-label>
+        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
       </ion-item>
     </ion-list>
 
-    <ion-list *ngIf="isCommesseGrouped">
-      <ion-item-group *ngFor="let gruppo of commesseGruppi">
-        <ion-item-divider sticky="true"
-          ><ion-label
-            >{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label
-          ></ion-item-divider
-        >
+    <ion-list lines="none" class="custom-list" *ngIf="isCommesseGrouped">
+       <ion-item-group *ngFor="let gruppo of commesseGruppi">
+        <ion-item-divider sticky="true" class="custom-divider">
+          <ion-label>{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label>
+        </ion-item-divider>
         <ion-item
           *ngFor="let item of gruppo.items"
           button
-          detail="true"
+          detail="false"
           [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
+          class="list-item"
         >
-          <ion-icon
-            slot="start"
-            name="documents-outline"
-            color="tertiary"
-          ></ion-icon>
-          <ion-label
-            ><h3>{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
-            <p>{{ item.descrizione }}</p></ion-label
-          >
+          <div slot="start" class="list-icon-box box-tertiary">
+            <ion-icon name="documents"></ion-icon>
+          </div>
+          <ion-label>
+            <h3 class="item-title">{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
+            <p class="item-subtitle">{{ item.descrizione }}</p>
+          </ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>
+
     <div
       *ngIf="(isCommesseGrouped ? commesseGruppi.length : commesseLista.length) === 0"
       class="empty-state"
     >
+      <ion-icon name="folder-open-outline"></ion-icon>
       <p>Nessuna commessa trovata.</p>
     </div>
   </div>
 
   <div *ngIf="vistaCorrente === 'appuntamenti'">
-    <ion-list *ngIf="!isAppuntamentiGrouped">
+    
+    <ion-list lines="none" class="custom-list" *ngIf="!isAppuntamentiGrouped">
       <ion-item
         *ngFor="let app of appuntamentiLista"
         button
-        detail="true"
+        detail="false"
         [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
         [queryParams]="{ 
-    cantiereId: app.commessa?.indirizzo?.id, 
-    commessaId: app.commessa?.id, 
-    appuntamentoId: app.id 
-  }"
+          cantiereId: app.commessa?.indirizzo?.id, 
+          commessaId: app.commessa?.id, 
+          appuntamentoId: app.id 
+        }"
+        class="list-item"
       >
-        <ion-icon
-          slot="start"
-          name="calendar-outline"
-          color="warning"
-          size="large"
-        ></ion-icon>
+        <div slot="start" class="list-icon-box box-warning">
+          <ion-icon name="calendar"></ion-icon>
+        </div>
         <ion-label>
-          <ion-note color="dark" style="font-weight: bold; font-size: 0.9rem"
-            >{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</ion-note
-          >
-          <h2>{{ app.nome }}</h2>
-          <p style="font-size: 0.8rem; margin-top: 4px">
-            <ion-icon
-              name="documents-outline"
-              style="vertical-align: middle"
-            ></ion-icon>
-            {{ app.commessa?.seriale }} <br />
-            <ion-icon
-              name="person-outline"
-              style="vertical-align: middle"
-            ></ion-icon>
-            {{ app.commessa?.indirizzo?.cliente?.nome }}
-          </p>
+          <ion-note class="date-note">
+            {{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}
+          </ion-note>
+          
+          <h2 class="item-title ion-text-wrap">
+            {{ app.descrizione}}
+          </h2>
+          
+          <div class="details-block">
+            <div class="detail-row">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>
+                {{ app.commessa?.indirizzo?.via || 'Via N.D.' }}, 
+                {{ app.commessa?.indirizzo?.citta }}
+              </span>
+            </div>
+
+            <div class="detail-row">
+              <ion-icon name="storefront-outline"></ion-icon>
+              <span class="truncate-text">
+                {{ app.commessa?.descrizione || 'Nessuna nota commessa' }}
+              </span>
+            </div>
+          </div>
         </ion-label>
+        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
       </ion-item>
     </ion-list>
 
-    <ion-list *ngIf="isAppuntamentiGrouped">
+    <ion-list lines="none" class="custom-list" *ngIf="isAppuntamentiGrouped">
       <ion-item-group *ngFor="let gruppo of appuntamentiGruppi">
-        <ion-item-divider sticky="true"
-          ><ion-label
-            >{{ gruppo.nome }}
-            <span style="font-weight: normal; font-size: 0.8em"
-              >({{ gruppo.items.length }})</span
-            ></ion-label
-          ></ion-item-divider
-        >
+        <ion-item-divider sticky="true" class="custom-divider">
+          <ion-label>{{ gruppo.nome }} <span class="divider-count">({{ gruppo.items.length }})</span></ion-label>
+        </ion-item-divider>
         <ion-item
           *ngFor="let app of gruppo.items"
           button
-          detail="true"
+          detail="false"
           [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
+          class="list-item"
         >
-          <ion-icon
-            slot="start"
-            name="calendar-outline"
-            color="warning"
-          ></ion-icon>
+          <div slot="start" class="list-icon-box box-warning">
+            <ion-icon name="calendar"></ion-icon>
+          </div>
           <ion-label>
-            <ion-note color="dark" style="font-weight: bold"
-              >{{ app.data_ora | date: (settingsAppuntamenti.groupBy ===
-              'giorno' ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}</ion-note
-            >
-            <h3>{{ app.nome }}</h3>
-            <p>
-              {{ app.commessa?.indirizzo?.cliente?.nome }} - {{
-              app.commessa?.seriale }}
+            <ion-note class="date-note">
+              {{ app.data_ora | date: (settingsAppuntamenti.groupBy === 'giorno' ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}
+            </ion-note>
+            <h3 class="item-title">{{ app.descrizione}}</h3>
+            <p class="item-subtitle">
+              {{ app.commessa?.indirizzo?.via }} <br>
+              <span class="italic-note">{{ app.commessa?.descrizione }}</span>
             </p>
           </ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>
+    
     <div
       *ngIf="(isAppuntamentiGrouped ? appuntamentiGruppi.length : appuntamentiLista.length) === 0"
       class="empty-state"
     >
+      <ion-icon name="calendar-number-outline"></ion-icon>
       <p>Nessun appuntamento trovato.</p>
     </div>
   </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'clienti'"
-      (click)="apriNuovoCliente()"
-      ><ion-icon name="person-add-outline"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'cantieri'"
-      (click)="apriNuovoCantiere()"
-      color="secondary"
-      ><ion-icon name="add"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'commesse'"
-      (click)="apriNuovaCommessa()"
-      color="tertiary"
-      ><ion-icon name="documents-outline"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'appuntamenti'"
-      (click)="apriNuovoAppuntamento()"
-      color="warning"
-      ><ion-icon name="calendar-outline"></ion-icon
-    ></ion-fab-button>
+    <ion-fab-button *ngIf="vistaCorrente === 'clienti'" (click)="apriNuovoCliente()">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="vistaCorrente === 'cantieri'" (click)="apriNuovoCantiere()" color="secondary">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="vistaCorrente === 'commesse'" (click)="apriNuovaCommessa()" color="tertiary">
+      <ion-icon name="documents-outline"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-button *ngIf="vistaCorrente === 'appuntamenti'" (click)="apriNuovoAppuntamento()" color="warning">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </ion-fab-button>
   </ion-fab>
 </ion-content>

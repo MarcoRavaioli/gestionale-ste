@@ -38,9 +38,9 @@ async function bootstrap() {
   // --- ASSET STATICI ---
   // Rendi pubblica la cartella uploads
   // I file saranno accessibili su: http://localhost:3000/uploads/fatture/nomefile.pdf
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
+  //app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  //  prefix: '/uploads/',
+  //});
 
   await app.listen(3000);
 }

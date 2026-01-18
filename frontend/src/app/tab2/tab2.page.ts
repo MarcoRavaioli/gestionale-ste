@@ -32,6 +32,7 @@ import {
   todayOutline,
   shareSocialOutline,
   downloadOutline,
+  createOutline,
 } from 'ionicons/icons';
 
 import {
@@ -47,6 +48,7 @@ import {
   endOfMonth,
 } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-tab2',
@@ -85,7 +87,8 @@ export class Tab2Page implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private platform: Platform,
-    private http: HttpClient
+    private http: HttpClient,
+    private router: Router
   ) {
     addIcons({
       chevronBackOutline,
@@ -103,6 +106,7 @@ export class Tab2Page implements OnInit {
       todayOutline,
       shareSocialOutline,
       downloadOutline,
+      createOutline,
     });
   }
 
@@ -310,7 +314,23 @@ export class Tab2Page implements OnInit {
     }
   }
 
-  // ... Resto del codice (setExportModal, esportaAppuntamenti, ecc.) invariato ...
+  goToAppuntamento(app: Appuntamento) {
+    if (app.commessa?.indirizzo?.cliente?.id) {
+      this.router.navigate(
+        ['/cliente-dettaglio', app.commessa.indirizzo.cliente.id],
+        {
+          queryParams: {
+            cantiereId: app.commessa.indirizzo.id,
+            commessaId: app.commessa.id,
+            appuntamentoId: app.id,
+          },
+        }
+      );
+    } else {
+      this.mostraToast('Impossibile aprire: Appuntamento non collegato a un cliente.', 'warning');
+    }
+  }
+
   setExportModal(open: boolean) {
     this.isExportModalOpen = open;
     if (open) {

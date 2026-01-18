@@ -65,7 +65,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     seriale: '',
     descrizione: '',
     stato: 'APERTA',
-    valore_totale: null,
+    valore_totale: undefined,
   };
   nuovoCantiere = {
     via: '',

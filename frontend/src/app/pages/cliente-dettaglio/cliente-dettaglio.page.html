@@ -4,144 +4,190 @@
       <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
     </ion-buttons>
     <ion-title>{{ cliente?.nome }}</ion-title>
-    <ion-buttons slot="end" *ngIf="isAdmin">
-      <ion-button *ngIf="!isEditing" (click)="abilitaModifica()"
-        ><ion-icon slot="icon-only" name="pencil-outline"></ion-icon
-      ></ion-button>
-      <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light"
-        ><ion-icon slot="icon-only" name="close-outline"></ion-icon
-      ></ion-button>
-      <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning"
-        ><ion-icon slot="icon-only" name="save-outline"></ion-icon
-      ></ion-button>
+
+    <ion-buttons slot="end" *ngIf="hasManagerAccess">
+      <ion-button *ngIf="!isEditing" (click)="abilitaModifica()">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
+
+      <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+      <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning">
+        <ion-icon slot="icon-only" name="save-outline"></ion-icon>
+      </ion-button>
+
       <ion-button
         *ngIf="!isEditing"
         (click)="chiediConfermaCancellazione()"
         color="danger"
-        ><ion-icon
+      >
+        <ion-icon
           slot="icon-only"
           name="trash-outline"
           style="color: #ffcccc"
-        ></ion-icon
-      ></ion-button>
+        ></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" *ngIf="cliente">
-  <div class="ion-padding section-header"><h3>Contatti</h3></div>
-  <ion-list inset="true">
-    <ion-item *ngIf="isEditing">
-      <ion-icon name="person-outline" slot="start"></ion-icon>
-      <ion-input
-        label="Nome Cliente"
-        label-placement="floating"
-        [(ngModel)]="cliente.nome"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-icon name="mail-outline" slot="start"></ion-icon>
-      <ion-label *ngIf="!isEditing"
-        ><h3>Email</h3>
-        <p>{{ cliente.email || 'Nessuna' }}</p></ion-label
-      >
-      <ion-input
-        *ngIf="isEditing"
-        [(ngModel)]="cliente.email"
-        placeholder="Email"
-      ></ion-input>
-    </ion-item>
-    <ion-item>
-      <ion-icon name="call-outline" slot="start"></ion-icon>
-      <ion-label *ngIf="!isEditing"
-        ><h3>Telefono</h3>
-        <p>{{ cliente.telefono || 'Nessuno' }}</p></ion-label
-      >
-      <ion-input
-        *ngIf="isEditing"
-        [(ngModel)]="cliente.telefono"
-        placeholder="Telefono"
-      ></ion-input>
-    </ion-item>
-  </ion-list>
+<ion-content [fullscreen]="true" *ngIf="cliente" class="light-bg">
+  <div class="contact-card ion-margin">
+    <div class="card-header">
+      <h3>Dati Contatto</h3>
+    </div>
 
-  <div class="section-header ion-padding-horizontal ion-margin-top flex-header">
-    <h3>Cantieri</h3>
-    <ion-button
-      *ngIf="isAdmin"
-      size="small"
-      fill="clear"
-      (click)="apriModalIndirizzo()"
-    >
-      <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuovo
-      Cantiere
-    </ion-button>
-  </div>
-
-  <div
-    *ngIf="!cliente.indirizzi?.length"
-    class="ion-padding-horizontal text-muted"
-  >
-    <small>Nessun cantiere registrato.</small>
-  </div>
-
-  <ion-accordion-group
-    expand="inset"
-    class="ion-margin-top"
-    [multiple]="true"
-    [value]="indirizziAperti"
-  >
-    <ion-accordion
-      *ngFor="let indirizzo of cliente.indirizzi"
-      [value]="indirizzo.id.toString()"
-      [id]="'cantiere-' + indirizzo.id"
-    >
-      <ion-item
-        slot="header"
-        color="light"
-        [id]="'cantiere-header-' + indirizzo.id"
-      >
-        <ion-icon
-          name="location-outline"
-          slot="start"
-          color="primary"
-        ></ion-icon>
-        <ion-label>
-          <h2>{{ indirizzo.via }} {{ indirizzo.civico }}</h2>
-          <p>{{ indirizzo.citta }} ({{ indirizzo.cap }})</p>
-        </ion-label>
-
-        <div slot="end" class="action-buttons" *ngIf="isAdmin">
-          <ion-button
-            fill="clear"
-            (click)="apriModalIndirizzo(indirizzo); $event.stopPropagation()"
-          >
-            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-button
-            fill="clear"
-            color="danger"
-            (click)="eliminaIndirizzo(indirizzo); $event.stopPropagation()"
-          >
-            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </div>
-      </ion-item>
-
-      <div slot="content">
-        <app-indirizzo-accordion
-          [indirizzo]="indirizzo"
-          [isAdmin]="isAdmin"
-          [targetCommessaId]="targetCommessaId"
-          [targetAppuntamentoId]="targetAppuntamentoId"
-          (onAddCommessa)="apriModalCommessa($event)"
-          (onEditCommessa)="apriModalCommessa(indirizzo.id, $event)"
-          (onDeleteCommessa)="eliminaCommessa($event)"
-        >
-        </app-indirizzo-accordion>
+    <div class="contact-grid">
+      <div class="contact-item full-width" *ngIf="isEditing">
+        <ion-input
+          label="Nome Cliente/Ragione Sociale"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.nome"
+        ></ion-input>
       </div>
-    </ion-accordion>
-  </ion-accordion-group>
 
-  <div class="ion-margin-bottom" style="height: 100px"></div>
+      <div class="contact-item">
+        <div class="icon-box"><ion-icon name="mail-outline"></ion-icon></div>
+        <div class="info-content" *ngIf="!isEditing">
+          <label>Email</label>
+          <span>{{ cliente.email || '-' }}</span>
+        </div>
+        <ion-input
+          *ngIf="isEditing"
+          label="Email"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.email"
+        ></ion-input>
+      </div>
+
+      <div class="contact-item">
+        <div class="icon-box"><ion-icon name="call-outline"></ion-icon></div>
+        <div class="info-content" *ngIf="!isEditing">
+          <label>Telefono</label>
+          <span>{{ cliente.telefono || '-' }}</span>
+        </div>
+        <ion-input
+          *ngIf="isEditing"
+          label="Telefono"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.telefono"
+        ></ion-input>
+      </div>
+    </div>
+  </div>
+
+  <div class="sites-section">
+    <div class="section-header-row ion-padding-horizontal">
+      <h3>Cantieri Operativi</h3>
+      <ion-button
+        *ngIf="hasManagerAccess"
+        size="small"
+        fill="solid"
+        (click)="apriModalIndirizzo()"
+      >
+        <ion-icon name="add-circle-outline" slot="start"></ion-icon>
+        Nuovo
+      </ion-button>
+    </div>
+
+    <div class="ion-padding-horizontal search-wrapper">
+      <ion-searchbar
+        placeholder="Cerca cantiere, commessa..."
+        [(ngModel)]="searchTerm"
+        (ionInput)="filtraCantieri()"
+        animated="true"
+      >
+      </ion-searchbar>
+    </div>
+
+    <div *ngIf="!indirizziVisualizzati?.length" class="empty-state">
+      <ion-icon name="business-outline"></ion-icon>
+      <p>Nessun cantiere trovato.</p>
+    </div>
+
+    <ion-accordion-group
+      expand="inset"
+      class="custom-accordion"
+      [multiple]="true"
+      [value]="indirizziAperti"
+      (ionChange)="accordionChange($event)"
+    >
+      <ion-accordion
+        *ngFor="let indirizzo of indirizziVisualizzati"
+        [value]="indirizzo.id.toString()"
+        [id]="'cantiere-' + indirizzo.id"
+      >
+        <ion-item
+          slot="header"
+          [id]="'cantiere-header-' + indirizzo.id"
+          lines="none"
+          class="accordion-header-item"
+        >
+          <div class="site-header-content">
+            <div class="site-icon">
+              <ion-icon name="location" color="secondary"></ion-icon>
+            </div>
+
+            <div class="site-info">
+              <h2 class="site-address">
+                {{ indirizzo.via }} {{ indirizzo.civico }}
+              </h2>
+              <p class="site-city">
+                {{ indirizzo.citta }}
+                <span *ngIf="indirizzo.provincia"
+                  >({{ indirizzo.provincia }})</span
+                >
+              </p>
+              <div class="site-badges">
+                <ion-badge color="light" class="small-badge">
+                  {{ indirizzo.commesse?.length || 0 }} Commesse
+                </ion-badge>
+              </div>
+            </div>
+          </div>
+        </ion-item>
+
+        <div slot="content" class="accordion-content-box">
+          <div class="cantiere-actions-bar" *ngIf="hasManagerAccess">
+            <span class="actions-label">Gestione Cantiere</span>
+            <div class="actions-buttons">
+              <ion-button
+                fill="clear"
+                size="small"
+                color="medium"
+                (click)="apriModalIndirizzo(indirizzo)"
+              >
+                <ion-icon name="pencil-outline" slot="start"></ion-icon>
+              </ion-button>
+              <ion-button
+                fill="clear"
+                size="small"
+                color="danger"
+                (click)="eliminaIndirizzo(indirizzo)"
+              >
+                <ion-icon name="trash-outline" slot="start"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
+
+          <app-indirizzo-accordion
+            [indirizzo]="indirizzo"
+            [hasManagerAccess]="hasManagerAccess"
+            [targetCommessaId]="targetCommessaId"
+            [targetAppuntamentoId]="targetAppuntamentoId"
+            (onAddCommessa)="apriModalCommessa($event)"
+            (onEditCommessa)="apriModalCommessa(indirizzo.id, $event)"
+            (onDeleteCommessa)="eliminaCommessa($event)"
+          >
+          </app-indirizzo-accordion>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+  </div>
+
+  <div class="spacer" style="height: 100px"></div>
 </ion-content>

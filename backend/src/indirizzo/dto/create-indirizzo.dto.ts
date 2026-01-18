@@ -1,28 +1,30 @@
-import { IsNotEmpty, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreateIndirizzoDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   via: string;
 
-  @IsNotEmpty()
   @IsString()
-  civico: string;
+  @IsOptional()
+  civico?: string; // <--- Mancava
 
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   citta: string;
 
-  @IsNotEmpty()
   @IsString()
-  cap: string;
+  @IsOptional()
+  provincia?: string; // <--- Mancava
+
+  @IsString()
+  @IsOptional()
+  cap?: string;
+
+  @IsString()
+  @IsOptional()
+  stato?: string; // <--- Mancava
 
   @IsOptional()
-  @IsString()
-  provincia?: string;
-
-  // Accettiamo l'oggetto cliente nidificato che manda il frontend
-  @IsOptional()
-  @IsObject()
-  cliente?: { id: number };
+  cliente?: any;
 }

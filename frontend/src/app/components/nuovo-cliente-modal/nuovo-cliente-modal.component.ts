@@ -13,7 +13,6 @@ import { ClienteService } from '../../services/cliente.service';
 })
 export class NuovoClienteModalComponent {
   
-  // Oggetto temporaneo per il form
   cliente = {
     nome: '',
     telefono: '',
@@ -32,15 +31,30 @@ export class NuovoClienteModalComponent {
   salva() {
     if (!this.cliente.nome) return;
 
-    // Chiamiamo il backend
-    this.clienteService.create(this.cliente).subscribe({
+    // --- CORREZIONE: Pulizia Dati ---
+    // Creiamo un payload pulito. Se un campo è vuoto (""), non lo inviamo proprio.
+    const payload: any = {
+      nome: this.cliente.nome
+    };
+
+    if (this.cliente.telefono && this.cliente.telefono.trim() !== '') {
+      payload.telefono = this.cliente.telefono;
+    }
+    
+    if (this.cliente.email && this.cliente.email.trim() !== '') {
+      payload.email = this.cliente.email;
+    }
+
+    // Ora inviamo 'payload' invece di 'this.cliente'
+    this.clienteService.create(payload).subscribe({
       next: (nuovoCliente) => {
-        // Chiudiamo la modale e passiamo il nuovo cliente alla pagina sotto
         this.modalCtrl.dismiss({ creato: true, data: nuovoCliente });
       },
       error: (err) => {
         console.error(err);
-        alert('Errore salvataggio cliente');
+        // Suggerimento: mostra l'errore specifico se disponibile
+        const msg = err.error?.message || 'Errore salvataggio cliente';
+        alert(Array.isArray(msg) ? msg[0] : msg);
       }
     });
   }

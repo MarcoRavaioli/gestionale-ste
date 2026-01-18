@@ -105,32 +105,31 @@
         [class.expanded]="expandedAppointmentId === app.id"
       >
         <div class="card-main">
-          <div class="main-info">
-            <h3>{{ app.nome }}</h3>
+          
+          <div class="main-info ion-activatable ripple-parent" (click)="goToAppuntamento(app)" style="position: relative; cursor: pointer;">
+            <ion-ripple-effect></ion-ripple-effect>
+            
+            <h3>{{ app.commessa?.descrizione || app.nome }}</h3>
 
             <div class="info-row primary-text">
               <ion-icon name="person-outline"></ion-icon>
-              <span
-                >{{ app.commessa?.indirizzo?.cliente?.nome || 'Cliente N.D.'
-                }}</span
-              >
+              <span>{{ app.commessa?.indirizzo?.cliente?.nome || 'Cliente N.D.' }}</span>
             </div>
 
             <div class="info-row" *ngIf="app.commessa?.indirizzo">
               <ion-icon name="location-outline"></ion-icon>
-              <span
-                >{{ app.commessa?.indirizzo?.via }}, {{
-                app.commessa?.indirizzo?.citta }}</span
-              >
+              <span>{{ app.commessa?.indirizzo?.via }}, {{ app.commessa?.indirizzo?.citta }}</span>
             </div>
 
             <div class="chip-row">
               <ion-badge color="light" class="commessa-badge">
                 <ion-icon
-                  name="documents-outline"
-                  style="font-size: 0.8rem; margin-right: 4px"
+                  name="create-outline"
+                  style="font-size: 0.8rem; margin-right: 4px; min-width: 12px;"
                 ></ion-icon>
-                {{ app.commessa?.seriale || 'Nessuna Commessa' }}
+                <span style="white-space: normal; line-height: 1.2;">
+                  {{ app.descrizione || 'Nessuna nota' }}
+                </span>
               </ion-badge>
             </div>
           </div>
@@ -151,29 +150,23 @@
 
         <div class="expanded-content" *ngIf="expandedAppointmentId === app.id">
           <hr class="separator" />
-
-          <p class="description-label">NOTE</p>
-          <p class="description-text">
-            {{ app.descrizione || 'Nessuna nota inserita.' }}
+          <p class="description-label">DETTAGLI COMMESSA</p>
+          <p class="description-text" style="margin-bottom: 5px;">
+            <strong>Codice:</strong> {{ app.commessa?.seriale || 'N/A' }}
           </p>
-
+          <p class="description-text" style="margin-bottom: 5px;">
+            <strong>Valore:</strong> € {{ app.commessa?.valore_totale | number:'1.2-2' }}
+          </p>
+          <p class="description-text">
+            <strong>Stato:</strong> 
+            <ion-text [color]="app.commessa?.stato === 'APERTA' ? 'success' : 'medium'">
+              {{ app.commessa?.stato || 'N/A' }}
+            </ion-text>
+          </p>
           <div *ngIf="isAdmin" class="admin-details">
-            <p class="description-label text-warning">INFO AMMINISTRATIVE</p>
-            <p>
-              <strong>Valore Commessa:</strong> € {{ app.commessa?.valore_totale
-              || '0' }}
-            </p>
-            <p><strong>Stato Commessa:</strong> {{ app.commessa?.stato }}</p>
-            <p>
-              <strong>Email Cliente:</strong> {{
-              app.commessa?.indirizzo?.cliente?.email || 'Nessuna email
-              inserita.' }}
-            </p>
-            <p>
-              <strong>Telefono Cliente:</strong> {{
-              app.commessa?.indirizzo?.cliente?.telefono || 'Nessun numero di
-              telefono inserito.' }}
-            </p>
+            <p class="description-label text-warning">CONTATTI CLIENTE</p>
+            <p><strong>Email:</strong> {{ app.commessa?.indirizzo?.cliente?.email || '-' }}</p>
+            <p><strong>Telefono:</strong> {{ app.commessa?.indirizzo?.cliente?.telefono || '-' }}</p>
           </div>
         </div>
       </div>

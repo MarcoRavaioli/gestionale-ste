@@ -1,31 +1,67 @@
-<div class="appuntamenti-content">
-  <div class="appuntamenti-label">
-    <ion-icon name="calendar-outline"></ion-icon> APPUNTAMENTI COLLEGATI
+<div class="appuntamenti-wrapper">
+  
+  <div class="appuntamenti-header">
+    <div class="label-container">
+      <ion-icon name="calendar-outline"></ion-icon>
+      <span>APPUNTAMENTI</span>
+    </div>
+    
+    <ion-button 
+      *ngIf="hasManagerAccess" 
+      size="small" 
+      fill="outline" 
+      shape="round" 
+      (click)="nuovoAppuntamento()">
+      <ion-icon name="add" slot="start"></ion-icon>
+      Nuovo
+    </ion-button>
   </div>
 
   <div *ngIf="!commessa.appuntamenti?.length" class="no-appuntamenti">
     Nessun appuntamento registrato.
   </div>
 
-  <ion-list lines="full">
-    <ion-item 
+  <div class="app-list">
+    <div 
+      class="app-card" 
       *ngFor="let app of commessa.appuntamenti" 
-      [class.highlight-item]="app.id == targetAppuntamentoId">
-      
-      <ion-label>
-        <h3>{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</h3>
-        <p>{{ app.nome }}</p>
-      </ion-label>
+      [class.highlight-item]="app.id == targetAppuntamentoId"
+    >
+      <div class="date-box">
+        <span class="day">{{ getGiorno(app.data_ora) }}</span>
+        <span class="month">{{ getMese(app.data_ora) | uppercase }}</span>
+        <span class="year">{{ getAnno(app.data_ora) }}</span>
+      </div>
 
-      <ion-buttons slot="end">
-        <ion-button color="medium" (click)="modificaApp(app); $event.stopPropagation()">
+      <div class="info-box">
+        <div class="time-row">
+          <ion-icon name="time-outline"></ion-icon>
+          <span class="time">{{ getOra(app.data_ora) }}</span>
+        </div>
+
+        <div class="notes-box" *ngIf="app.descrizione">
+          {{ app.descrizione }}
+        </div>
+      </div>
+
+      <div class="actions-box" *ngIf="hasManagerAccess">
+        <ion-button
+          fill="clear"
+          color="medium"
+          size="small"
+          (click)="modificaApp(app); $event.stopPropagation()"
+        >
           <ion-icon name="pencil" slot="icon-only"></ion-icon>
         </ion-button>
-        <ion-button color="danger" (click)="eliminaApp(app); $event.stopPropagation()">
+        <ion-button
+          fill="clear"
+          color="danger"
+          size="small"
+          (click)="eliminaApp(app); $event.stopPropagation()"
+        >
           <ion-icon name="trash" slot="icon-only"></ion-icon>
         </ion-button>
-      </ion-buttons>
-
-    </ion-item>
-  </ion-list>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,29 +1,23 @@
 import {
-  IsNotEmpty,
   IsString,
-  IsDateString,
+  IsNotEmpty,
   IsOptional,
-  IsObject,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateAppuntamentoDto {
-  @IsNotEmpty()
   @IsString()
+  @IsNotEmpty()
   nome: string;
 
-  @IsNotEmpty()
   @IsDateString()
+  @IsNotEmpty()
   data_ora: string;
 
-  @IsOptional()
   @IsString()
+  @IsOptional()
   descrizione?: string;
 
-  @IsNotEmpty()
-  @IsObject()
-  commessa: { id: number }; // Obbligatorio
-
-  // Opzionale: Array di ID collaboratori
   @IsOptional()
-  collaboratori?: { id: number }[];
+  commessa?: any;
 }

@@ -28,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { IndirizzoModule } from './indirizzo/indirizzo.module';
+import { UploadsController } from './uploads/uploads.controller';
 
 @Module({
   imports: [
@@ -69,7 +70,7 @@ import { IndirizzoModule } from './indirizzo/indirizzo.module';
     AuthModule,
     IndirizzoModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UploadsController],
   providers: [
     AppService,
     // --- 3. ATTIVAZIONE GUARDIA AUTH (Esistente) ---

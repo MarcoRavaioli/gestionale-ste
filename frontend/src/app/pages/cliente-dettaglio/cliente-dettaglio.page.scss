@@ -1,46 +1,259 @@
-/* --- UTILITIES GENERALI --- */
-.flex-header {
-  display: flex;
-  justify-content: space-between;
+/* --- STILI GENERALI --- */
+/* Usiamo le variabili Ionic per gestire il cambio tema OS (Light/Dark) */
+:host {
+  /* --ion-background-color gestisce automaticamente bianco/nero */
+  --background: var(--ion-background-color); 
+}
+
+.light-bg {
+  --background: var(--ion-background-color);
+}
+
+/* --- CARD CONTATTI --- */
+.contact-card {
+  /* Sfondo adattivo: bianco in light, grigio scuro in dark */
+  background: var(--ion-card-background);
+  border-radius: 16px;
+  /* Ombra più morbida e moderna */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); 
+  padding: 20px; /* Spaziatura aumentata per respiro */
+  
+  .card-header {
+    margin-bottom: 20px;
+    h3 { 
+      margin: 0; 
+      font-size: 1.2rem; 
+      font-weight: 700; 
+      /* Colore testo principale adattivo */
+      color: var(--ion-text-color); 
+      letter-spacing: -0.02em;
+    }
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    
+    .contact-item {
+      display: flex; align-items: center; gap: 12px;
+      &.full-width { grid-column: span 2; }
+      
+      .icon-box {
+        width: 40px; height: 40px; border-radius: 10px;
+        /* Colore primario con opacità: sta bene su qualsiasi sfondo */
+        background: rgba(var(--ion-color-primary-rgb), 0.1);
+        display: flex; align-items: center; justify-content: center;
+        transition: transform 0.2s ease;
+        
+        ion-icon { color: var(--ion-color-primary); font-size: 1.3rem; }
+      }
+      
+      .info-content {
+        display: flex; flex-direction: column;
+        justify-content: center;
+        
+        label { 
+          font-size: 0.75rem; 
+          color: var(--ion-color-medium); 
+          font-weight: 600; 
+          text-transform: uppercase; 
+          letter-spacing: 0.05em;
+          margin-bottom: 2px;
+        }
+        span { 
+          font-size: 1rem; 
+          color: var(--ion-text-color); 
+          font-weight: 500; 
+          word-break: break-all; 
+        }
+      }
+    }
+  }
+}
+
+/* --- SEZIONE CANTIERI --- */
+.sites-section {
+  .section-header-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+    
+    h3 { 
+      font-size: 1.3rem; 
+      font-weight: 800; 
+      color: var(--ion-text-color); 
+      margin: 0; 
+      letter-spacing: -0.02em;
+    }
+  }
+  
+  .search-wrapper {
+    margin-top: 10px; margin-bottom: 16px;
+    
+    ion-searchbar {
+      --box-shadow: none;
+      /* Sfondo input adattivo (es. grigio chiaro in light, grigio scuro in dark) */
+      --background: var(--ion-color-step-50); 
+      --border-radius: 12px;
+      padding-inline-start: 0; padding-inline-end: 0;
+      /* Nessun bordo fisico, usiamo il colore di sfondo per definizione */
+    }
+  }
+}
+
+/* --- LISTA CANTIERI CUSTOM --- */
+.custom-accordion {
+  background: transparent;
+  
+  ion-accordion {
+    margin-bottom: 16px;
+    background: var(--ion-card-background);
+    border-radius: 14px;
+    overflow: hidden;
+    /* Ombra sottile per separazione */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, border-color 0.2s;
+    border: 1px solid transparent; /* Preparazione per stato attivo */
+    
+    /* Quando aperto, aggiungi bordo colorato e rimuovi ombra per appiattimento */
+    &.accordion-expanding, &.accordion-expanded {
+      border-color: var(--ion-color-primary);
+      box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.15);
+    }
+  }
+}
+
+/* HEADER CANTIERE (La "card" chiusa) */
+.accordion-header-item {
+  --padding-start: 12px;
+  --inner-padding-end: 8px;
+  --background: var(--ion-card-background); /* Fondamentale per Dark Mode */
+  
+  .site-header-content {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 0;
+    width: 100%;
+    
+    .site-icon {
+      margin-top: 2px;
+      background: rgba(var(--ion-color-secondary-rgb), 0.12);
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      
+      ion-icon { font-size: 1.4rem; }
+    }
+    
+    .site-info {
+      display: flex; flex-direction: column;
+      
+      .site-address {
+        font-size: 1.05rem; font-weight: 700; color: var(--ion-text-color);
+        margin: 0 0 4px 0; line-height: 1.3;
+      }
+      
+      .site-city {
+        font-size: 0.9rem; color: var(--ion-color-medium);
+        margin: 0 0 8px 0; font-weight: 500;
+      }
+      
+      .site-badges {
+        .small-badge {
+          font-weight: 600; font-size: 0.75rem;
+          --padding-start: 8px; --padding-end: 8px;
+          border-radius: 6px;
+          /* Badge adattivo */
+          --background: var(--ion-color-step-100);
+          --color: var(--ion-text-color);
+        }
+      }
+    }
+  }
+}
+
+.accordion-content-box {
+  /* Bordo superiore sottile usando i colori step di Ionic */
+  border-top: 1px solid var(--ion-color-step-100);
+  /* Sfondo leggermente diverso dalla card per indicare "interno" */
+  background: var(--ion-background-color); 
+}
+
+/* --- NUOVA ACTION BAR CANTIERE --- */
+.cantiere-actions-bar {
+  display: flex; 
+  justify-content: space-between; 
   align-items: center;
+  padding: 10px 16px;
   
-  h3 { margin: 0; }
+  /* Sfondo che si fonde bene in entrambi i temi */
+  background-color: var(--ion-color-step-50);
+  border-bottom: 1px solid var(--ion-color-step-150);
+
+  .actions-label {
+    font-size: 0.7rem; 
+    font-weight: 800; 
+    color: var(--ion-color-medium); 
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .actions-buttons {
+    display: flex;
+    gap: 8px;
+    
+    ion-button {
+      margin: 0;
+      font-weight: 600;
+      font-size: 0.85rem;
+      --padding-start: 8px;
+      --padding-end: 8px;
+      height: 32px;
+    }
+  }
 }
 
-.text-muted {
+/* --- EMPTY STATE --- */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
   color: var(--ion-color-medium);
-  font-style: italic;
-}
-
-.admin-box {
-  background: rgba(var(--ion-color-warning-rgb), 0.1);
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px dashed var(--ion-color-warning);
-}
-
-/* ... mantieni flex-header, text-muted, admin-box come sono ... */
-
-/* --- EVIDENZIAZIONE CANTIERE --- */
-@keyframes flashHighlight {
-  0% {
-    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
-  }
-  20% {
-    --background: rgba(var(--ion-color-warning-rgb), 0.5) !important; /* Giallo */
-  }
-  100% {
-    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
-  }
-}
-
-.highlight-item {
-  /* Nessun ritardo */
-  animation: flashHighlight 3s ease-out forwards;
   
-  border-left: 5px solid var(--ion-color-warning);
+  ion-icon { 
+    font-size: 4rem; 
+    margin-bottom: 16px; 
+    opacity: 0.4; 
+    color: var(--ion-color-step-400);
+  }
+  p { 
+    font-size: 1.1rem; 
+    margin: 0; 
+    font-weight: 500;
+  }
+}
+
+@keyframes flashFocus {
+  0% { 
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+    border-left-color: transparent;
+  }
+  20% { 
+    --background: rgba(var(--ion-color-warning-rgb), 0.3) !important; 
+    border-left-color: var(--ion-color-warning);
+  }
+  100% { 
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+    border-left-color: transparent;
+  }
+}
+
+.flash-highlight-target {
+  position: relative;
+  /* L'animazione dura 2.5s */
+  animation: flashFocus 2.5s ease-out forwards;
   
-  /* Forza la trasparenza iniziale */
-  --background: transparent !important;
-  transition: --background 0.3s;
+  /* Bordo laterale evidente per l'evidenziazione */
+  border-left: 6px solid transparent; 
+  
+  /* Transizione fluida per il background */
+  transition: --background 0.3s, border-left-color 0.3s;
 }

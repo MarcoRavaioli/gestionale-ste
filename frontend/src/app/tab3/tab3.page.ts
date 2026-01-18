@@ -33,6 +33,11 @@ import {
   callOutline,
   documentsOutline,
   calendarOutline,
+  peopleOutline,
+  chevronForward,
+  location,
+  documents,
+  storefrontOutline,
 } from 'ionicons/icons';
 import { CommessaService } from '../services/commessa.service';
 import { AppuntamentoService } from '../services/appuntamento.service';
@@ -124,6 +129,11 @@ export class Tab3Page implements OnInit {
       callOutline,
       documentsOutline,
       calendarOutline,
+      peopleOutline,
+      chevronForward,
+      location,
+      documents,
+      storefrontOutline,
     });
   }
 
