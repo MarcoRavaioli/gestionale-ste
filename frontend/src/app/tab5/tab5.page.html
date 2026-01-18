@@ -235,12 +235,15 @@
         <div class="info-box">
           <span class="hours">{{ rap.ore_lavorate }} Ore</span>
           <span class="desc">{{ rap.descrizione || 'Nessuna nota' }}</span>
+          <div class="actions">
+          <div class="icon-badge food" *ngIf="rap.buono_pasto">
+            <ion-icon name="fast-food-outline"></ion-icon>
+            </div>
+          </div>
         </div>
         
         <div class="actions">
-          <div class="icon-badge food" *ngIf="rap.buono_pasto">
-            <ion-icon name="fast-food-outline"></ion-icon>
-          </div>
+          
           
           <div class="icon-badge edit" (click)="avviaModifica(rap)">
             <ion-icon name="pencil-outline"></ion-icon>

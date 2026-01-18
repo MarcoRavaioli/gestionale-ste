@@ -13,15 +13,17 @@ export class CommessaService {
   ) {}
 
   create(createDto: CreateCommessaDto) {
-    // TypeORM collegherà automaticamente l'indirizzo grazie alla struttura del DTO
     const nuovaCommessa = this.commessaRepository.create(createDto as any);
     return this.commessaRepository.save(nuovaCommessa);
   }
 
   findAll() {
     return this.commessaRepository.find({
-      // Se vuoi vedere di chi è la commessa, devi risalire la catena:
-      relations: ['indirizzo', 'indirizzo.cliente'],
+      // CORREZIONE QUI: Aggiunto 'allegati' per popolare l'array nel frontend
+      relations: ['indirizzo', 'indirizzo.cliente', 'allegati'],
+
+      // Opzionale: Ordina per data creazione o seriale
+      order: { id: 'DESC' },
     });
   }
 
@@ -46,11 +48,11 @@ export class CommessaService {
     if ('allegati' in datiPuliti) delete datiPuliti.allegati;
 
     await this.commessaRepository.update(id, datiPuliti);
-
     return this.findOne(id);
   }
 
-  remove(id: number) {
-    return this.commessaRepository.delete(id);
+  async remove(id: number) {
+    await this.commessaRepository.delete(id);
+    return { deleted: true };
   }
 }

@@ -13,7 +13,7 @@
     <div class="header-toggle">
       <h3>
         <ion-icon name="location-outline"></ion-icon> 
-        {{ modeCantiere === 'esistente' ? 'Seleziona Cantiere' : 'Crea Nuovo Cantiere' }}
+        {{ modeCantiere === 'esistente' ? 'Seleziona Indirizzo' : 'Crea Nuovo Indirizzo' }}
       </h3>
       <ion-button size="small" fill="outline" (click)="toggleModeCantiere()">
         {{ modeCantiere === 'esistente' ? '+ Crea Nuovo' : 'Scegli Esistente' }}
@@ -22,7 +22,7 @@
 
     <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
       <app-generic-selector 
-        label="Cantiere di destinazione"
+        label="Indirizzo Cantiere"
         type="cantiere"
         [items]="listaCantieri"
         [(selectedId)]="selectedCantiereId">
@@ -44,7 +44,7 @@
         <div class="header-toggle">
           <h4 style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
             <ion-icon name="person-add-outline"></ion-icon> 
-            {{ modeCliente === 'esistente' ? 'Proprietario Esistente' : 'Nuovo Proprietario' }}
+            {{ modeCliente === 'esistente' ? 'Appaltante Esistente' : 'Nuovo Appaltante' }}
           </h4>
           <ion-button size="small" fill="clear" (click)="toggleModeCliente()">
             {{ modeCliente === 'esistente' ? '+ Crea' : 'Scegli' }}
@@ -53,7 +53,7 @@
 
         <div *ngIf="modeCliente === 'esistente'" class="fade-in">
           <app-generic-selector 
-            label="Seleziona Cliente"
+            label="Seleziona Committente"
             type="cliente"
             [items]="listaClienti"
             [(selectedId)]="selectedClienteId">
@@ -61,7 +61,7 @@
         </div>
 
         <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">
-          <ion-input label="Nome Cliente *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
+          <ion-input label="Nome Committente *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
           <ion-input label="Telefono" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.telefono"></ion-input>
           <ion-input label="Email" type="email" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.email"></ion-input>
         </div>
@@ -75,7 +75,7 @@
     
     <div class="form-grid">
       <ion-input label="Numero Commessa / Seriale *" label-placement="floating" fill="outline" [(ngModel)]="commessa.seriale"></ion-input>
-      <ion-textarea label="Descrizione" label-placement="floating" fill="outline" rows="2" [(ngModel)]="commessa.descrizione"></ion-textarea>
+      <ion-textarea label="Nome Azienda *" label-placement="floating" fill="outline" rows="2" [(ngModel)]="commessa.descrizione"></ion-textarea>
       
       <div style="display: flex; gap: 10px;">
         <ion-input label="Valore (€)" type="number" label-placement="floating" fill="outline" [(ngModel)]="commessa.valore_totale"></ion-input>

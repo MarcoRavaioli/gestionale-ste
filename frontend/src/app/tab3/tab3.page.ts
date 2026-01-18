@@ -38,6 +38,7 @@ import {
   location,
   documents,
   storefrontOutline,
+  attachOutline,
 } from 'ionicons/icons';
 import { CommessaService } from '../services/commessa.service';
 import { AppuntamentoService } from '../services/appuntamento.service';
@@ -134,6 +135,7 @@ export class Tab3Page implements OnInit {
       location,
       documents,
       storefrontOutline,
+      attachOutline,
     });
   }
 

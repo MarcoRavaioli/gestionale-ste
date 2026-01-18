@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Nuovo Cantiere</ion-title>
+    <ion-title>Nuovo Indirizzo Cantiere</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">Annulla</ion-button>
     </ion-buttons>
@@ -13,7 +13,7 @@
     <div class="header-toggle">
       <h3>
         <ion-icon name="person-add-outline"></ion-icon> 
-        {{ mode === 'esistente' ? 'Seleziona Cliente' : 'Crea Nuovo Cliente' }}
+        {{ mode === 'esistente' ? 'Seleziona Committente' : 'Crea Nuovo Committente' }}
       </h3>
       
       <ion-button size="small" fill="outline" (click)="toggleMode()">
@@ -23,7 +23,7 @@
 
     <div *ngIf="mode === 'esistente'" class="fade-in">
       <app-generic-selector 
-        label="Cliente di riferimento"
+        label="Committente di riferimento"
         type="cliente"
         [items]="listaClienti"
         [(selectedId)]="clienteSelezionatoId">
@@ -31,14 +31,14 @@
     </div>
 
     <div *ngIf="mode === 'nuovo'" class="fade-in form-grid">
-      <ion-input label="Nome Cliente / Ragione Sociale *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
+      <ion-input label="Nome Committente / Ragione Sociale *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
       <ion-input label="Telefono" type="tel" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.telefono"></ion-input>
       <ion-input label="Email" type="email" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.email"></ion-input>
     </div>
   </div>
 
   <div class="section-box ion-margin-top">
-    <h3><ion-icon name="location-outline"></ion-icon> Dati Cantiere</h3>
+    <h3><ion-icon name="location-outline"></ion-icon> Indirizzo</h3>
     
     <div class="form-grid">
       <ion-input label="Via / Piazza *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.via"></ion-input>
@@ -54,7 +54,7 @@
   </div>
 
   <ion-button expand="block" class="ion-margin-top" size="large" (click)="salva()" [disabled]="!isFormValid()">
-    CREA CANTIERE
+    CREA INDIRIZZO CANTIERE
   </ion-button>
 
 </ion-content>

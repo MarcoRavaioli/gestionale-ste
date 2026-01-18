@@ -37,6 +37,7 @@ export class ClienteService {
         'indirizzi',
         'indirizzi.commesse',
         'indirizzi.commesse.appuntamenti',
+        'indirizzi.commesse.allegati',
       ],
     });
   }

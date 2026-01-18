@@ -8,14 +8,14 @@
       [class.chip-active]="vistaCorrente === 'clienti'"
       (click)="cambiaVista('clienti')"
     >
-      <ion-label>Clienti</ion-label>
+      <ion-label>Committenti</ion-label>
     </ion-chip>
 
     <ion-chip
       [class.chip-active]="vistaCorrente === 'cantieri'"
       (click)="cambiaVista('cantieri')"
     >
-      <ion-label>Cantieri</ion-label>
+      <ion-label>Indiriz. Cant.</ion-label>
     </ion-chip>
 
     <ion-chip
@@ -66,15 +66,18 @@
         class="list-item"
       >
         <ion-avatar slot="start" class="item-avatar">
-          <div class="avatar-placeholder">
-            {{ cliente.nome.charAt(0) }}
-          </div>
+          <div class="avatar-placeholder">{{ cliente.nome.charAt(0) }}</div>
         </ion-avatar>
         <ion-label>
           <h2 class="item-title">{{ cliente.nome }}</h2>
           <p class="item-subtitle">{{ cliente.email || 'Nessuna email' }}</p>
         </ion-label>
-        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
+        <ion-icon
+          name="chevron-forward"
+          slot="end"
+          color="medium"
+          class="arrow-icon"
+        ></ion-icon>
       </ion-item>
     </ion-list>
     <div *ngIf="clientiVisualizzati.length === 0" class="empty-state">
@@ -103,7 +106,12 @@
             {{ cantiere.cliente?.nome }}
           </p>
         </ion-label>
-        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
+        <ion-icon
+          name="chevron-forward"
+          slot="end"
+          color="medium"
+          class="arrow-icon"
+        ></ion-icon>
       </ion-item>
     </ion-list>
 
@@ -153,24 +161,51 @@
         </div>
         <ion-label>
           <div class="meta-row">
-            <span class="serial-code">{{ item.seriale }}</span>
-            <ion-badge [color]="getColoreStato(item.stato)" class="status-badge">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span class="serial-code">{{ item.seriale }}</span>
+
+              <ion-icon
+                *ngIf="item.allegati && item.allegati.length > 0"
+                name="attach-outline"
+                color="primary"
+                style="
+                  font-size: 1.4rem;
+                  transform: rotate(45deg);
+                  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+                "
+              >
+              </ion-icon>
+            </div>
+
+            <ion-badge
+              [color]="getColoreStato(item.stato)"
+              class="status-badge"
+            >
               {{ item.stato }}
             </ion-badge>
           </div>
-          <h2 class="item-title">{{ item.descrizione || 'Nessuna descrizione' }}</h2>
+          <h2 class="item-title">
+            {{ item.descrizione || 'Nessuna descrizione' }}
+          </h2>
           <p class="item-subtitle icon-text">
-            <ion-icon name="person-outline"></ion-icon> 
+            <ion-icon name="person-outline"></ion-icon>
             {{ item.indirizzo?.cliente?.nome }}
-            <span *ngIf="item.indirizzo" class="sub-location"> • {{ item.indirizzo.citta }}</span>
+            <span *ngIf="item.indirizzo" class="sub-location">
+              • {{ item.indirizzo.citta }}</span
+            >
           </p>
         </ion-label>
-        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
+        <ion-icon
+          name="chevron-forward"
+          slot="end"
+          color="medium"
+          class="arrow-icon"
+        ></ion-icon>
       </ion-item>
     </ion-list>
 
     <ion-list lines="none" class="custom-list" *ngIf="isCommesseGrouped">
-       <ion-item-group *ngFor="let gruppo of commesseGruppi">
+      <ion-item-group *ngFor="let gruppo of commesseGruppi">
         <ion-item-divider sticky="true" class="custom-divider">
           <ion-label>{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label>
         </ion-item-divider>
@@ -185,8 +220,33 @@
             <ion-icon name="documents"></ion-icon>
           </div>
           <ion-label>
-            <h3 class="item-title">{{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}</h3>
-            <p class="item-subtitle">{{ item.descrizione }}</p>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+              "
+            >
+              <h3 class="item-title" style="margin: 0; flex: 1">
+                {{ item.seriale }} - {{ item.indirizzo?.cliente?.nome }}
+              </h3>
+
+              <ion-icon
+                *ngIf="item.allegati && item.allegati.length > 0"
+                name="attach-outline"
+                color="primary"
+                style="
+                  font-size: 1.3rem;
+                  transform: rotate(45deg);
+                  margin-left: 8px;
+                "
+              >
+              </ion-icon>
+            </div>
+            <p class="item-subtitle" style="margin-top: 4px">
+              {{ item.descrizione }}
+            </p>
           </ion-label>
         </ion-item>
       </ion-item-group>
@@ -202,7 +262,6 @@
   </div>
 
   <div *ngIf="vistaCorrente === 'appuntamenti'">
-    
     <ion-list lines="none" class="custom-list" *ngIf="!isAppuntamentiGrouped">
       <ion-item
         *ngFor="let app of appuntamentiLista"
@@ -223,36 +282,46 @@
           <ion-note class="date-note">
             {{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}
           </ion-note>
-          
+
           <h2 class="item-title ion-text-wrap">
-            {{ app.descrizione}}
+            {{ app.descrizione || app.nome }}
           </h2>
-          
+
           <div class="details-block">
             <div class="detail-row">
               <ion-icon name="location-outline"></ion-icon>
               <span>
-                {{ app.commessa?.indirizzo?.via || 'Via N.D.' }}, 
-                {{ app.commessa?.indirizzo?.citta }}
+                {{ app.commessa?.indirizzo?.via || 'Via N.D.' }}, {{
+                app.commessa?.indirizzo?.citta }}
               </span>
             </div>
 
             <div class="detail-row">
-              <ion-icon name="storefront-outline"></ion-icon>
+              <ion-icon name="documents-outline"></ion-icon>
               <span class="truncate-text">
                 {{ app.commessa?.descrizione || 'Nessuna nota commessa' }}
               </span>
             </div>
           </div>
         </ion-label>
-        <ion-icon name="chevron-forward" slot="end" color="medium" class="arrow-icon"></ion-icon>
+        <ion-icon
+          name="chevron-forward"
+          slot="end"
+          color="medium"
+          class="arrow-icon"
+        ></ion-icon>
       </ion-item>
     </ion-list>
 
     <ion-list lines="none" class="custom-list" *ngIf="isAppuntamentiGrouped">
       <ion-item-group *ngFor="let gruppo of appuntamentiGruppi">
         <ion-item-divider sticky="true" class="custom-divider">
-          <ion-label>{{ gruppo.nome }} <span class="divider-count">({{ gruppo.items.length }})</span></ion-label>
+          <ion-label
+            >{{ gruppo.nome }}
+            <span class="divider-count"
+              >({{ gruppo.items.length }})</span
+            ></ion-label
+          >
         </ion-item-divider>
         <ion-item
           *ngFor="let app of gruppo.items"
@@ -266,18 +335,19 @@
           </div>
           <ion-label>
             <ion-note class="date-note">
-              {{ app.data_ora | date: (settingsAppuntamenti.groupBy === 'giorno' ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}
+              {{ app.data_ora | date: (settingsAppuntamenti.groupBy === 'giorno'
+              ? 'HH:mm' : 'dd/MM/yyyy HH:mm') }}
             </ion-note>
-            <h3 class="item-title">{{ app.descrizione}}</h3>
+            <h3 class="item-title">{{ app.descrizione || app.nome }}</h3>
             <p class="item-subtitle">
-              {{ app.commessa?.indirizzo?.via }} <br>
+              {{ app.commessa?.indirizzo?.via }} <br />
               <span class="italic-note">{{ app.commessa?.descrizione }}</span>
             </p>
           </ion-label>
         </ion-item>
       </ion-item-group>
     </ion-list>
-    
+
     <div
       *ngIf="(isAppuntamentiGrouped ? appuntamentiGruppi.length : appuntamentiLista.length) === 0"
       class="empty-state"
@@ -288,16 +358,31 @@
   </div>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button *ngIf="vistaCorrente === 'clienti'" (click)="apriNuovoCliente()">
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'clienti'"
+      (click)="apriNuovoCliente()"
+    >
       <ion-icon name="person-add-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="vistaCorrente === 'cantieri'" (click)="apriNuovoCantiere()" color="secondary">
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'cantieri'"
+      (click)="apriNuovoCantiere()"
+      color="secondary"
+    >
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="vistaCorrente === 'commesse'" (click)="apriNuovaCommessa()" color="tertiary">
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'commesse'"
+      (click)="apriNuovaCommessa()"
+      color="tertiary"
+    >
       <ion-icon name="documents-outline"></ion-icon>
     </ion-fab-button>
-    <ion-fab-button *ngIf="vistaCorrente === 'appuntamenti'" (click)="apriNuovoAppuntamento()" color="warning">
+    <ion-fab-button
+      *ngIf="vistaCorrente === 'appuntamenti'"
+      (click)="apriNuovoAppuntamento()"
+      color="warning"
+    >
       <ion-icon name="calendar-outline"></ion-icon>
     </ion-fab-button>
   </ion-fab>

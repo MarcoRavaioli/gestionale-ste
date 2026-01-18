@@ -24,6 +24,7 @@ import {
   add,
   chevronDownOutline,
   checkmarkCircle,
+  cloudUploadOutline,
 } from 'ionicons/icons';
 import { AllegatoService } from 'src/app/services/allegato.service';
 
@@ -97,6 +98,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       add,
       chevronDownOutline,
       checkmarkCircle,
+      cloudUploadOutline,
     });
   }
 
@@ -109,7 +111,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       this.isEditing = true;
 
       // 1. Copia i dati semplici nel form
-      this.formDati.nome = this.appuntamento.nome;
+      this.formDati.nome = this.appuntamento.nome || '';
       this.formDati.descrizione = this.appuntamento.descrizione || '';
 
       // 2. FIX DATA: Taglia i secondi e il fuso orario 'Z' se presenti per far piacere all'input HTML
@@ -208,7 +210,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (!this.formDati.nome || !this.formDati.data_ora) return false;
+    if (!this.formDati.descrizione || !this.formDati.data_ora) return false;
     if (this.modeCommessa === 'esistente' && !this.selectedCommessaId)
       return false;
     return true;

@@ -80,6 +80,7 @@ export class Tab2Page implements OnInit {
   isAdmin: boolean = false; // Solo per 'ADMIN'
   isManager: boolean = false; // Per 'ADMIN' e 'MANAGER'
   expandedAppointmentId: number | null = null;
+  hasManagerAccess: boolean = false;
 
   constructor(
     private appService: AppuntamentoService,
@@ -88,7 +89,7 @@ export class Tab2Page implements OnInit {
     private toastCtrl: ToastController,
     private platform: Platform,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {
     addIcons({
       chevronBackOutline,
@@ -111,6 +112,7 @@ export class Tab2Page implements OnInit {
   }
 
   ngOnInit() {
+    this.hasManagerAccess = this.authService.hasManagerAccess();
     // --- MODIFICA: Sottoscrizione per aggiornare i permessi in tempo reale ---
     this.authService.currentUser$.subscribe((user) => {
       this.isAdmin = this.authService.isAdmin();
@@ -149,9 +151,9 @@ export class Tab2Page implements OnInit {
     const mese = this.dataCorrente.getMonth() + 1;
 
     this.http
-      .get<string[]>(
-        `${environment.apiUrl}/tracciamento/completamento?anno=${anno}&mese=${mese}`
-      )
+      .get<
+        string[]
+      >(`${environment.apiUrl}/tracciamento/completamento?anno=${anno}&mese=${mese}`)
       .subscribe({
         next: (dates) => {
           this.giorniTeamCompleti = dates;
@@ -231,7 +233,7 @@ export class Tab2Page implements OnInit {
       return isSameDay(new Date(app.data_ora), this.giornoSelezionato);
     });
     this.appuntamentiDelGiorno.sort(
-      (a, b) => new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime()
+      (a, b) => new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
     );
   }
 
@@ -275,7 +277,7 @@ export class Tab2Page implements OnInit {
 
   hasEvents(giorno: Date): boolean {
     return this.tuttiAppuntamenti.some((app) =>
-      isSameDay(new Date(app.data_ora), giorno)
+      isSameDay(new Date(app.data_ora), giorno),
     );
   }
 
@@ -285,7 +287,7 @@ export class Tab2Page implements OnInit {
     defaultDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
 
     const localIso = new Date(
-      defaultDate.getTime() - defaultDate.getTimezoneOffset() * 60000
+      defaultDate.getTime() - defaultDate.getTimezoneOffset() * 60000,
     )
       .toISOString()
       .slice(0, 16);
@@ -315,19 +317,24 @@ export class Tab2Page implements OnInit {
   }
 
   goToAppuntamento(app: Appuntamento) {
-    if (app.commessa?.indirizzo?.cliente?.id) {
-      this.router.navigate(
-        ['/cliente-dettaglio', app.commessa.indirizzo.cliente.id],
-        {
-          queryParams: {
-            cantiereId: app.commessa.indirizzo.id,
-            commessaId: app.commessa.id,
-            appuntamentoId: app.id,
+    if (this.isManager) {
+      if (app.commessa?.indirizzo?.cliente?.id) {
+        this.router.navigate(
+          ['/cliente-dettaglio', app.commessa.indirizzo.cliente.id],
+          {
+            queryParams: {
+              cantiereId: app.commessa.indirizzo.id,
+              commessaId: app.commessa.id,
+              appuntamentoId: app.id,
+            },
           },
-        }
-      );
-    } else {
-      this.mostraToast('Impossibile aprire: Appuntamento non collegato a un cliente.', 'warning');
+        );
+      } else {
+        this.mostraToast(
+          'Impossibile aprire: Appuntamento non collegato a un cliente.',
+          'warning',
+        );
+      }
     }
   }
 
@@ -391,7 +398,7 @@ END:VEVENT
 
     const fileName = `calendario_${format(start, 'yyyyMMdd')}_${format(
       end,
-      'yyyyMMdd'
+      'yyyyMMdd',
     )}.ics`;
 
     try {

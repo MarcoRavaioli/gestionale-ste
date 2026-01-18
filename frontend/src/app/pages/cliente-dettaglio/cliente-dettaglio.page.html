@@ -41,7 +41,7 @@
     <div class="contact-grid">
       <div class="contact-item full-width" *ngIf="isEditing">
         <ion-input
-          label="Nome Cliente/Ragione Sociale"
+          label="Nome Committente/Ragione Sociale"
           label-placement="stacked"
           fill="outline"
           [(ngModel)]="cliente.nome"
@@ -96,7 +96,7 @@
 
     <div class="ion-padding-horizontal search-wrapper">
       <ion-searchbar
-        placeholder="Cerca cantiere, commessa..."
+        placeholder="Cerca indirizzo cantiere, commessa..."
         [(ngModel)]="searchTerm"
         (ionInput)="filtraCantieri()"
         animated="true"
@@ -106,7 +106,7 @@
 
     <div *ngIf="!indirizziVisualizzati?.length" class="empty-state">
       <ion-icon name="business-outline"></ion-icon>
-      <p>Nessun cantiere trovato.</p>
+      <p>Nessun indirizzo trovato.</p>
     </div>
 
     <ion-accordion-group
@@ -152,7 +152,7 @@
 
         <div slot="content" class="accordion-content-box">
           <div class="cantiere-actions-bar" *ngIf="hasManagerAccess">
-            <span class="actions-label">Gestione Cantiere</span>
+            <span class="actions-label">Gestione Indirizzo</span>
             <div class="actions-buttons">
               <ion-button
                 fill="clear"

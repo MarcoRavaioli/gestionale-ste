@@ -107,7 +107,7 @@
         <div class="card-main">
           
           <div class="main-info ion-activatable ripple-parent" (click)="goToAppuntamento(app)" style="position: relative; cursor: pointer;">
-            <ion-ripple-effect></ion-ripple-effect>
+            <ion-ripple-effect *ngIf="hasManagerAccess"></ion-ripple-effect>
             
             <h3>{{ app.commessa?.descrizione || app.nome }}</h3>
 
@@ -154,7 +154,7 @@
           <p class="description-text" style="margin-bottom: 5px;">
             <strong>Codice:</strong> {{ app.commessa?.seriale || 'N/A' }}
           </p>
-          <p class="description-text" style="margin-bottom: 5px;">
+          <p class="description-text" *ngIf="hasManagerAccess" style="margin-bottom: 5px;">
             <strong>Valore:</strong> € {{ app.commessa?.valore_totale | number:'1.2-2' }}
           </p>
           <p class="description-text">

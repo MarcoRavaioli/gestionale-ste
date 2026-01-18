@@ -150,7 +150,7 @@ export class CommessaItemComponent implements OnChanges {
   async eliminaAllegato(file: Allegato) {
     const alert = await this.alertCtrl.create({
       header: 'Elimina Allegato',
-      message: `Vuoi eliminare il file <strong>${file.nome_file}</strong>?`,
+      message: `Vuoi eliminare il file ${file.nome_file}?`,
       buttons: [
         { text: 'Annulla', role: 'cancel' },
         {

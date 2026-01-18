@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Nuovo Cliente</ion-title>
+    <ion-title>Nuovo Committente</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">Chiudi</ion-button>
     </ion-buttons>
@@ -10,7 +10,7 @@
 <ion-content class="ion-padding">
   
   <ion-item>
-    <ion-input label="Nome e Cognome *" label-placement="floating" [(ngModel)]="cliente.nome"></ion-input>
+    <ion-input label="Nome *" label-placement="floating" [(ngModel)]="cliente.nome"></ion-input>
   </ion-item>
 
   <ion-item>
@@ -23,7 +23,7 @@
 
   <div class="ion-margin-top">
     <ion-button expand="block" (click)="salva()" [disabled]="!cliente.nome">
-      SALVA CLIENTE
+      SALVA COMMITTENTE
     </ion-button>
   </div>
 

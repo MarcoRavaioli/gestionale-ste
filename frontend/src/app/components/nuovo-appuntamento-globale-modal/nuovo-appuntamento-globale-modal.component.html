@@ -1,6 +1,8 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ isEditing ? 'Modifica Appuntamento' : 'Nuovo Appuntamento' }}</ion-title>
+    <ion-title>{{
+      isEditing ? "Modifica Appuntamento" : "Nuovo Appuntamento"
+    }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">Annulla</ion-button>
     </ion-buttons>
@@ -8,12 +10,13 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  
   <div class="section-box">
     <div class="header-toggle">
       <h3>
         <ion-icon name="documents-outline"></ion-icon>
-        {{ modeCommessa === "esistente" ? "Seleziona Commessa" : "Nuova Commessa" }}
+        {{
+          modeCommessa === "esistente" ? "Seleziona Commessa" : "Nuova Commessa"
+        }}
       </h3>
       <ion-button size="small" fill="outline" (click)="toggleModeCommessa()">
         {{ modeCommessa === "esistente" ? "+ Nuova" : "Scegli" }}
@@ -21,98 +24,213 @@
     </div>
 
     <div *ngIf="modeCommessa === 'esistente'" class="fade-in">
-      <app-generic-selector 
-        label="Commessa di riferimento"
+      <app-generic-selector
+        label="Commessa di riferimento *"
         type="commessa"
         [items]="listaCommesse"
-        [(selectedId)]="selectedCommessaId">
+        [(selectedId)]="selectedCommessaId"
+      >
       </app-generic-selector>
     </div>
 
     <div *ngIf="modeCommessa === 'nuova'" class="fade-in form-grid">
-       <ion-input label="Seriale *" label-placement="floating" fill="outline" [(ngModel)]="nuovaCommessa.seriale"></ion-input>
-       <ion-textarea label="Descrizione" label-placement="floating" fill="outline" rows="2" [(ngModel)]="nuovaCommessa.descrizione"></ion-textarea>
-       
-       <div style="display: flex; gap: 10px">
-          <ion-input label="Valore (€)" type="number" label-placement="floating" fill="outline" [(ngModel)]="nuovaCommessa.valore_totale"></ion-input>
-          <ion-select label="Stato" label-placement="floating" fill="outline" [(ngModel)]="nuovaCommessa.stato">
-            <ion-select-option value="APERTA">APERTA</ion-select-option>
-            <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
-            <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
-          </ion-select>
-       </div>
+      <ion-input
+        label="Seriale *"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="nuovaCommessa.seriale"
+      ></ion-input>
+      <ion-textarea
+        label="Nome Azienda *"
+        label-placement="floating"
+        fill="outline"
+        rows="2"
+        [(ngModel)]="nuovaCommessa.descrizione"
+      ></ion-textarea>
 
-       <div class="file-upload-section">
-          <p class="section-subtitle">Allegato (Opzionale)</p>
-          
-          <input 
-            type="file" 
-            id="fileInputApp" 
-            (change)="onFileSelected($event)" 
-            style="display: none;"
+      <div style="display: flex; gap: 10px">
+        <ion-input
+          label="Valore (€)"
+          type="number"
+          label-placement="floating"
+          fill="outline"
+          [(ngModel)]="nuovaCommessa.valore_totale"
+        ></ion-input>
+        <ion-select
+          label="Stato"
+          label-placement="floating"
+          fill="outline"
+          [(ngModel)]="nuovaCommessa.stato"
+        >
+          <ion-select-option value="APERTA">APERTA</ion-select-option>
+          <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
+          <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="file-upload-section">
+        <p class="section-subtitle">Allegato (Opzionale)</p>
+
+        <input
+          type="file"
+          id="fileInputApp"
+          (change)="onFileSelected($event)"
+          style="display: none"
+        />
+
+        <div class="file-box" (click)="triggerFileInput()">
+          <ion-icon
+            name="cloud-upload-outline"
+            *ngIf="!selectedFile"
+          ></ion-icon>
+          <ion-icon
+            name="document-attach-outline"
+            *ngIf="selectedFile"
+            color="primary"
+          ></ion-icon>
+
+          <div class="file-info">
+            <span class="filename">{{
+              selectedFile ? selectedFile.name : "Tocca per caricare un file"
+            }}</span>
+            <span class="filesize" *ngIf="selectedFile"
+              >{{ selectedFile.size / 1024 / 1024 | number: "1.2-2" }} MB</span
+            >
+          </div>
+
+          <ion-button
+            *ngIf="selectedFile"
+            fill="clear"
+            color="danger"
+            (click)="rimuoviFile($event)"
           >
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
 
-          <div class="file-box" (click)="triggerFileInput()">
-            <ion-icon name="cloud-upload-outline" *ngIf="!selectedFile"></ion-icon>
-            <ion-icon name="document-attach-outline" *ngIf="selectedFile" color="primary"></ion-icon>
-            
-            <div class="file-info">
-              <span class="filename">{{ selectedFile ? selectedFile.name : 'Tocca per caricare un file' }}</span>
-              <span class="filesize" *ngIf="selectedFile">{{ (selectedFile.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+      <div class="nested-box ion-margin-top">
+        <div class="header-toggle">
+          <h4>
+            <ion-icon name="location-outline"></ion-icon>
+            {{ modeCantiere === "esistente" ? "Indirizzo Cantiere" : "Nuovo Indirizzo Cantiere" }}
+          </h4>
+          <ion-button
+            size="small"
+            fill="clear"
+            (click)="toggleModeCantiere()"
+            >{{
+              modeCantiere === "esistente" ? "+ Nuovo" : "Scegli"
+            }}</ion-button
+          >
+        </div>
+        <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
+          <app-generic-selector
+            label="Seleziona Cantiere"
+            type="cantiere"
+            [items]="listaCantieri"
+            [(selectedId)]="selectedCantiereId"
+          ></app-generic-selector>
+        </div>
+        <div *ngIf="modeCantiere === 'nuovo'" class="fade-in form-grid">
+          <ion-input
+            label="Via *"
+            label-placement="floating"
+            fill="outline"
+            [(ngModel)]="nuovoCantiere.via"
+          ></ion-input>
+          <div style="display: flex; gap: 10px">
+            <ion-input
+              label="Civico"
+              label-placement="floating"
+              fill="outline"
+              style="flex: 1"
+              [(ngModel)]="nuovoCantiere.civico"
+            ></ion-input>
+            <ion-input
+              label="CAP"
+              type="number"
+              label-placement="floating"
+              fill="outline"
+              style="flex: 1"
+              [(ngModel)]="nuovoCantiere.cap"
+            ></ion-input>
+          </div>
+          <ion-input
+            label="Città *"
+            label-placement="floating"
+            fill="outline"
+            [(ngModel)]="nuovoCantiere.citta"
+          ></ion-input>
+          <ion-input
+            label="Provincia"
+            label-placement="floating"
+            fill="outline"
+            [(ngModel)]="nuovoCantiere.provincia"
+          ></ion-input>
+
+          <div class="nested-box ion-margin-top">
+            <div class="header-toggle">
+              <h4>
+                <ion-icon name="person-add-outline"></ion-icon>
+                {{
+                  modeCliente === "esistente" ? "Appaltante" : "Nuovo Appaltante"
+                }}
+              </h4>
+              <ion-button
+                size="small"
+                fill="clear"
+                (click)="toggleModeCliente()"
+                >{{
+                  modeCliente === "esistente" ? "+ Nuovo" : "Scegli"
+                }}</ion-button
+              >
             </div>
-
-            <ion-button *ngIf="selectedFile" fill="clear" color="danger" (click)="rimuoviFile($event)">
-              <ion-icon name="close-circle" slot="icon-only"></ion-icon>
-            </ion-button>
+            <div *ngIf="modeCliente === 'esistente'" class="fade-in">
+              <app-generic-selector
+                label="Seleziona Committente"
+                type="cliente"
+                [items]="listaClienti"
+                [(selectedId)]="selectedClienteId"
+              ></app-generic-selector>
+            </div>
+            <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">
+              <ion-input
+                label="Nome Committente *"
+                label-placement="floating"
+                fill="outline"
+                [(ngModel)]="nuovoCliente.nome"
+              ></ion-input>
+              <ion-input
+                label="Telefono"
+                label-placement="floating"
+                fill="outline"
+                [(ngModel)]="nuovoCliente.telefono"
+              ></ion-input>
+              <ion-input
+                label="Email"
+                type="email"
+                label-placement="floating"
+                fill="outline"
+                [(ngModel)]="nuovoCliente.email"
+              ></ion-input>
+            </div>
           </div>
-       </div>
-
-       <div class="nested-box ion-margin-top">
-          <div class="header-toggle">
-             <h4><ion-icon name="location-outline"></ion-icon> {{ modeCantiere === "esistente" ? "Cantiere" : "Nuovo Cantiere" }}</h4>
-             <ion-button size="small" fill="clear" (click)="toggleModeCantiere()">{{ modeCantiere === "esistente" ? "+ Nuovo" : "Scegli" }}</ion-button>
-          </div>
-          <div *ngIf="modeCantiere === 'esistente'" class="fade-in">
-             <app-generic-selector label="Seleziona Cantiere" type="cantiere" [items]="listaCantieri" [(selectedId)]="selectedCantiereId"></app-generic-selector>
-          </div>
-          <div *ngIf="modeCantiere === 'nuovo'" class="fade-in form-grid">
-             <ion-input label="Via *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.via"></ion-input>
-             <div style="display: flex; gap: 10px">
-                <ion-input label="Civico" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="nuovoCantiere.civico"></ion-input>
-                <ion-input label="CAP" type="number" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="nuovoCantiere.cap"></ion-input>
-             </div>
-             <ion-input label="Città *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.citta"></ion-input>
-             <ion-input label="Provincia" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.provincia"></ion-input>
-             
-             <div class="nested-box ion-margin-top">
-                <div class="header-toggle">
-                   <h4><ion-icon name="person-add-outline"></ion-icon> {{ modeCliente === "esistente" ? "Proprietario" : "Nuovo Cliente" }}</h4>
-                   <ion-button size="small" fill="clear" (click)="toggleModeCliente()">{{ modeCliente === "esistente" ? "+ Nuovo" : "Scegli" }}</ion-button>
-                </div>
-                <div *ngIf="modeCliente === 'esistente'" class="fade-in">
-                   <app-generic-selector label="Seleziona Cliente" type="cliente" [items]="listaClienti" [(selectedId)]="selectedClienteId"></app-generic-selector>
-                </div>
-                <div *ngIf="modeCliente === 'nuovo'" class="fade-in form-grid">
-                   <ion-input label="Nome Cliente *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.nome"></ion-input>
-                   <ion-input label="Telefono" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.telefono"></ion-input>
-                   <ion-input label="Email" type="email" label-placement="floating" fill="outline" [(ngModel)]="nuovoCliente.email"></ion-input>
-                </div>
-             </div>
-          </div>
-       </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="section-box ion-margin-top">
     <h3><ion-icon name="calendar-outline"></ion-icon> Dettagli Appuntamento</h3>
-    <div class="form-grid">
-      <ion-input
-        label="Titolo *"
+     <div class="form-grid">
+    <!--  <ion-input
+        label="Titolo"
         label-placement="floating"
         fill="outline"
-        [(ngModel)]="formDati.nome" 
-      ></ion-input>
-      
+        [(ngModel)]="formDati.nome"
+      ></ion-input> -->
+
       <ion-input
         label="Data e Ora *"
         type="datetime-local"
@@ -120,7 +238,7 @@
         fill="outline"
         [(ngModel)]="formDati.data_ora"
       ></ion-input>
-      
+
       <ion-textarea
         label="Note"
         label-placement="floating"
@@ -138,6 +256,6 @@
     (click)="salva()"
     [disabled]="!isValid()"
   >
-    {{ isEditing ? 'SALVA MODIFICHE' : 'CREA APPUNTAMENTO' }}
+    {{ isEditing ? "SALVA MODIFICHE" : "CREA APPUNTAMENTO" }}
   </ion-button>
 </ion-content>
