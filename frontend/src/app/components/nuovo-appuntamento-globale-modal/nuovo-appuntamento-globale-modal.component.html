@@ -42,6 +42,31 @@
           </ion-select>
        </div>
 
+       <div class="file-upload-section">
+          <p class="section-subtitle">Allegato (Opzionale)</p>
+          
+          <input 
+            type="file" 
+            id="fileInputApp" 
+            (change)="onFileSelected($event)" 
+            style="display: none;"
+          >
+
+          <div class="file-box" (click)="triggerFileInput()">
+            <ion-icon name="cloud-upload-outline" *ngIf="!selectedFile"></ion-icon>
+            <ion-icon name="document-attach-outline" *ngIf="selectedFile" color="primary"></ion-icon>
+            
+            <div class="file-info">
+              <span class="filename">{{ selectedFile ? selectedFile.name : 'Tocca per caricare un file' }}</span>
+              <span class="filesize" *ngIf="selectedFile">{{ (selectedFile.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+            </div>
+
+            <ion-button *ngIf="selectedFile" fill="clear" color="danger" (click)="rimuoviFile($event)">
+              <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+            </ion-button>
+          </div>
+       </div>
+
        <div class="nested-box ion-margin-top">
           <div class="header-toggle">
              <h4><ion-icon name="location-outline"></ion-icon> {{ modeCantiere === "esistente" ? "Cantiere" : "Nuovo Cantiere" }}</h4>

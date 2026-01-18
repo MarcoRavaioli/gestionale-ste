@@ -8,14 +8,17 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
-import { Commessa, Appuntamento } from '../../interfaces/models';
+import { IonicModule, ModalController, AlertController, ToastController } from '@ionic/angular';
+import { Commessa, Appuntamento, Allegato } from '../../interfaces/models';
 import { AppuntamentoService } from 'src/app/services/appuntamento.service';
+import { AllegatoService } from 'src/app/services/allegato.service'; // <--- NUOVO
 import { NuovoAppuntamentoGlobaleModalComponent } from '../nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 import { addIcons } from 'ionicons';
-import { calendarOutline, pencil, trash, add, timeOutline } from 'ionicons/icons';
+import { 
+  calendarOutline, pencil, trash, add, timeOutline, 
+  attachOutline, documentTextOutline, cloudDownloadOutline // <--- ICONE NUOVE
+} from 'ionicons/icons';
 
-// --- IMPORT DATE-FNS PER ITALIANO ---
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -36,12 +39,18 @@ export class CommessaItemComponent implements OnChanges {
     private el: ElementRef,
     private modalCtrl: ModalController,
     private alertCtrl: AlertController,
-    private appService: AppuntamentoService
+    private toastCtrl: ToastController,
+    private appService: AppuntamentoService,
+    private allegatoService: AllegatoService // <--- Inject
   ) {
-    addIcons({ calendarOutline, pencil, trash, add, timeOutline });
+    addIcons({ 
+      calendarOutline, pencil, trash, add, timeOutline, 
+      attachOutline, documentTextOutline, cloudDownloadOutline 
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    // ... logica esistente ...
     if (this.targetAppuntamentoId && this.commessa.appuntamenti) {
       const found = this.commessa.appuntamenti.some(
         (a) => a.id == this.targetAppuntamentoId
@@ -61,7 +70,7 @@ export class CommessaItemComponent implements OnChanges {
     }
   }
 
-  // --- FORMATTAZIONE DATE (Italiano) ---
+  // ... Metodi data (getGiorno, ecc) esistenti ...
   getGiorno(isoString: string): string {
     if (!isoString) return '-';
     return format(new Date(isoString), 'dd');
@@ -69,7 +78,6 @@ export class CommessaItemComponent implements OnChanges {
 
   getMese(isoString: string): string {
     if (!isoString) return '-';
-    // 'MMM' restituisce 'gen', 'feb'. Lo rendiamo maiuscolo nell'HTML.
     return format(new Date(isoString), 'MMM', { locale: it });
   }
 
@@ -83,34 +91,25 @@ export class CommessaItemComponent implements OnChanges {
     return format(new Date(isoString), 'HH:mm');
   }
 
-  // --- AZIONI ---
+  // --- AZIONI ESISTENTI (nuovoAppuntamento, modificaApp, eliminaApp) ---
   async nuovoAppuntamento() {
     const modal = await this.modalCtrl.create({
       component: NuovoAppuntamentoGlobaleModalComponent,
-      componentProps: {
-        commessaId: this.commessa.id,
-      },
+      componentProps: { commessaId: this.commessa.id },
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data && data.creato) {
-      this.refreshReq.emit();
-    }
+    if (data && data.creato) { this.refreshReq.emit(); }
   }
 
   async modificaApp(app: Appuntamento) {
     const modal = await this.modalCtrl.create({
       component: NuovoAppuntamentoGlobaleModalComponent,
-      componentProps: {
-        appuntamento: app,
-        commessaId: this.commessa.id,
-      },
+      componentProps: { appuntamento: app, commessaId: this.commessa.id },
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data && data.creato) {
-      this.refreshReq.emit();
-    }
+    if (data && data.creato) { this.refreshReq.emit(); }
   }
 
   async eliminaApp(app: Appuntamento) {
@@ -120,16 +119,59 @@ export class CommessaItemComponent implements OnChanges {
       buttons: [
         { text: 'Annulla', role: 'cancel' },
         {
-          text: 'Elimina',
-          role: 'destructive',
+          text: 'Elimina', role: 'destructive',
           handler: () => {
-            this.appService.delete(app.id).subscribe(() => {
-              this.refreshReq.emit();
-            });
+            this.appService.delete(app.id).subscribe(() => { this.refreshReq.emit(); });
           },
         },
       ],
     });
     await alert.present();
+  }
+
+  // --- NUOVI METODI ALLEGATI ---
+  scaricaAllegato(file: Allegato) {
+    this.allegatoService.download(file.id).subscribe({
+      next: (blob) => {
+        // Crea un URL temporaneo per il blob e simula il click
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.nome_file; // Nome file originale
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Err download', err)
+    });
+  }
+
+  async eliminaAllegato(file: Allegato) {
+    const alert = await this.alertCtrl.create({
+      header: 'Elimina Allegato',
+      message: `Vuoi eliminare il file <strong>${file.nome_file}</strong>?`,
+      buttons: [
+        { text: 'Annulla', role: 'cancel' },
+        {
+          text: 'Elimina', role: 'destructive',
+          handler: () => {
+            this.allegatoService.delete(file.id).subscribe({
+              next: () => { 
+                this.mostraToast('File eliminato');
+                this.refreshReq.emit(); 
+              },
+              error: () => this.mostraToast('Errore eliminazione')
+            });
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  async mostraToast(msg: string) {
+    const t = await this.toastCtrl.create({ message: msg, duration: 2000 });
+    t.present();
   }
 }

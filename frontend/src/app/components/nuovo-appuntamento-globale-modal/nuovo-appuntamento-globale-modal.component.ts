@@ -25,6 +25,7 @@ import {
   chevronDownOutline,
   checkmarkCircle,
 } from 'ionicons/icons';
+import { AllegatoService } from 'src/app/services/allegato.service';
 
 @Component({
   selector: 'app-nuovo-appuntamento-globale-modal',
@@ -59,6 +60,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   selectedCommessaId: number | null = null;
   selectedCantiereId: number | null = null;
   selectedClienteId: number | null = null;
+  selectedFile: File | null = null;
 
   // DATI FORM NUOVI OGGETTI
   nuovaCommessa = {
@@ -82,7 +84,8 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     private cliService: ClienteService,
     private indService: IndirizzoService,
     private comService: CommessaService,
-    private appService: AppuntamentoService
+    private appService: AppuntamentoService,
+    private allegatoService: AllegatoService,
   ) {
     addIcons({
       calendarOutline,
@@ -143,6 +146,22 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
         this.selectedCommessaId = this.commessaId;
       }
     }
+  }
+
+  triggerFileInput() {
+    document.getElementById('fileInputApp')?.click();
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) this.selectedFile = file;
+  }
+
+  rimuoviFile(ev: Event) {
+    ev.stopPropagation();
+    this.selectedFile = null;
+    const input = document.getElementById('fileInputApp') as HTMLInputElement;
+    if (input) input.value = '';
   }
 
   caricaDatiListe() {

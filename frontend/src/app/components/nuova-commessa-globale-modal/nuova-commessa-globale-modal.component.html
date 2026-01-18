@@ -40,7 +40,6 @@
       <ion-input label="Città *" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.citta"></ion-input>
       <ion-input label="Provincia" label-placement="floating" fill="outline" [(ngModel)]="nuovoCantiere.provincia"></ion-input>
 
-
       <div class="nested-box ion-margin-top">
         <div class="header-toggle">
           <h4 style="margin: 0; font-size: 0.9rem; color: var(--ion-color-medium);">
@@ -86,6 +85,32 @@
           <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
         </ion-select>
       </div>
+
+      <div class="file-upload-section">
+        <p class="section-subtitle">Allegato (Opzionale)</p>
+        
+        <input 
+          type="file" 
+          id="fileInputGlobal" 
+          (change)="onFileSelected($event)" 
+          style="display: none;"
+        >
+
+        <div class="file-box" (click)="triggerFileInput()">
+          <ion-icon name="cloud-upload-outline" *ngIf="!selectedFile"></ion-icon>
+          <ion-icon name="document-attach-outline" *ngIf="selectedFile" color="primary"></ion-icon>
+          
+          <div class="file-info">
+            <span class="filename">{{ selectedFile ? selectedFile.name : 'Tocca per caricare un file' }}</span>
+            <span class="filesize" *ngIf="selectedFile">{{ (selectedFile.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+          </div>
+
+          <ion-button *ngIf="selectedFile" fill="clear" color="danger" (click)="rimuoviFile($event)">
+            <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+          </ion-button>
+        </div>
+      </div>
+
     </div>
   </div>
 

@@ -15,7 +15,7 @@
 }
 
 .nested-box {
-  background: var(--ion-color-step-50); /* Leggermente diverso per staccare dal cantiere */
+  background: var(--ion-color-step-50); 
   padding: 10px;
   border-radius: 8px;
   border: 1px dashed var(--ion-color-medium);
@@ -41,4 +41,56 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- NUOVI STILI UPLOAD --- */
+.file-upload-section {
+  margin-top: 5px;
+
+  .section-subtitle {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+    margin-top: 0;
+  }
+
+  .file-box {
+    border: 2px dashed var(--ion-color-step-300);
+    background: var(--ion-background-color); /* Sfondo che si adatta */
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:active {
+      background: var(--ion-color-step-100);
+      border-color: var(--ion-color-primary);
+    }
+
+    ion-icon {
+      font-size: 1.6rem;
+      color: var(--ion-color-medium);
+    }
+
+    .file-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      
+      .filename {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--ion-text-color);
+        word-break: break-all;
+      }
+      .filesize {
+        font-size: 0.7rem;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
 }

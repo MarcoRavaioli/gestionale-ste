@@ -64,4 +64,35 @@
       </div>
     </div>
   </div>
+
+  <div class="attachments-section ion-margin-top" *ngIf="commessa.allegati?.length">
+    <div class="appuntamenti-header">
+      <div class="label-container">
+        <ion-icon name="attach-outline"></ion-icon>
+        <span>ALLEGATI ({{ commessa.allegati?.length }})</span>
+      </div>
+    </div>
+
+    <ion-list lines="none" class="files-list">
+      <ion-item *ngFor="let file of commessa.allegati" class="file-item">
+        <div slot="start" class="file-icon">
+          <ion-icon name="document-text-outline"></ion-icon>
+        </div>
+        <ion-label>
+          <h3>{{ file.nome_file }}</h3>
+          <p>{{ file.data_caricamento | date:'dd/MM/yyyy' }}</p>
+        </ion-label>
+        
+        <ion-buttons slot="end">
+          <ion-button color="primary" (click)="scaricaAllegato(file)">
+            <ion-icon name="cloud-download-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+          <ion-button *ngIf="hasManagerAccess" color="danger" (click)="eliminaAllegato(file)">
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-item>
+    </ion-list>
+  </div>
+
 </div>

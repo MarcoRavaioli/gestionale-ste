@@ -2,23 +2,21 @@ export type RuoloUtente = 'ADMIN' | 'MANAGER' | 'COLLABORATORE';
 
 export interface Utente {
   id: number;
-  nickname: string; // Usiamo nickname, non email
+  nickname: string;
   nome: string;
   cognome: string;
   email: string;
   password: string;
   ruolo: RuoloUtente;
   avatar?: string;
-  // Altri campi che il backend ti manda nel token/profilo
 }
 
-// Interfaccia per il payload del token JWT
 export interface TokenPayload {
-  sub: string;       // Solitamente l'ID o il nickname
+  sub: string;
   nickname: string;
   nome: string;
   ruolo: RuoloUtente;
-  exp: number;       // Scadenza
+  exp: number;
 }
 
 export interface Indirizzo {
@@ -33,6 +31,7 @@ export interface Indirizzo {
   cliente?: Cliente;
 }
 
+// --- MODIFICA QUI ---
 export interface Commessa {
   id: number;
   seriale: string;
@@ -41,6 +40,7 @@ export interface Commessa {
   valore_totale?: number;
   indirizzo?: Indirizzo; 
   appuntamenti?: Appuntamento[]; 
+  allegati?: Allegato[]; // <--- AGGIUNTO: Ora TypeScript sa che esistono!
 }
 
 export interface Cliente {

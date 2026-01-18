@@ -104,3 +104,32 @@
   animation: flashHighlight 3s ease-out 0.5s forwards;
   border: 2px solid var(--ion-color-warning); /* Bordo evidente */
 }
+
+/* --- SEZIONE ALLEGATI --- */
+.files-list {
+  background: transparent;
+  padding: 0;
+}
+
+.file-item {
+  --background: var(--ion-background-color);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  border: 1px solid var(--ion-color-step-100);
+  
+  .file-icon {
+    width: 36px; height: 36px;
+    background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-right: 12px;
+    margin-left: 10px;
+    
+    ion-icon { color: var(--ion-color-tertiary); font-size: 1.2rem; }
+  }
+
+  h3 { font-size: 0.9rem; font-weight: 500; margin-bottom: 2px; }
+  p { font-size: 0.75rem; color: var(--ion-color-medium); }
+}
