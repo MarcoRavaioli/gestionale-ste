@@ -35,10 +35,12 @@ import { UploadsController } from './uploads/uploads.controller';
     // --- 2. CONFIGURAZIONE RATE LIMITING GLOBALE ---
     // Impostiamo una regola base: Max 100 richieste ogni 60 secondi per IP.
     // Questo protegge da attacchi DDoS generici su tutta l'app.
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 60 secondi (in millisecondi)
-      limit: 100, // Limite richieste
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 secondi (in millisecondi)
+        limit: 100, // Limite richieste
+      },
+    ]),
 
     ConfigModule.forRoot({
       isGlobal: true,
@@ -46,7 +48,9 @@ import { UploadsController } from './uploads/uploads.controller';
 
     TypeOrmModule.forRoot({
       type: 'sqlite',
-      database: 'gestionale.db',
+      // MODIFICA QUI:
+      // Se esiste la variabile DATABASE_FILE usala (per Docker), altrimenti usa il default (per il Mac)
+      database: process.env.DATABASE_FILE || 'gestionale.db',
       entities: [
         Cliente,
         Indirizzo,
@@ -57,7 +61,7 @@ import { UploadsController } from './uploads/uploads.controller';
         TracciamentoPersonale,
         Allegato,
       ],
-      synchronize: true,
+      synchronize: true, // In produzione andrebbe false con le migrazioni, ma per ora tienilo true per semplicità
     }),
     // ... moduli
     ClienteModule,
