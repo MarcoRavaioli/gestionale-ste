@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Indirizzo } from '../interfaces/models';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class IndirizzoService {
-  private apiUrl = '/api/indirizzo';
+  private apiUrl = environment.apiUrl + '/indirizzo';
 
   constructor(private http: HttpClient) {}
 
@@ -28,3 +29,5 @@ export class IndirizzoService {
     return this.http.get<Indirizzo[]>(this.apiUrl);
   }
 }
+
+export { Indirizzo };

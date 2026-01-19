@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Commessa } from '../interfaces/models';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommessaService {
-  private apiUrl = '/api/commessa';
+  private apiUrl = environment.apiUrl + '/commessa';
 
   constructor(private http: HttpClient) {}
 
