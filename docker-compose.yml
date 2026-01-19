@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # --- BACKEND ---
+  gspose-api:
+    build: ./backend
+    container_name: gspose-api
+    restart: always
+    environment:
+      # Percorsi interni al container (NON TOCCARE)
+      - DATABASE_FILE=/app/data/gestionale.db
+      # Variabili prese dal file .env che creeremo tra poco
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - MANAGER_PASSWORD=${MANAGER_PASSWORD}
+      # - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    volumes:
+      # Mappiamo la cartella centrale dei dati dentro il container
+      - /home/mamo/docker-data/gestionale-gspose/data:/app/data
+      - /home/mamo/docker-data/gestionale-gspose/uploads:/app/uploads
+    networks:
+      - stack # Si aggancia alla rete del tuo Cloudflare Tunnel esistente
+
+  # --- FRONTEND ---
+  gspose-web:
+    build: ./frontend
+    container_name: gspose-web
+    restart: always
+    ports:
+      - "8080:80" # Accessibile in LAN se serve (es. http://192.168.1.50:8080)
+    depends_on:
+      - gspose-api
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - stack # Si aggancia alla rete del tuo Cloudflare Tunnel esistente
+
+# Usiamo la rete "stack" che è già stata creata dal tuo docker-compose principale
+networks:
+  stack:
+    external: true
+    name: mamo_stack
+    # Se il nome della rete non è esattamente "stack", controlla con 'docker network ls'
+    # Nel tuo file principale si chiama 'stack', quindi dovrebbe andare bene così.

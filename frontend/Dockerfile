@@ -1,5 +1,5 @@
 # Stage 1: Build Angular
-FROM node:18-alpine as build
+FROM node:20-alpine as build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -9,8 +9,10 @@ RUN npm run build -- --configuration=production
 
 # Stage 2: Serve con Nginx
 FROM nginx:alpine
-# Copia i file compilati dalla fase precedente dentro Nginx
-COPY --from=build /app/www /usr/share/nginx/html
-# Configurazione custom per gestire il routing di Angular (vedi sotto)
+# --- MODIFICA CRUCIALE QUI SOTTO ---
+# Copiamo dalla cartella "browser" che è dentro "www"
+COPY --from=build /app/www/browser /usr/share/nginx/html
+
+# Copiamo la configurazione Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80 
+EXPOSE 80
