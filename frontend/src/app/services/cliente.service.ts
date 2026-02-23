@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Cliente } from '../interfaces/models';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClienteService {
   // Grazie al proxy, '/api' viene girato a localhost:3000
-  private apiUrl = '/api/cliente';
+  private apiUrl = environment.apiUrl + '/cliente';
 
   constructor(private http: HttpClient) {}
 

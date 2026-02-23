@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Appuntamento } from '../interfaces/models';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppuntamentoService {
   // L'URL base corrisponde al controller del backend
-  private apiUrl = '/api/appuntamento';
+  private apiUrl = environment.apiUrl + '/appuntamento';
 
   constructor(private http: HttpClient) {}
 

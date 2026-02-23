@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Fattura } from '../interfaces/models';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FatturaService {
-  private apiUrl = '/api/fattura';
+  private apiUrl = environment.apiUrl + '/fattura';
 
   constructor(private http: HttpClient) {}
 

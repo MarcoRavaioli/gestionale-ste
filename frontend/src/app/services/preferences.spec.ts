@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { Preferences } from './preferences';
+import { PreferencesService } from './preferences';
 
 describe('Preferences', () => {
-  let service: Preferences;
+  let service: PreferencesService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(Preferences);
+    service = TestBed.inject(PreferencesService);
   });
 
   it('should be created', () => {
