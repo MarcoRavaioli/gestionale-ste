@@ -17,12 +17,13 @@ async function bootstrap() {
 
   // 2. CORS: Fondamentale per far parlare i due sottodomini
   app.enableCors({
-    origin: [
-      'https://gestionalegspose.marcoravaiolii.xyz', // Produzione
-      'http://localhost:8100', // Sviluppo locale (opzionale)
-      'http://localhost:4200',
-    ],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  //  origin: [
+  //    'https://gestionalegspose.marcoravaiolii.xyz', // Produzione
+  //    'http://localhost:8100', // Sviluppo locale (opzionale)
+  //    'http://localhost:4200',
+  //  ],
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
 
