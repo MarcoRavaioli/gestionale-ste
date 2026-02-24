@@ -16,7 +16,7 @@ export class Allegato {
   @Column({ nullable: true })
   tipo_file: string; // Es: "application/pdf" o "image/jpeg"
 
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   data_caricamento: Date;
 
   @ManyToOne(() => Commessa, (commessa) => commessa.allegati, {
