@@ -47,22 +47,21 @@ import { UploadsController } from './uploads/uploads.controller';
     }),
 
     TypeOrmModule.forRoot({
-      type: 'sqlite',
-      // MODIFICA QUI:
-      // Se esiste la variabile DATABASE_FILE usala (per Docker), altrimenti usa il default (per il Mac)
-      database: process.env.DATABASE_FILE || 'gestionale.db',
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: 5432,
+      username: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || 'super_segreto',
+      database: process.env.DB_NAME || 'gestionale_db',
       entities: [
-        Cliente,
-        Indirizzo,
-        Commessa,
-        Appuntamento,
-        Fattura,
-        Collaboratore,
-        TracciamentoPersonale,
-        Allegato,
+        Cliente, Indirizzo, Commessa, Appuntamento,
+        Fattura, Collaboratore, TracciamentoPersonale, Allegato,
       ],
-      synchronize: true, // In produzione andrebbe false con le migrazioni, ma per ora tienilo true per semplicità
+      synchronize: false, 
+      migrationsRun: true,
+      migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     }),
+
     // ... moduli
     ClienteModule,
     AppuntamentoModule,
