@@ -210,7 +210,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (!this.formDati.nome || !this.formDati.data_ora) return false;
+    if (!this.formDati.data_ora) return false;
     if (this.modeCommessa === 'esistente' && !this.selectedCommessaId)
       return false;
     return true;
@@ -236,8 +236,17 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
             if (!this.selectedClienteId) return;
             clienteIdFinale = this.selectedClienteId;
           } else {
+            // FIX EMAIL VUOTA
+            const clientePayload = { ...this.nuovoCliente } as any;
+            if (!clientePayload.email || clientePayload.email.trim() === '') {
+              delete clientePayload.email; 
+            }
+            if (!clientePayload.telefono || clientePayload.telefono.trim() === '') {
+              delete clientePayload.telefono;
+            }
+
             const cli = await this.wrap(
-              this.cliService.create(this.nuovoCliente)
+              this.cliService.create(clientePayload) // Usa clientePayload invece di this.nuovoCliente
             );
             clienteIdFinale = cli.id;
           }
@@ -262,9 +271,14 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
       // 4. CREA O AGGIORNA APPUNTAMENTO
       const appPayload = {
-        ...this.formDati, // Usa i dati del form
+        ...this.formDati, 
         commessa: { id: commessaIdFinale },
       } as any;
+
+      // FIX NOME: Aggiungiamo un nome fittizio se manca
+      if (!appPayload.nome || appPayload.nome.trim() === '') {
+        appPayload.nome = 'Intervento'; 
+      }
 
       if (this.isEditing && this.appuntamento) {
         // UPDATE
