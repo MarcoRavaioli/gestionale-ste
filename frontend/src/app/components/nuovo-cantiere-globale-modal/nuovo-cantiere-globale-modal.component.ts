@@ -88,6 +88,9 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
       cliente: { id: clienteId },
     } as any;
 
+    if (payload.cap) payload.cap = String(payload.cap);
+    if (payload.civico) payload.civico = String(payload.civico);
+
     this.indirizzoService.create(payload).subscribe({
       next: (res) => {
         this.modalCtrl.dismiss({ creato: true, data: res });

@@ -210,7 +210,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (!this.formDati.descrizione || !this.formDati.data_ora) return false;
+    if (!this.formDati.nome || !this.formDati.data_ora) return false;
     if (this.modeCommessa === 'esistente' && !this.selectedCommessaId)
       return false;
     return true;
@@ -245,6 +245,10 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
             ...this.nuovoCantiere,
             cliente: { id: clienteIdFinale },
           } as any;
+
+          if (indPayload.cap) indPayload.cap = String(indPayload.cap);
+          if (indPayload.civico) indPayload.civico = String(indPayload.civico);
+
           const ind = await this.wrap(this.indService.create(indPayload));
           indirizzoIdFinale = ind.id;
         }
