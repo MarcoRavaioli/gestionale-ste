@@ -12,7 +12,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-// MODIFICA QUI: Usa 'import type' per Response
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 import type { Response } from 'express';
 import { AllegatoService } from './allegato.service';
 import { CreateAllegatoDto } from './dto/create-allegato.dto';
@@ -30,7 +31,18 @@ export class AllegatoController {
 
   @Post('upload')
   @Roles('ADMIN', 'MANAGER', 'COLLABORATORE')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file', {
+    // 1. LIMITIAMO LA DIMENSIONE DEL FILE A 5MB (5 * 1024 * 1024)
+    limits: { fileSize: 5 * 1024 * 1024 },
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+      },
+    }),
+  }))
   uploadFile(
     @Body() createAllegatoDto: CreateAllegatoDto,
     @UploadedFile() file: Express.Multer.File,

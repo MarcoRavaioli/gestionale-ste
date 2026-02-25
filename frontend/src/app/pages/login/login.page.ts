@@ -19,7 +19,7 @@ import { personOutline, lockClosedOutline, business, alertCircle } from 'ionicon
 })
 export class LoginPage {
   
-  credentials = { nickname: '', password: '' };
+  credentials = { username: '', password: '' };
   isLoading = false;
   errorMessage = '';
 
@@ -28,7 +28,7 @@ export class LoginPage {
   }
 
   eseguiLogin() {
-    if(!this.credentials.nickname || !this.credentials.password) return;
+    if(!this.credentials.username || !this.credentials.password) return;
 
     this.isLoading = true;
     this.errorMessage = '';

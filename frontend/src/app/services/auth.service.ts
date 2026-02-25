@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   // --- 1. LOGIN REALE (Nickname + Password) ---
-  login(credentials: { nickname: string, password: string }) {
+  login(credentials: { username: string, password: string }) {
     return this.http.post<{ access_token: string }>(this.apiUrl, credentials).pipe(
       tap(response => {
         // Salva il token grezzo

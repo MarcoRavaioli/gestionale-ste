@@ -18,15 +18,19 @@ export class CollaboratoreService implements OnModuleInit {
     await this.seedUsers();
   }
 
-  async seedUsers() {
+async seedUsers() {
     // 1. ADMIN (Marco)
     const adminNick = 'marco123';
     const adminEsiste = await this.findOneByNickname(adminNick);
 
     if (!adminEsiste) {
       console.log('⚡ Creazione ADMIN in corso...');
-      // Legge dal .env, se non trova usa fallback 'admin123'
-      const pass = process.env.ADMIN_PASSWORD || 'admin123';
+      
+      const pass = process.env.ADMIN_PASSWORD;
+      if (!pass) {
+        throw new Error('ERRORE CRITICO: Variabile ADMIN_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.');
+      }
+      
       const salt = await bcrypt.genSalt();
       const hash = await bcrypt.hash(pass, salt);
 
@@ -39,7 +43,7 @@ export class CollaboratoreService implements OnModuleInit {
         email: 'admin@gs.it', // Opzionale
       });
       await this.collaboratoreRepository.save(admin);
-      console.log(`✅ ADMIN creato: ${adminNick}`);
+      console.log(`ADMIN creato: ${adminNick}`);
     }
 
     // 2. MANAGER (Stefano)
@@ -47,8 +51,13 @@ export class CollaboratoreService implements OnModuleInit {
     const managerEsiste = await this.findOneByNickname(managerNick);
 
     if (!managerEsiste) {
-      console.log('⚡ Creazione MANAGER in corso...');
-      const pass = process.env.MANAGER_PASSWORD || 'stefano123';
+      console.log('Creazione MANAGER in corso...');
+      
+      const pass = process.env.MANAGER_PASSWORD;
+      if (!pass) {
+        throw new Error('ERRORE CRITICO: Variabile MANAGER_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.');
+      }
+      
       const salt = await bcrypt.genSalt();
       const hash = await bcrypt.hash(pass, salt);
 
@@ -60,7 +69,7 @@ export class CollaboratoreService implements OnModuleInit {
         ruolo: 'MANAGER',
       });
       await this.collaboratoreRepository.save(manager);
-      console.log(`✅ MANAGER creato: ${managerNick}`);
+      console.log(`MANAGER creato: ${managerNick}`);
     }
   }
   // ----------------------------------------------------
@@ -83,6 +92,15 @@ export class CollaboratoreService implements OnModuleInit {
       .where('collaboratore.nickname = :nickname', { nickname })
       .addSelect('collaboratore.password')
       .getOne();
+  }
+
+  async findOneByUsernameOrEmail(identifier: string): Promise<Collaboratore | null> {
+    return this.collaboratoreRepository.findOne({
+      where: [
+        { nickname: identifier },
+        { email: identifier }
+      ]
+    });
   }
 
   // Helper legacy, se servisse ancora in futuro
