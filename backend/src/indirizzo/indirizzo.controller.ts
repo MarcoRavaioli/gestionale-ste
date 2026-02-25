@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { IndirizzoService } from './indirizzo.service';
 import { CreateIndirizzoDto } from './dto/create-indirizzo.dto';
@@ -32,20 +33,20 @@ export class IndirizzoController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.indirizzoService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.indirizzoService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateIndirizzoDto: UpdateIndirizzoDto,
   ) {
-    return this.indirizzoService.update(+id, updateIndirizzoDto);
+    return this.indirizzoService.update(id, updateIndirizzoDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.indirizzoService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.indirizzoService.remove(id);
   }
 }

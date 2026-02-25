@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CommessaService } from './commessa.service';
 import { CreateCommessaDto } from './dto/create-commessa.dto';
@@ -32,20 +33,20 @@ export class CommessaController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commessaService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.commessaService.findOne(id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateCommessaDto: UpdateCommessaDto,
   ) {
-    return this.commessaService.update(+id, updateCommessaDto);
+    return this.commessaService.update(id, updateCommessaDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.commessaService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.commessaService.remove(id);
   }
 }

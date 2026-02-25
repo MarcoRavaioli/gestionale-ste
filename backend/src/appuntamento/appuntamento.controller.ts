@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AppuntamentoService } from './appuntamento.service';
 import { CreateAppuntamentoDto } from './dto/create-appuntamento.dto';
@@ -28,8 +29,8 @@ export class AppuntamentoController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.appuntamentoService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.appuntamentoService.findOne(id);
   }
 
   // 🔒 CREAZIONE: Solo i capi possono assegnare lavoro
@@ -43,16 +44,16 @@ export class AppuntamentoController {
   @Patch(':id')
   @Roles('ADMIN', 'MANAGER')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateAppuntamentoDto: UpdateAppuntamentoDto,
   ) {
-    return this.appuntamentoService.update(+id, updateAppuntamentoDto);
+    return this.appuntamentoService.update(id, updateAppuntamentoDto);
   }
 
   // 🔒 CANCELLAZIONE: Solo i capi possono eliminare
   @Delete(':id')
   @Roles('ADMIN', 'MANAGER')
-  remove(@Param('id') id: string) {
-    return this.appuntamentoService.remove(+id);
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.appuntamentoService.remove(id);
   }
 }

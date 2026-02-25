@@ -9,7 +9,7 @@ import {
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ClienteService } from '../services/cliente.service';
 import { IndirizzoService } from '../services/indirizzo.service';
 import { PreferencesService, ViewSettings } from '../services/preferences';
@@ -27,6 +27,7 @@ import {
 } from 'ionicons/icons';
 import { CommessaService } from '../services/commessa.service';
 import { AppuntamentoService } from '../services/appuntamento.service';
+import { ToastController } from '@ionic/angular';
 
 interface GruppoCantieri {
   nome: string;
@@ -52,6 +53,7 @@ interface GruppoAppuntamenti {
     CommonModule, 
     FormsModule, 
     RouterModule,
+    ToastController,
     IonHeader, IonToolbar, IonTitle, IonChip, IonLabel, IonSearchbar, IonButton, 
     IonIcon, IonContent, IonRefresher, IonRefresherContent, IonList, IonItem, 
     IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge
@@ -110,7 +112,9 @@ export class Tab3Page implements OnInit {
     private preferencesService: PreferencesService,
     private appService: AppuntamentoService,
     private modalCtrl: ModalController,
-    private popoverCtrl: PopoverController
+    private popoverCtrl: PopoverController,
+    private toastCtrl: ToastController,
+    private router: Router,
   ) {
     addIcons({
       add,
@@ -573,6 +577,46 @@ export class Tab3Page implements OnInit {
         return 'Cerca appuntamento...';
       default:
         return 'Cerca...';
+    }
+  }
+
+  goToDettaglioElemento(item: any, tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento') {
+    let clienteId = null;
+
+    // Peschiamo l'ID del cliente in base a dove abbiamo cliccato
+    if (tipo === 'cliente') {
+      clienteId = item.id;
+    } else if (tipo === 'cantiere') {
+      clienteId = item.cliente?.id;
+    } else if (tipo === 'commessa') {
+      clienteId = item.indirizzo?.cliente?.id;
+    } else if (tipo === 'appuntamento') {
+      clienteId = item.commessa?.indirizzo?.cliente?.id;
+    }
+
+    if (clienteId) {
+      // Ha un cliente associato, possiamo navigare in sicurezza!
+      // Costruiamo eventuali QueryParams (per far aprire l'accordion giusto nel dettaglio)
+      const queryParams: any = {};
+      if (tipo === 'cantiere') queryParams.cantiereId = item.id;
+      if (tipo === 'commessa') {
+        queryParams.cantiereId = item.indirizzo?.id;
+        queryParams.commessaId = item.id;
+      }
+      if (tipo === 'appuntamento') {
+        queryParams.cantiereId = item.commessa?.indirizzo?.id;
+        queryParams.commessaId = item.commessa?.id;
+        queryParams.appuntamentoId = item.id;
+      }
+
+      this.router.navigate(['/cliente-dettaglio', clienteId], { queryParams });
+    } else {
+      // È un elemento generico, NON navigare e avvisa l'utente
+      this.toastCtrl.create({
+        message: 'Questo è un elemento interno generico, nessun cliente associato.',
+        duration: 2500,
+        color: 'primary'
+      }).then(t => t.present());
     }
   }
 }

@@ -95,8 +95,24 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
     this.hasManagerAccess = this.authService.hasManagerAccess();
     this.deepLinkGestito = false;
 
-    const id = this.route.snapshot.paramMap.get('id');
+    // 1. Leggiamo l'ID dall'URL e proviamo a convertirlo in numero
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const clienteId = parseInt(idParam || '', 10);
 
+    // 2. BLOCCO DI SICUREZZA: Se è NaN (Not a Number) o non esiste, lo blocchiamo subito
+    if (isNaN(clienteId) || !clienteId) {
+      this.toastCtrl.create({
+        message: 'Elemento generico: nessun cliente associato.',
+        duration: 2500,
+        color: 'warning'
+      }).then(t => t.present());
+      
+      // Lo cacciamo indietro alla Tab 3 (Archivio)
+      this.navCtrl.navigateRoot('/tabs/tab3');
+      return; // <-- FONDAMENTALE: Ferma l'esecuzione della funzione qui!
+    }
+
+    // 3. Se l'ID è valido, procediamo normalmente con i queryParams e il caricamento
     this.route.queryParams.subscribe((params) => {
       this.targetCantiereId = params['cantiereId'] ? +params['cantiereId'] : null;
       this.targetCommessaId = params['commessaId'] ? +params['commessaId'] : null;
@@ -109,7 +125,7 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
       }
     });
 
-    if (id) this.caricaDati(+id);
+    this.caricaDati(clienteId);
   }
 
   ionViewDidEnter() {

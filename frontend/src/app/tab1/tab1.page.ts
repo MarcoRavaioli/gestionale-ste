@@ -317,6 +317,8 @@ export class Tab1Page implements OnInit {
     }
   }
 
+  
+
   goToCharts() {
     this.toastCtrl
       .create({

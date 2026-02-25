@@ -61,8 +61,8 @@
       <ion-item
         *ngFor="let cliente of clientiVisualizzati"
         button
-        detail="false"
-        [routerLink]="['/cliente-dettaglio', cliente.id]"
+        detail="true"
+        (click)="goToDettaglioElemento(cliente, 'cliente')"
         class="list-item"
       >
         <ion-avatar slot="start" class="item-avatar">
@@ -91,9 +91,8 @@
       <ion-item
         *ngFor="let cantiere of cantieriLista"
         button
-        detail="false"
-        [routerLink]="['/cliente-dettaglio', cantiere.cliente?.id]"
-        [queryParams]="{ cantiereId: cantiere.id }"
+        detail="true"
+        (click)="goToDettaglioElemento(cantiere, 'cantiere')"
         class="list-item"
       >
         <div slot="start" class="list-icon-box box-secondary">
@@ -123,8 +122,8 @@
         <ion-item
           *ngFor="let item of gruppo.items"
           button
-          detail="false"
-          [routerLink]="['/cliente-dettaglio', item.cliente?.id]"
+          detail="true"
+          (click)="goToDettaglioElemento(item, 'cantiere')"
           class="list-item"
         >
           <div slot="start" class="list-icon-box box-secondary">
@@ -151,9 +150,8 @@
       <ion-item
         *ngFor="let item of commesseLista"
         button
-        detail="false"
-        [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
-        [queryParams]="{ cantiereId: item.indirizzo?.id, commessaId: item.id }"
+        detail="true"
+        (click)="goToDettaglioElemento(item, 'commessa')"
         class="list-item"
       >
         <div slot="start" class="list-icon-box box-tertiary">
@@ -212,8 +210,8 @@
         <ion-item
           *ngFor="let item of gruppo.items"
           button
-          detail="false"
-          [routerLink]="['/cliente-dettaglio', item.indirizzo?.cliente?.id]"
+          detail="true"
+          (click)="goToDettaglioElemento(item, 'commessa')"
           class="list-item"
         >
           <div slot="start" class="list-icon-box box-tertiary">
@@ -266,13 +264,8 @@
       <ion-item
         *ngFor="let app of appuntamentiLista"
         button
-        detail="false"
-        [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
-        [queryParams]="{ 
-          cantiereId: app.commessa?.indirizzo?.id, 
-          commessaId: app.commessa?.id, 
-          appuntamentoId: app.id 
-        }"
+        detail="true"
+        (click)="goToDettaglioElemento(app, 'appuntamento')"
         class="list-item"
       >
         <div slot="start" class="list-icon-box box-warning">
@@ -326,8 +319,8 @@
         <ion-item
           *ngFor="let app of gruppo.items"
           button
-          detail="false"
-          [routerLink]="['/cliente-dettaglio', app.commessa?.indirizzo?.cliente?.id]"
+          detail="true"
+          (click)="goToDettaglioElemento(app, 'appuntamento')"
           class="list-item"
         >
           <div slot="start" class="list-icon-box box-warning">
