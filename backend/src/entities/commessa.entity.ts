@@ -27,10 +27,9 @@ export class Commessa {
   @Column({ nullable: true, type: 'float' })
   valore_totale: number;
 
-  // (Ho tolto nullable: true perché senza indirizzo la commessa "vola nel nulla")
   @ManyToOne(() => Indirizzo, (indirizzo) => indirizzo.commesse, {
-    onDelete: 'CASCADE', // Se cancello l'indirizzo, spariscono le commesse
-    nullable: false,
+    onDelete: 'CASCADE',
+    nullable: true,
   })
   indirizzo: Indirizzo;
 

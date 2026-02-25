@@ -23,9 +23,9 @@ export class Appuntamento {
   @Column({ type: 'text', nullable: true })
   descrizione: string;
 
-  // Collegato alla commessa (OBBLIGATORIO: nullable: false)
+  // Collegato alla commessa
   @ManyToOne(() => Commessa, (commessa) => commessa.appuntamenti, {
-    nullable: false,
+    nullable: true,
     onDelete: 'CASCADE',
   })
   commessa: Commessa;
