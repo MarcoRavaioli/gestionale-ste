@@ -1,25 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
+// 1. RIMOZIONE DI IonicModule E IMPORT DEI COMPONENTI STANDALONE
+import { 
+  ModalController,
+  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
+  IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSearchbar,
+  IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
+  IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
+  IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
+  IonDatetimeButton, IonModal, IonToggle
+} from '@ionic/angular/standalone';
 import { FatturaService } from '../services/fattura.service';
 import { Fattura, TipoFattura } from '../interfaces/models';
 import { addIcons } from 'ionicons';
 import {
-  arrowUpCircle,
-  arrowDownCircle,
-  filterOutline,
-  add,
-  alertCircleOutline,
-  checkmarkCircleOutline,
-  timeOutline,
-  walletOutline,
-  chevronDownOutline,
-  searchOutline,
-  calendarOutline,
-  calendar, // <--- AGGIUNTO (Icona calendario piena)
-  closeCircle, // <--- AGGIUNTO (Icona X piena per il tasto cancella)
-  closeCircleOutline,
+  arrowUpCircle, arrowDownCircle, filterOutline, add, alertCircleOutline,
+  checkmarkCircleOutline, timeOutline, walletOutline, chevronDownOutline,
+  searchOutline, calendarOutline, calendar, closeCircle, closeCircleOutline,
 } from 'ionicons/icons';
 import { NuovaFatturaModalComponent } from '../components/nuova-fattura-modal/nuova-fattura-modal.component';
 import { FatturaDettaglioModalComponent } from '../components/fattura-dettaglio-modal/fattura-dettaglio-modal.component';
@@ -34,8 +32,19 @@ interface GruppoFatture {
   templateUrl: './tab4.page.html',
   styleUrls: ['./tab4.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    // 2. DICHIARAZIONE DEI COMPONENTI GRAFICI IONIC
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
+    IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSearchbar,
+    IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
+    IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
+    IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
+    IonDatetimeButton, IonModal, IonToggle
+  ],
 })
+
 export class Tab4Page implements OnInit {
   tutteFatture: Fattura[] = [];
   gruppiFatture: GruppoFatture[] = [];

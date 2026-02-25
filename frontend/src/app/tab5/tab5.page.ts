@@ -1,34 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+// 1. RIMOZIONE DI IonicModule E IMPORT DEI COMPONENTI STANDALONE
 import {
-  IonicModule,
-  ToastController,
-  LoadingController,
-  AlertController,
-} from '@ionic/angular';
+  ToastController, LoadingController, AlertController,
+  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
+  IonIcon, IonList, IonItem, IonLabel, IonNote, IonFab, IonFabButton,
+  IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol,
+  IonDatetime, IonDatetimeButton, IonModal, IonToggle, IonInput, IonTextarea,
+  IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge
+} from '@ionic/angular/standalone';
 import { AuthService } from '../services/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { addIcons } from 'ionicons';
 import {
-  timeOutline,
-  restaurantOutline,
-  saveOutline,
-  calendarOutline,
-  createOutline,
-  walletOutline,
-  personOutline,
-  fastFoodOutline,
-  pencilOutline,
-  closeCircleOutline,
-  trashOutline,
-  addCircleOutline,
-  settingsOutline,
-  cashOutline,
-  briefcaseOutline,
-  calculatorOutline, // Icona per i calcoli
-  pricetagOutline
+  timeOutline, restaurantOutline, saveOutline, calendarOutline,
+  createOutline, walletOutline, personOutline, fastFoodOutline,
+  pencilOutline, closeCircleOutline, trashOutline, 
+  addCircleOutline, settingsOutline, cashOutline, briefcaseOutline,
+  calculatorOutline, pricetagOutline
 } from 'ionicons/icons';
 
 @Component({
@@ -36,8 +27,18 @@ import {
   templateUrl: './tab5.page.html',
   styleUrls: ['./tab5.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    // 2. DICHIARAZIONE DEI COMPONENTI GRAFICI IONIC
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
+    IonIcon, IonList, IonItem, IonLabel, IonNote, IonFab, IonFabButton,
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol,
+    IonDatetime, IonDatetimeButton, IonModal, IonToggle, IonInput, IonTextarea,
+    IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge
+  ],
 })
+
 export class Tab5Page implements OnInit {
   isManager = false;
   user: any = null;
