@@ -56,7 +56,7 @@ import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, IonRefresherContent, IonButton, IonIcon, IonRippleEffect, ModalController, ToastController, CommonModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, IonRefresherContent, IonButton, IonIcon, IonRippleEffect, CommonModule],
 })
 export class Tab1Page implements OnInit {
   userNome = 'Utente';
