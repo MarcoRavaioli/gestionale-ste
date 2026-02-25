@@ -27,7 +27,6 @@ import { Indirizzo } from '../../interfaces/models';
     IonButton,
     IonContent,
     IonInput,
-    ModalController,
     CommonModule,
     FormsModule,
   ],

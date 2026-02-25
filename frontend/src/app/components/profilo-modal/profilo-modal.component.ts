@@ -47,8 +47,6 @@ import {
     IonLabel,
     IonNote,
     IonText,
-    ModalController,
-    ToastController,
     CommonModule,
     FormsModule,
   ],

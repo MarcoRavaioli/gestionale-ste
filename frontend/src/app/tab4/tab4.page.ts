@@ -36,12 +36,10 @@ interface GruppoFatture {
   imports: [
     CommonModule, 
     FormsModule,
-    // 2. DICHIARAZIONE DEI COMPONENTI GRAFICI IONIC
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButton,
     IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSearchbar,
-    IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
-    IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
-    IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
+    IonList, IonItem, IonBadge, IonFab, IonFabButton,
+    IonRefresher, IonRefresherContent, IonDatetime, 
     IonDatetimeButton, IonModal, IonToggle, IonPopover
   ],
 })

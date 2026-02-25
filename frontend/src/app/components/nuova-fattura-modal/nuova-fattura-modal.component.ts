@@ -84,7 +84,6 @@ import {
     IonTextarea,
     IonFooter,
     IonSpinner,
-    ModalController,
   ],
 })
 export class NuovaFatturaModalComponent implements OnInit {

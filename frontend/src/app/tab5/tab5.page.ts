@@ -30,12 +30,10 @@ import {
   imports: [
     CommonModule, 
     FormsModule,
-    // 2. DICHIARAZIONE DEI COMPONENTI GRAFICI IONIC
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
-    IonIcon, IonList, IonItem, IonLabel, IonNote, IonFab, IonFabButton,
-    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol,
-    IonDatetime, IonDatetimeButton, IonModal, IonToggle, IonInput, IonTextarea,
-    IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge, IonCardSubtitle
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButton,
+    IonIcon, IonLabel, IonCard, IonCardHeader, IonCardTitle, 
+    IonCardContent, IonDatetime, IonDatetimeButton, IonModal, 
+    IonToggle, IonInput, IonTextarea, IonCardSubtitle
   ],
 })
 

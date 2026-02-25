@@ -45,7 +45,6 @@ import { AllegatoService } from 'src/app/services/allegato.service';
     IonItem,
     IonBadge,
     IonButton,
-    ToastController,
     CommessaItemComponent,
   ],
 })
