@@ -35,3 +35,19 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+
+/* --- FIX TAB BAR ASSOLUTA --- */
+/* Spinge in alto il contenuto e i bottoni fluttuanti solo nelle pagine principali */
+app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
+  
+  /* 1. Alza il bottone fluttuante (FAB) */
+  ion-fab[vertical="bottom"] {
+    margin-bottom: 75px !important; /* Compensa i ~60px della tab bar + un po' di margine */
+  }
+
+  /* 2. Aggiunge uno spazio vuoto alla fine della pagina per poter scorrere le liste fino in fondo */
+  ion-content {
+    --padding-bottom: 85px !important;
+  }
+}
