@@ -53,7 +53,6 @@ interface GruppoAppuntamenti {
     CommonModule, 
     FormsModule, 
     RouterModule,
-    ToastController,
     IonHeader, IonToolbar, IonTitle, IonChip, IonLabel, IonSearchbar, IonButton, 
     IonIcon, IonContent, IonRefresher, IonRefresherContent, IonList, IonItem, 
     IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge
