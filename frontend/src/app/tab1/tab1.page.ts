@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // <--- IMPORT HTTP
 import { environment } from 'src/environments/environment'; // <--- IMPORT ENV
+import { 
+  IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, 
+  IonRefresherContent, IonButton, IonIcon, IonRippleEffect,
+  ModalController, ToastController 
+} from '@ionic/angular/standalone';
 
 // Services
 import { AppuntamentoService } from '../services/appuntamento.service';
@@ -52,7 +56,7 @@ import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule],
+  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, IonRefresherContent, IonButton, IonIcon, IonRippleEffect, ModalController, ToastController, CommonModule],
 })
 export class Tab1Page implements OnInit {
   userNome = 'Utente';

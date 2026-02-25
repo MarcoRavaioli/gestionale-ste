@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-// CORREZIONE IMPORT: Risaliamo di due livelli (../../)
 import { AuthService } from '../../services/auth.service'; 
 import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
