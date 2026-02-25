@@ -4,28 +4,67 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import helmet from 'helmet';
 import { ValidationPipe } from '@nestjs/common';
+import { WinstonModule } from 'nest-winston';
+import * as winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  // 1. CONFIGURAZIONE WINSTON LOGGER
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: WinstonModule.createLogger({
+      transports: [
+        // A. Log in Console (colorato per lo sviluppo)
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.colorize(),
+            winston.format.printf(({ timestamp, level, message, context }) => {
+              return `[${timestamp}] ${level} [${context || 'App'}]: ${message}`;
+            }),
+          ),
+        }),
+        // B. Log su File - Solo per gli Errori (Formato JSON strutturato)
+        new DailyRotateFile({
+          filename: 'logs/error-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true, // Comprime i file vecchi per salvare spazio
+          maxSize: '20m',
+          maxFiles: '14d', // Mantiene i log per 14 giorni, poi li cancella
+          level: 'error',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
+        // C. Log su File - Tutto il traffico (Formato JSON strutturato)
+        new DailyRotateFile({
+          filename: 'logs/application-%DATE%.log',
+          datePattern: 'YYYY-MM-DD',
+          zippedArchive: true,
+          maxSize: '20m',
+          maxFiles: '14d',
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.json(),
+          ),
+        }),
+      ],
+    }),
+  });
 
-  // 1. HELMET: Configurato per permettere il caricamento immagini cross-site
+  // 2. HELMET
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
 
-  // 2. CORS: Fondamentale per far parlare i due sottodomini
+  // 3. CORS
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(',')
-    : ['http://localhost:8100', 'http://localhost:4200']; // Sviluppo locale (opzionale)
+    : ['http://localhost:8100', 'http://localhost:4200'];
 
   app.enableCors({
-  //  origin: [
-  //    'https://gestionalegspose.marcoravaiolii.xyz', // Produzione
-  //    'http://localhost:8100', // Sviluppo locale (opzionale)
-  //    'http://localhost:4200',
-  //  ],
     origin: corsOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
@@ -38,14 +77,14 @@ async function bootstrap() {
     }),
   );
 
-  // 3. ASSET STATICI (Uploads)
-  // Decommentato e reso robusto.
-  // In locale userà la cartella 'uploads' nella root del progetto.
-  // In Docker mapperemo questa cartella su un volume.
+  // 4. ASSET STATICI (Uploads)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
   });
 
-  await app.listen(3000);
+  // 5. PORTA DINAMICA O FALLBACK
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`Applicazione avviata sulla porta ${port}`);
 }
 void bootstrap();

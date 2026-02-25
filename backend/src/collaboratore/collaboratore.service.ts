@@ -95,12 +95,10 @@ async seedUsers() {
   }
 
   async findOneByUsernameOrEmail(identifier: string): Promise<Collaboratore | null> {
-    return this.collaboratoreRepository.findOne({
-      where: [
-        { nickname: identifier },
-        { email: identifier }
-      ]
-    });
+    return this.collaboratoreRepository.createQueryBuilder('user')
+      .where('user.nickname = :identifier OR user.email = :identifier', { identifier })
+      .addSelect('user.password') // <--- IL TRUCCO È QUI: Forza il recupero del campo nascosto
+      .getOne();
   }
 
   // Helper legacy, se servisse ancora in futuro
