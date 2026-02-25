@@ -1,7 +1,20 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonTextarea,
+  IonSelect,
+  IonSelectOption,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { CommessaService } from '../../services/commessa.service';
@@ -33,7 +46,22 @@ import { AllegatoService } from 'src/app/services/allegato.service';
   templateUrl: './nuovo-appuntamento-globale-modal.component.html',
   styleUrls: ['./nuovo-appuntamento-globale-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, GenericSelectorComponent],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonInput,
+    IonTextarea,
+    IonSelect,
+    IonSelectOption,
+    CommonModule,
+    FormsModule,
+    GenericSelectorComponent,
+  ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   // INPUT DAL PADRE
@@ -136,7 +164,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
         now.setSeconds(0, 0);
         // Hack per timezone locale
         const localIso = new Date(
-          now.getTime() - now.getTimezoneOffset() * 60000
+          now.getTime() - now.getTimezoneOffset() * 60000,
         )
           .toISOString()
           .slice(0, 16);
@@ -171,15 +199,15 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       .getAll()
       .subscribe(
         (d) =>
-          (this.listaClienti = d.sort((a, b) => a.nome.localeCompare(b.nome)))
+          (this.listaClienti = d.sort((a, b) => a.nome.localeCompare(b.nome))),
       );
     this.indService
       .getAll()
       .subscribe(
         (d) =>
           (this.listaCantieri = d.sort((a, b) =>
-            a.citta.localeCompare(b.citta)
-          ))
+            a.citta.localeCompare(b.citta),
+          )),
       );
     this.comService.getAll().subscribe((d) => {
       this.listaCommesse = d.sort((a, b) => a.seriale.localeCompare(b.seriale));
@@ -239,14 +267,17 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
             // FIX EMAIL VUOTA
             const clientePayload = { ...this.nuovoCliente } as any;
             if (!clientePayload.email || clientePayload.email.trim() === '') {
-              delete clientePayload.email; 
+              delete clientePayload.email;
             }
-            if (!clientePayload.telefono || clientePayload.telefono.trim() === '') {
+            if (
+              !clientePayload.telefono ||
+              clientePayload.telefono.trim() === ''
+            ) {
               delete clientePayload.telefono;
             }
 
             const cli = await this.wrap(
-              this.cliService.create(clientePayload) // Usa clientePayload invece di this.nuovoCliente
+              this.cliService.create(clientePayload), // Usa clientePayload invece di this.nuovoCliente
             );
             clienteIdFinale = cli.id;
           }
@@ -271,13 +302,13 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
       // 4. CREA O AGGIORNA APPUNTAMENTO
       const appPayload = {
-        ...this.formDati, 
+        ...this.formDati,
         commessa: { id: commessaIdFinale },
       } as any;
 
       // FIX NOME: Aggiungiamo un nome fittizio se manca
       if (!appPayload.nome || appPayload.nome.trim() === '') {
-        appPayload.nome = 'Intervento'; 
+        appPayload.nome = 'Intervento';
       }
 
       if (this.isEditing && this.appuntamento) {

@@ -1,7 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonTextarea,
+  IonSelect,
+  IonSelectOption,
+  ModalController,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { CommessaService } from '../../services/commessa.service';
@@ -27,7 +41,22 @@ import {
   templateUrl: './nuova-commessa-globale-modal.component.html',
   styleUrls: ['./nuova-commessa-globale-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, GenericSelectorComponent],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonInput,
+    IonTextarea,
+    IonSelect,
+    IonSelectOption,
+    CommonModule,
+    FormsModule,
+    GenericSelectorComponent,
+  ],
 })
 export class NuovaCommessaGlobaleModalComponent implements OnInit {
   // LISTE PER SELECT

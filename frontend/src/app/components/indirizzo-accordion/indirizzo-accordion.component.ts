@@ -8,7 +8,16 @@ import {
   ElementRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AnimationController, IonicModule, ToastController } from '@ionic/angular';
+import {
+  AnimationController,
+  IonIcon,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonBadge,
+  IonButton,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { Indirizzo, Commessa, Allegato } from '../../interfaces/models';
 import { CommessaItemComponent } from '../commessa-item/commessa-item.component';
 import { addIcons } from 'ionicons';
@@ -28,7 +37,17 @@ import { AllegatoService } from 'src/app/services/allegato.service';
   templateUrl: './indirizzo-accordion.component.html',
   styleUrls: ['./indirizzo-accordion.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, CommessaItemComponent],
+  imports: [
+    CommonModule,
+    IonIcon,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonBadge,
+    IonButton,
+    ToastController,
+    CommessaItemComponent,
+  ],
 })
 export class IndirizzoAccordionComponent implements OnChanges {
   @Input() indirizzo!: Indirizzo;
@@ -157,23 +176,23 @@ export class IndirizzoAccordionComponent implements OnChanges {
     }
 
     // Altrimenti mostra menu di scelta
-    const buttons = commessa.allegati.map(file => ({
+    const buttons = commessa.allegati.map((file) => ({
       text: file.nome_file,
       icon: 'document-text-outline',
       handler: () => {
         this.scaricaFile(file);
-      }
+      },
     }));
 
     buttons.push({
       text: 'Annulla',
       icon: 'close',
-      role: 'cancel'
+      role: 'cancel',
     } as any);
 
     const actionSheet = await this.actionSheetCtrl.create({
       header: `Allegati (${commessa.allegati.length})`,
-      buttons: buttons
+      buttons: buttons,
     });
 
     await actionSheet.present();
@@ -191,12 +210,16 @@ export class IndirizzoAccordionComponent implements OnChanges {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
       },
-      error: () => this.mostraToast('Errore durante il download')
+      error: () => this.mostraToast('Errore durante il download'),
     });
   }
 
   async mostraToast(msg: string) {
-    const t = await this.toastCtrl.create({ message: msg, duration: 2000, color: 'danger' });
+    const t = await this.toastCtrl.create({
+      message: msg,
+      duration: 2000,
+      color: 'danger',
+    });
     t.present();
   }
 }

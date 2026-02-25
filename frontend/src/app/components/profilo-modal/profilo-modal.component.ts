@@ -1,7 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonInput,
+  IonList,
+  IonItem,
+  IonIcon,
+  IonLabel,
+  IonNote,
+  IonText,
+  ModalController,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { AuthService } from '../../services/auth.service';
 import { CollaboratoreService } from '../../services/collaboratore.service';
 import { addIcons } from 'ionicons';
@@ -17,7 +33,25 @@ import {
   templateUrl: './profilo-modal.component.html',
   styleUrls: ['./profilo-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonInput,
+    IonList,
+    IonItem,
+    IonIcon,
+    IonLabel,
+    IonNote,
+    IonText,
+    ModalController,
+    ToastController,
+    CommonModule,
+    FormsModule,
+  ],
 })
 export class ProfiloModalComponent implements OnInit {
   utente: any = {};

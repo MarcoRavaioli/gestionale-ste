@@ -1,19 +1,51 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { IonicModule, ModalController, ToastController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonInput,
+  IonTextarea,
+  IonSelect,
+  IonSelectOption,
+  IonIcon,
+  ModalController,
+  ToastController,
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommessaService } from '../../services/commessa.service';
 import { AllegatoService } from '../../services/allegato.service'; // <--- NUOVO
 import { Commessa } from '../../interfaces/models';
 import { addIcons } from 'ionicons';
-import { cloudUploadOutline, documentAttachOutline, closeCircle } from 'ionicons/icons';
+import {
+  cloudUploadOutline,
+  documentAttachOutline,
+  closeCircle,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuova-commessa-modal',
   templateUrl: './nuova-commessa-modal.component.html',
   styleUrls: ['./nuova-commessa-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonInput,
+    IonTextarea,
+    IonSelect,
+    IonSelectOption,
+    IonIcon,
+    CommonModule,
+    FormsModule,
+  ],
 })
 export class NuovaCommessaModalComponent implements OnInit {
   @Input() indirizzoId!: number;
@@ -32,7 +64,7 @@ export class NuovaCommessaModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private commessaService: CommessaService,
     private allegatoService: AllegatoService, // <--- Inject
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
   ) {
     addIcons({ cloudUploadOutline, documentAttachOutline, closeCircle });
   }
@@ -76,7 +108,10 @@ export class NuovaCommessaModalComponent implements OnInit {
     // 1. Crea o Aggiorna Commessa
     let obs$;
     if (this.commessaEsistente) {
-      obs$ = this.commessaService.update(this.commessaEsistente.id, payload as any);
+      obs$ = this.commessaService.update(
+        this.commessaEsistente.id,
+        payload as any,
+      );
     } else {
       obs$ = this.commessaService.create(payload as any);
     }
@@ -87,14 +122,19 @@ export class NuovaCommessaModalComponent implements OnInit {
         if (this.selectedFile) {
           try {
             // Se stiamo modificando, usa l'ID esistente, altrimenti quello nuovo
-            const idCommessa = this.commessaEsistente ? this.commessaEsistente.id : res.id;
+            const idCommessa = this.commessaEsistente
+              ? this.commessaEsistente.id
+              : res.id;
             await this.uploadFilePromise(idCommessa, this.selectedFile);
           } catch (err) {
             console.error('Errore upload', err);
-            this.showToast('Commessa salvata, ma errore nel caricamento allegato.', 'warning');
+            this.showToast(
+              'Commessa salvata, ma errore nel caricamento allegato.',
+              'warning',
+            );
           }
         }
-        
+
         this.modalCtrl.dismiss({ aggiornato: true, data: res });
       },
       error: (err) => {
@@ -109,13 +149,17 @@ export class NuovaCommessaModalComponent implements OnInit {
     return new Promise((resolve, reject) => {
       this.allegatoService.upload(commessaId, file).subscribe({
         next: (res) => resolve(res),
-        error: (err) => reject(err)
+        error: (err) => reject(err),
       });
     });
   }
 
   async showToast(msg: string, color: string) {
-    const toast = await this.toastCtrl.create({ message: msg, color, duration: 3000 });
+    const toast = await this.toastCtrl.create({
+      message: msg,
+      color,
+      duration: 3000,
+    });
     toast.present();
   }
 }

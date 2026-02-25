@@ -7,7 +7,32 @@ import {
   ReactiveFormsModule,
   FormsModule,
 } from '@angular/forms';
-import { IonicModule, ModalController, AlertController } from '@ionic/angular';
+import {
+  IonIcon,
+  IonButton,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonButtons,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItemGroup,
+  IonSegment,
+  IonSegmentButton,
+  IonInput,
+  IonRow,
+  IonCol,
+  IonDatetimeButton,
+  IonModal,
+  IonDatetime,
+  IonSelect,
+  IonSelectOption,
+  IonTextarea,
+  IonFooter,
+} from '@ionic/angular/standalone';
+import { ModalController, AlertController } from '@ionic/angular/standalone';
 import { Fattura, Cliente, Commessa } from 'src/app/interfaces/models';
 import { FatturaService } from 'src/app/services/fattura.service';
 import { ClienteService } from 'src/app/services/cliente.service';
@@ -40,7 +65,34 @@ import {
   templateUrl: './fattura-dettaglio-modal.component.html',
   styleUrls: ['./fattura-dettaglio-modal.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule,
+    IonIcon,
+    IonButton,
+    IonList,
+    IonItem,
+    IonLabel,
+    IonButtons,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItemGroup,
+    IonSegment,
+    IonSegmentButton,
+    IonInput,
+    IonRow,
+    IonCol,
+    IonDatetimeButton,
+    IonModal,
+    IonDatetime,
+    IonSelect,
+    IonSelectOption,
+    IonTextarea,
+    IonFooter,
+    ReactiveFormsModule,
+    FormsModule,
+  ],
 })
 export class FatturaDettaglioModalComponent implements OnInit {
   @Input() fattura!: Fattura;
@@ -56,7 +108,7 @@ export class FatturaDettaglioModalComponent implements OnInit {
     private fb: FormBuilder,
     private fatturaService: FatturaService,
     private clienteService: ClienteService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
   ) {
     addIcons({
       close,
@@ -247,7 +299,7 @@ export class FatturaDettaglioModalComponent implements OnInit {
       .updateWithAttachment(
         this.fattura.id,
         this.form.value,
-        this.fileSelezionato
+        this.fileSelezionato,
       )
       .subscribe({
         next: (fatturaAggiornata) => {

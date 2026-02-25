@@ -8,7 +8,8 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule, ModalController, AlertController, ToastController } from '@ionic/angular';
+import { IonIcon, IonButton,  IonList, IonItem, IonLabel, IonButtons} from '@ionic/angular/standalone';
+import { ModalController, AlertController, ToastController } from '@ionic/angular/standalone';
 import { Commessa, Appuntamento, Allegato } from '../../interfaces/models';
 import { AppuntamentoService } from 'src/app/services/appuntamento.service';
 import { AllegatoService } from 'src/app/services/allegato.service'; // <--- NUOVO
@@ -27,7 +28,7 @@ import { it } from 'date-fns/locale';
   templateUrl: './commessa-item.component.html',
   styleUrls: ['./commessa-item.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule],
+  imports: [CommonModule, IonIcon, IonButton,  IonList, IonItem, IonLabel, IonButtons],
 })
 export class CommessaItemComponent implements OnChanges {
   @Input() commessa!: Commessa;

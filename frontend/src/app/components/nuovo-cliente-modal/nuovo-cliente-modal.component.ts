@@ -1,7 +1,18 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonItem,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
 
 @Component({
@@ -9,19 +20,30 @@ import { ClienteService } from '../../services/cliente.service';
   templateUrl: './nuovo-cliente-modal.component.html',
   styleUrls: ['./nuovo-cliente-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonInput,
+    IonItem,
+  ],
 })
 export class NuovoClienteModalComponent {
-  
   cliente = {
     nome: '',
     telefono: '',
-    email: ''
+    email: '',
   };
 
   constructor(
     private modalCtrl: ModalController,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
   ) {}
 
   chiudi() {
@@ -34,13 +56,13 @@ export class NuovoClienteModalComponent {
     // --- CORREZIONE: Pulizia Dati ---
     // Creiamo un payload pulito. Se un campo è vuoto (""), non lo inviamo proprio.
     const payload: any = {
-      nome: this.cliente.nome
+      nome: this.cliente.nome,
     };
 
     if (this.cliente.telefono && this.cliente.telefono.trim() !== '') {
       payload.telefono = this.cliente.telefono;
     }
-    
+
     if (this.cliente.email && this.cliente.email.trim() !== '') {
       payload.email = this.cliente.email;
     }
@@ -55,7 +77,7 @@ export class NuovoClienteModalComponent {
         // Suggerimento: mostra l'errore specifico se disponibile
         const msg = err.error?.message || 'Errore salvataggio cliente';
         alert(Array.isArray(msg) ? msg[0] : msg);
-      }
+      },
     });
   }
 }

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { IonicModule, PopoverController } from '@ionic/angular';
+import { IonList, IonListHeader, IonItem, IonSelect, IonSelectOption, PopoverController } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ViewSettings } from '../../services/preferences';
@@ -9,7 +9,7 @@ import { ViewSettings } from '../../services/preferences';
   templateUrl: './list-settings-popover.component.html',
   styleUrls: ['./list-settings-popover.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonList, IonListHeader, IonItem, IonSelect, IonSelectOption, CommonModule, FormsModule],
 })
 export class ListSettingsPopoverComponent {
   @Input() type: 'clienti' | 'cantieri' | 'commesse' | 'appuntamenti' = 'clienti';

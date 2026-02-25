@@ -1,20 +1,47 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonicModule, ModalController } from '@ionic/angular';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonInput,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
 import { Cliente } from '../../interfaces/models';
 import { addIcons } from 'ionicons';
-import { personAddOutline, searchOutline, closeOutline, locationOutline } from 'ionicons/icons';
+import {
+  personAddOutline,
+  searchOutline,
+  closeOutline,
+  locationOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-cantiere-globale-modal',
   templateUrl: './nuovo-cantiere-globale-modal.component.html',
   styleUrls: ['./nuovo-cantiere-globale-modal.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, GenericSelectorComponent],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonInput,
+    CommonModule,
+    FormsModule,
+    GenericSelectorComponent,
+  ],
 })
 export class NuovoCantiereGlobaleModalComponent implements OnInit {
   // Dati per la selezione
@@ -44,9 +71,14 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private clienteService: ClienteService,
-    private indirizzoService: IndirizzoService
+    private indirizzoService: IndirizzoService,
   ) {
-    addIcons({ personAddOutline, searchOutline, closeOutline, locationOutline });
+    addIcons({
+      personAddOutline,
+      searchOutline,
+      closeOutline,
+      locationOutline,
+    });
   }
 
   ngOnInit() {
