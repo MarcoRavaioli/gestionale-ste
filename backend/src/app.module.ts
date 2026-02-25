@@ -57,7 +57,7 @@ import { UploadsController } from './uploads/uploads.controller';
         Cliente, Indirizzo, Commessa, Appuntamento,
         Fattura, Collaboratore, TracciamentoPersonale, Allegato,
       ],
-      synchronize: false, 
+      synchronize: true, 
       migrationsRun: true,
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     }),
