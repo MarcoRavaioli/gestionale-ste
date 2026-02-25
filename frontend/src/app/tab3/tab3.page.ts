@@ -5,7 +5,7 @@ import {
   PopoverController,
   IonHeader, IonToolbar, IonTitle, IonChip, IonLabel, IonSearchbar, IonButton, 
   IonIcon, IonContent, IonRefresher, IonRefresherContent, IonList, IonItem, 
-  IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge
+  IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge,
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ import { addIcons } from 'ionicons';
 import {
   add, searchOutline, locationOutline, personOutline, filterOutline, businessOutline,
   personAddOutline, callOutline, documentsOutline, calendarOutline, peopleOutline,
-  chevronForward, location, documents, storefrontOutline, attachOutline, folderOpenOutline, calendarNumberOutline
+  chevronForward, location, documents, storefrontOutline, attachOutline, folderOpenOutline, calendarNumberOutline, createOutline,
 } from 'ionicons/icons';
 import { CommessaService } from '../services/commessa.service';
 import { AppuntamentoService } from '../services/appuntamento.service';
@@ -134,6 +134,7 @@ export class Tab3Page implements OnInit {
       attachOutline,
       folderOpenOutline,
       calendarNumberOutline,
+      createOutline,
     });
   }
 
@@ -579,23 +580,15 @@ export class Tab3Page implements OnInit {
     }
   }
 
-  goToDettaglioElemento(item: any, tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento') {
+  async goToDettaglioElemento(item: any, tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento') {
     let clienteId = null;
 
-    // Peschiamo l'ID del cliente in base a dove abbiamo cliccato
-    if (tipo === 'cliente') {
-      clienteId = item.id;
-    } else if (tipo === 'cantiere') {
-      clienteId = item.cliente?.id;
-    } else if (tipo === 'commessa') {
-      clienteId = item.indirizzo?.cliente?.id;
-    } else if (tipo === 'appuntamento') {
-      clienteId = item.commessa?.indirizzo?.cliente?.id;
-    }
+    if (tipo === 'cliente') clienteId = item.id;
+    else if (tipo === 'cantiere') clienteId = item.cliente?.id;
+    else if (tipo === 'commessa') clienteId = item.indirizzo?.cliente?.id;
+    else if (tipo === 'appuntamento') clienteId = item.commessa?.indirizzo?.cliente?.id;
 
     if (clienteId) {
-      // Ha un cliente associato, possiamo navigare in sicurezza!
-      // Costruiamo eventuali QueryParams (per far aprire l'accordion giusto nel dettaglio)
       const queryParams: any = {};
       if (tipo === 'cantiere') queryParams.cantiereId = item.id;
       if (tipo === 'commessa') {
@@ -607,15 +600,40 @@ export class Tab3Page implements OnInit {
         queryParams.commessaId = item.commessa?.id;
         queryParams.appuntamentoId = item.id;
       }
-
       this.router.navigate(['/cliente-dettaglio', clienteId], { queryParams });
     } else {
-      // È un elemento generico, NON navigare e avvisa l'utente
-      this.toastCtrl.create({
-        message: 'Questo è un elemento interno generico, nessun cliente associato.',
-        duration: 2500,
-        color: 'primary'
-      }).then(t => t.present());
+      // INVECE DEL TOAST, ORA APRIAMO IL MODALE IN MODALITÀ MODIFICA!
+      let componentToOpen: any;
+      let propsToPass: any = {};
+
+      if (tipo === 'appuntamento') {
+        componentToOpen = NuovoAppuntamentoGlobaleModalComponent;
+        propsToPass = { appuntamento: item }; // Il tuo modale supporta l'Input()
+      } else if (tipo === 'commessa') {
+         // Se non hai un @Input() nel modale globale commessa, ti farà creare uno nuovo.
+         // Ti consiglio di passare all'appuntamento per il momento.
+        this.toastCtrl.create({
+          message: 'Questa è una Commessa Generica',
+          duration: 2000, color: 'primary'
+        }).then(t => t.present());
+        return;
+      } else if (tipo === 'cantiere') {
+        this.toastCtrl.create({
+          message: 'Questo è un Cantiere Generico',
+          duration: 2000, color: 'primary'
+        }).then(t => t.present());
+        return;
+      }
+
+      if (componentToOpen) {
+        const modal = await this.modalCtrl.create({
+          component: componentToOpen,
+          componentProps: propsToPass
+        });
+        await modal.present();
+        const { data } = await modal.onWillDismiss();
+        if (data && (data.creato || data.aggiornato)) this.caricaDati();
+      }
     }
   }
 }

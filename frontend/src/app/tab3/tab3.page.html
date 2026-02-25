@@ -73,9 +73,9 @@
           <p class="item-subtitle">{{ cliente.email || 'Nessuna email' }}</p>
         </ion-label>
         <ion-icon
-          name="chevron-forward"
+          [name]="cliente.id ? 'chevron-forward' : 'create-outline'"
           slot="end"
-          color="medium"
+          [color]="cliente.id ? 'medium' : 'primary'"
           class="arrow-icon"
         ></ion-icon>
       </ion-item>
@@ -106,9 +106,9 @@
           </p>
         </ion-label>
         <ion-icon
-          name="chevron-forward"
+          [name]="cantiere.id ? 'chevron-forward' : 'create-outline'"
           slot="end"
-          color="medium"
+          [color]="cantiere.id ? 'medium' : 'primary'"
           class="arrow-icon"
         ></ion-icon>
       </ion-item>
@@ -194,9 +194,9 @@
           </p>
         </ion-label>
         <ion-icon
-          name="chevron-forward"
+          [name]="item.id ? 'chevron-forward' : 'create-outline'"
           slot="end"
-          color="medium"
+          [color]="item.id ? 'medium' : 'primary'"
           class="arrow-icon"
         ></ion-icon>
       </ion-item>
@@ -298,9 +298,9 @@
           </div>
         </ion-label>
         <ion-icon
-          name="chevron-forward"
+          [name]="app.commessa?.indirizzo?.cliente?.id ? 'chevron-forward' : 'create-outline'"
           slot="end"
-          color="medium"
+          [color]="app.commessa?.indirizzo?.cliente?.id ? 'medium' : 'primary'"
           class="arrow-icon"
         ></ion-icon>
       </ion-item>
