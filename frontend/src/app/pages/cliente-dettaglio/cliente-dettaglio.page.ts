@@ -1,16 +1,20 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+// 1. IMPORTIAMO I COMPONENTI STANDALONE E I CONTROLLER
 import {
-  IonicModule,
   ModalController,
   ToastController,
   AlertController,
   NavController,
-  IonicSafeString,
-  ViewDidEnter,
-  IonContent,
-} from '@ionic/angular';
+  IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle,
+  IonButton, IonIcon, IonContent, IonInput, IonSearchbar,
+  IonAccordionGroup, IonAccordion, IonItem, IonBadge
+} from '@ionic/angular/standalone';
+
+// 2. IMPORTIAMO LE UTILITY DI IONIC
+import { IonicSafeString, ViewDidEnter } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 // Services & Models
@@ -18,34 +22,19 @@ import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from 'src/app/services/indirizzo.service';
 import { CommessaService } from 'src/app/services/commessa.service';
 import { AuthService } from '../../services/auth.service';
-import {
-  Cliente,
-  Indirizzo,
-  Commessa,
-} from '../../interfaces/models';
+import { Cliente, Indirizzo, Commessa } from '../../interfaces/models';
 
-// Modali
+// Modali e Componenti Figli
 import { NuovoIndirizzoModalComponent } from '../../components/nuovo-indirizzo-modal/nuovo-indirizzo-modal.component';
 import { NuovaCommessaModalComponent } from '../../components/nuova-commessa-modal/nuova-commessa-modal.component';
-
-// Componenti Figli
 import { IndirizzoAccordionComponent } from '../../components/indirizzo-accordion/indirizzo-accordion.component';
 
+// Icone
 import { addIcons } from 'ionicons';
 import {
-  mailOutline,
-  callOutline,
-  pencilOutline,
-  closeOutline,
-  saveOutline,
-  trashOutline,
-  addCircleOutline,
-  searchOutline,
-  locationOutline,
-  businessOutline,
-  calendarOutline,
-  location,
-  personOutline,
+  mailOutline, callOutline, pencilOutline, closeOutline, saveOutline,
+  trashOutline, addCircleOutline, searchOutline, locationOutline,
+  businessOutline, calendarOutline, location, personOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -54,12 +43,16 @@ import {
   styleUrls: ['./cliente-dettaglio.page.scss'],
   standalone: true,
   imports: [
-    IonicModule,
     CommonModule,
     FormsModule,
     IndirizzoAccordionComponent,
+    // 3. DICHIARIAMO TUTTI I PEZZI GRAFICI, INCLUSO IL BACK BUTTON!
+    IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle,
+    IonButton, IonIcon, IonContent, IonInput, IonSearchbar,
+    IonAccordionGroup, IonAccordion, IonItem, IonBadge
   ],
 })
+
 export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
   // FIX 1: Aggiunto '!' per dire a TS che Angular lo inizializzerà
   @ViewChild(IonContent, { static: false }) content!: IonContent;
