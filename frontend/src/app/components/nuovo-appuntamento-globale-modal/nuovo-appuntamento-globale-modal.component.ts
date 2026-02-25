@@ -2,44 +2,19 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonContent,
-  IonIcon,
-  IonInput,
-  IonTextarea,
-  IonSelect,
-  IonSelectOption,
-  ModalController,
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+  IonContent, IonIcon, IonInput, IonTextarea, IonToggle, IonItem,
+  ModalController, ToastController
 } from '@ionic/angular/standalone';
-import { ClienteService } from '../../services/cliente.service';
-import { IndirizzoService } from '../../services/indirizzo.service';
-import { CommessaService } from '../../services/commessa.service';
 import { AppuntamentoService } from '../../services/appuntamento.service';
+import { CommessaService } from '../../services/commessa.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import {
-  Cliente,
-  Indirizzo,
-  Commessa,
-  Appuntamento,
-} from '../../interfaces/models';
+import { Appuntamento, Commessa } from '../../interfaces/models';
+// IMPORTIAMO IL MODALE DELLA COMMESSA CHE GIA' ESISTE!
+import { NuovaCommessaGlobaleModalComponent } from '../nuova-commessa-globale-modal/nuova-commessa-globale-modal.component'; 
+
 import { addIcons } from 'ionicons';
-import {
-  calendarOutline,
-  documentsOutline,
-  locationOutline,
-  personAddOutline,
-  closeOutline,
-  searchOutline,
-  add,
-  chevronDownOutline,
-  checkmarkCircle,
-  cloudUploadOutline,
-} from 'ionicons/icons';
-import { AllegatoService } from 'src/app/services/allegato.service';
+import { calendarOutline, documentsOutline, closeOutline, add } from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-appuntamento-globale-modal',
@@ -47,294 +22,111 @@ import { AllegatoService } from 'src/app/services/allegato.service';
   styleUrls: ['./nuovo-appuntamento-globale-modal.component.scss'],
   standalone: true,
   imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonContent,
-    IonIcon,
-    IonInput,
-    IonTextarea,
-    IonSelect,
-    IonSelectOption,
-    CommonModule,
-    FormsModule,
-    GenericSelectorComponent,
+    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+    IonContent, IonIcon, IonInput, IonTextarea, IonToggle, IonItem,
+    CommonModule, FormsModule, GenericSelectorComponent,
   ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
-  // INPUT DAL PADRE
-  @Input() dataIniziale?: string;
-  @Input() appuntamento?: Appuntamento; // Questo è l'oggetto originale passato per la modifica
-  @Input() commessaId?: number; // Contesto opzionale
-
+  @Input() appuntamento?: Appuntamento;
   isEditing = false;
 
-  // DATI DEL FORM (Separati dall'input per evitare conflitti)
-  formDati = { nome: '', data_ora: '', descrizione: '' };
-
-  // LISTE DATI
   listaCommesse: Commessa[] = [];
-  listaCantieri: Indirizzo[] = [];
-  listaClienti: Cliente[] = [];
-  filteredCommesse: Commessa[] = [];
-
-  // MODALITÀ (Toggles)
-  modeCommessa: 'esistente' | 'nuova' = 'esistente';
-  modeCantiere: 'esistente' | 'nuovo' = 'esistente';
-  modeCliente: 'esistente' | 'nuovo' = 'esistente';
-
-  // SELEZIONI
   selectedCommessaId: number | null = null;
-  selectedCantiereId: number | null = null;
-  selectedClienteId: number | null = null;
-  selectedFile: File | null = null;
+  
+  // LA SOLUZIONE ALLA RICHIESTA DEL TUO CLIENTE:
+  usaCommessaGenerica = false; 
 
-  // DATI FORM NUOVI OGGETTI
-  nuovaCommessa = {
-    seriale: '',
+  formDati = {
+    nome: '',
+    data_ora: '',
     descrizione: '',
-    stato: 'APERTA',
-    valore_totale: undefined,
   };
-  nuovoCantiere = {
-    via: '',
-    civico: '',
-    citta: '',
-    cap: '',
-    provincia: '',
-    stato: 'Italia',
-  };
-  nuovoCliente = { nome: '', email: '', telefono: '' };
 
   constructor(
     private modalCtrl: ModalController,
-    private cliService: ClienteService,
-    private indService: IndirizzoService,
-    private comService: CommessaService,
+    private toastCtrl: ToastController,
     private appService: AppuntamentoService,
-    private allegatoService: AllegatoService,
+    private comService: CommessaService
   ) {
-    addIcons({
-      calendarOutline,
-      documentsOutline,
-      locationOutline,
-      personAddOutline,
-      closeOutline,
-      searchOutline,
-      add,
-      chevronDownOutline,
-      checkmarkCircle,
-      cloudUploadOutline,
-    });
+    addIcons({ calendarOutline, documentsOutline, closeOutline, add });
   }
 
   ngOnInit() {
-    this.caricaDatiListe();
-
-    // --- LOGICA CRUCIALE: MODIFICA O CREAZIONE? ---
-    if (this.appuntamento && this.appuntamento.id) {
-      // *** CASO MODIFICA ***
+    this.caricaDatiBase();
+    if (this.appuntamento) {
       this.isEditing = true;
-
-      // 1. Copia i dati semplici nel form
-      this.formDati.nome = this.appuntamento.nome || '';
-      this.formDati.descrizione = this.appuntamento.descrizione || '';
-
-      // 2. FIX DATA: Taglia i secondi e il fuso orario 'Z' se presenti per far piacere all'input HTML
-      if (this.appuntamento.data_ora) {
-        this.formDati.data_ora = this.appuntamento.data_ora.substring(0, 16);
-      }
-
-      // 3. Pre-selezione Commessa (dal dato esistente)
+      this.formDati = {
+        nome: this.appuntamento.nome,
+        data_ora: this.appuntamento.data_ora ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16) : '',
+        descrizione: this.appuntamento.descrizione || '',
+      };
       if (this.appuntamento.commessa) {
         this.selectedCommessaId = this.appuntamento.commessa.id;
-        this.modeCommessa = 'esistente';
-      }
-    } else {
-      // *** CASO CREAZIONE ***
-      this.isEditing = false;
-
-      // 1. Imposta data default (Oggi)
-      if (this.dataIniziale) {
-        this.formDati.data_ora = this.dataIniziale;
       } else {
-        const now = new Date();
-        now.setSeconds(0, 0);
-        // Hack per timezone locale
-        const localIso = new Date(
-          now.getTime() - now.getTimezoneOffset() * 60000,
-        )
-          .toISOString()
-          .slice(0, 16);
-        this.formDati.data_ora = localIso;
-      }
-
-      // 2. Pre-selezione Commessa (dal contesto)
-      if (this.commessaId) {
-        this.selectedCommessaId = this.commessaId;
+        this.usaCommessaGenerica = true;
       }
     }
   }
 
-  triggerFileInput() {
-    document.getElementById('fileInputApp')?.click();
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) this.selectedFile = file;
-  }
-
-  rimuoviFile(ev: Event) {
-    ev.stopPropagation();
-    this.selectedFile = null;
-    const input = document.getElementById('fileInputApp') as HTMLInputElement;
-    if (input) input.value = '';
-  }
-
-  caricaDatiListe() {
-    this.cliService
-      .getAll()
-      .subscribe(
-        (d) =>
-          (this.listaClienti = d.sort((a, b) => a.nome.localeCompare(b.nome))),
-      );
-    this.indService
-      .getAll()
-      .subscribe(
-        (d) =>
-          (this.listaCantieri = d.sort((a, b) =>
-            a.citta.localeCompare(b.citta),
-          )),
-      );
-    this.comService.getAll().subscribe((d) => {
-      this.listaCommesse = d.sort((a, b) => a.seriale.localeCompare(b.seriale));
-      this.filteredCommesse = [...this.listaCommesse];
-    });
+  caricaDatiBase() {
+    this.comService.getAll().subscribe((res) => (this.listaCommesse = res));
   }
 
   chiudi() {
     this.modalCtrl.dismiss();
   }
 
-  // ... (Toggles e Helper rimangono uguali) ...
-  toggleModeCommessa() {
-    this.modeCommessa =
-      this.modeCommessa === 'esistente' ? 'nuova' : 'esistente';
-    this.selectedCommessaId = null;
-    this.modeCantiere = 'esistente';
-  }
-  toggleModeCantiere() {
-    this.modeCantiere =
-      this.modeCantiere === 'esistente' ? 'nuovo' : 'esistente';
-    this.selectedCantiereId = null;
-    this.modeCliente = 'esistente';
-  }
-  toggleModeCliente() {
-    this.modeCliente = this.modeCliente === 'esistente' ? 'nuovo' : 'esistente';
-    this.selectedClienteId = null;
+  // --- IL CUORE DEL REFACTORING: USIAMO IL MODALE GIA' FATTO! ---
+  async creaNuovaCommessaAlVolo() {
+    const modal = await this.modalCtrl.create({
+      component: NuovaCommessaGlobaleModalComponent,
+    });
+    await modal.present();
+    
+    // Quando il modale si chiude, intercettiamo i dati
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      // Aggiungiamo la nuova commessa alla lista e la auto-selezioniamo!
+      this.listaCommesse.unshift(data.data);
+      this.selectedCommessaId = data.data.id;
+    }
   }
 
   isValid(): boolean {
     if (!this.formDati.data_ora) return false;
-    if (this.modeCommessa === 'esistente' && !this.selectedCommessaId)
-      return false;
+    // Se è generica, la data basta. Se non è generica, serve aver selezionato una commessa.
+    if (!this.usaCommessaGenerica && !this.selectedCommessaId) return false;
     return true;
   }
 
-  async salva() {
-    try {
-      let commessaIdFinale: number;
+  salva() {
+    const payload: any = { ...this.formDati };
+    if (!payload.nome || payload.nome.trim() === '') payload.nome = 'Intervento';
 
-      // 1. GESTIONE COMMESSA (Logica esistente)
-      if (this.modeCommessa === 'esistente') {
-        if (!this.selectedCommessaId) return;
-        commessaIdFinale = this.selectedCommessaId;
-      } else {
-        // ... (Logica creazione a cascata invariata) ...
-        let indirizzoIdFinale: number;
-        if (this.modeCantiere === 'esistente') {
-          if (!this.selectedCantiereId) return;
-          indirizzoIdFinale = this.selectedCantiereId;
-        } else {
-          let clienteIdFinale: number;
-          if (this.modeCliente === 'esistente') {
-            if (!this.selectedClienteId) return;
-            clienteIdFinale = this.selectedClienteId;
-          } else {
-            // FIX EMAIL VUOTA
-            const clientePayload = { ...this.nuovoCliente } as any;
-            if (!clientePayload.email || clientePayload.email.trim() === '') {
-              delete clientePayload.email;
-            }
-            if (
-              !clientePayload.telefono ||
-              clientePayload.telefono.trim() === ''
-            ) {
-              delete clientePayload.telefono;
-            }
+    // Gestione intelligente della Commessa
+    if (!this.usaCommessaGenerica && this.selectedCommessaId) {
+      payload.commessa = { id: this.selectedCommessaId };
+    } else {
+      // Se il tuo backend crasha con null, cambia questa riga in: payload.commessa = { id: 1 }; (ID di una tua commessa fissa)
+      payload.commessa = null; 
+    }
 
-            const cli = await this.wrap(
-              this.cliService.create(clientePayload), // Usa clientePayload invece di this.nuovoCliente
-            );
-            clienteIdFinale = cli.id;
-          }
-          const indPayload = {
-            ...this.nuovoCantiere,
-            cliente: { id: clienteIdFinale },
-          } as any;
-
-          if (indPayload.cap) indPayload.cap = String(indPayload.cap);
-          if (indPayload.civico) indPayload.civico = String(indPayload.civico);
-
-          const ind = await this.wrap(this.indService.create(indPayload));
-          indirizzoIdFinale = ind.id;
-        }
-        const comPayload = {
-          ...this.nuovaCommessa,
-          indirizzo: { id: indirizzoIdFinale },
-        } as any;
-        const com = await this.wrap(this.comService.create(comPayload));
-        commessaIdFinale = com.id;
-      }
-
-      // 4. CREA O AGGIORNA APPUNTAMENTO
-      const appPayload = {
-        ...this.formDati,
-        commessa: { id: commessaIdFinale },
-      } as any;
-
-      // FIX NOME: Aggiungiamo un nome fittizio se manca
-      if (!appPayload.nome || appPayload.nome.trim() === '') {
-        appPayload.nome = 'Intervento';
-      }
-
-      if (this.isEditing && this.appuntamento) {
-        // UPDATE
-        this.appService.update(this.appuntamento.id, appPayload).subscribe({
-          next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
-          error: (err) => console.error('Errore update', err),
-        });
-      } else {
-        // CREATE
-        this.appService.create(appPayload).subscribe({
-          next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
-          error: (err) => console.error('Errore create', err),
-        });
-      }
-    } catch (err) {
-      console.error('Errore cascata', err);
+    if (this.isEditing && this.appuntamento) {
+      this.appService.update(this.appuntamento.id, payload).subscribe({
+        next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
+        error: () => this.mostraToast('Errore aggiornamento', 'danger')
+      });
+    } else {
+      this.appService.create(payload).subscribe({
+        next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
+        error: () => this.mostraToast('Errore creazione', 'danger')
+      });
     }
   }
 
-  wrap(obs: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      obs.subscribe({
-        next: (res: any) => resolve(res),
-        error: (err: any) => reject(err),
-      });
-    });
+  async mostraToast(msg: string, color: string) {
+    const toast = await this.toastCtrl.create({ message: msg, color, duration: 2000 });
+    toast.present();
   }
 }

@@ -2,27 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonButtons,
-  IonButton,
-  IonContent,
-  IonIcon,
-  IonInput,
-  ModalController,
+  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+  IonContent, IonIcon, IonInput, ModalController, ToastController, IonItem, IonToggle
 } from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
 import { Cliente } from '../../interfaces/models';
+// IMPORTIAMO IL MODALE DEL CLIENTE
+import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
+
 import { addIcons } from 'ionicons';
-import {
-  personAddOutline,
-  searchOutline,
-  closeOutline,
-  locationOutline,
-} from 'ionicons/icons';
+import { personAddOutline, locationOutline, closeOutline, searchOutline, add } from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-cantiere-globale-modal',
@@ -30,115 +21,71 @@ import {
   styleUrls: ['./nuovo-cantiere-globale-modal.component.scss'],
   standalone: true,
   imports: [
-    IonHeader,
-    IonToolbar,
-    IonTitle,
-    IonButtons,
-    IonButton,
-    IonContent,
-    IonIcon,
-    IonInput,
-    CommonModule,
-    FormsModule,
-    GenericSelectorComponent,
+    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
+    IonContent, IonIcon, IonInput, CommonModule, FormsModule, GenericSelectorComponent,
+    IonItem, IonToggle
   ],
 })
 export class NuovoCantiereGlobaleModalComponent implements OnInit {
-  // Dati per la selezione
   listaClienti: Cliente[] = [];
-
-  // Modalità: 'esistente' o 'nuovo'
-  mode: 'esistente' | 'nuovo' = 'esistente';
-
-  // Dati del form
   clienteSelezionatoId: number | null = null;
+  usaClienteGenerico = false;
 
-  nuovoCliente = {
-    nome: '',
-    email: '',
-    telefono: '',
-  };
-
-  indirizzo = {
-    via: '',
-    civico: '',
-    citta: '',
-    cap: '',
-    provincia: '',
-    stato: 'Italia',
-  };
+  indirizzo = { via: '', civico: '', citta: '', cap: '', provincia: '', stato: 'Italia' };
 
   constructor(
     private modalCtrl: ModalController,
+    private toastCtrl: ToastController,
     private clienteService: ClienteService,
-    private indirizzoService: IndirizzoService,
+    private indirizzoService: IndirizzoService
   ) {
-    addIcons({
-      personAddOutline,
-      searchOutline,
-      closeOutline,
-      locationOutline,
-    });
+    addIcons({ personAddOutline, locationOutline, closeOutline, searchOutline, add });
   }
 
-  ngOnInit() {
-    // Carichiamo tutti i clienti per la tendina
-    this.clienteService.getAll().subscribe((data) => {
-      // Li ordiniamo alfabeticamente per comodità
-      this.listaClienti = data.sort((a, b) => a.nome.localeCompare(b.nome));
-    });
+  ngOnInit() { this.caricaClienti(); }
+
+  caricaClienti() {
+    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
   }
 
-  chiudi() {
-    this.modalCtrl.dismiss();
+  chiudi() { this.modalCtrl.dismiss(); }
+
+  // MODAL STACKING: Creiamo il cliente e lo selezioniamo!
+  async creaNuovoClienteAlVolo() {
+    const modal = await this.modalCtrl.create({ component: NuovoClienteModalComponent });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaClienti.unshift(data.data);
+      this.clienteSelezionatoId = data.data.id;
+    }
   }
 
-  toggleMode() {
-    this.mode = this.mode === 'esistente' ? 'nuovo' : 'esistente';
-    // Reset delle scelte per evitare confusione
-    this.clienteSelezionatoId = null;
+  isValid(): boolean {
+    if (!this.indirizzo.via || this.indirizzo.via.trim() === '' || !this.indirizzo.citta) return false;
+    if (!this.usaClienteGenerico && !this.clienteSelezionatoId) return false;
+    return true;
   }
 
   salva() {
-    if (this.mode === 'esistente' && this.clienteSelezionatoId) {
-      // CASO 1: Cliente Esistente -> Creo solo indirizzo
-      this.creaIndirizzo(this.clienteSelezionatoId);
-    } else if (this.mode === 'nuovo' && this.nuovoCliente.nome) {
-      // CASO 2: Nuovo Cliente -> Creo Cliente POI Indirizzo
-      this.clienteService.create(this.nuovoCliente).subscribe({
-        next: (clienteCreato) => {
-          this.creaIndirizzo(clienteCreato.id);
-        },
-        error: (err) => console.error('Errore creazione cliente', err),
-      });
-    }
-  }
-
-  creaIndirizzo(clienteId: number) {
-    const payload = {
-      ...this.indirizzo,
-      cliente: { id: clienteId },
-    } as any;
-
+    const payload: any = { ...this.indirizzo };
     if (payload.cap) payload.cap = String(payload.cap);
     if (payload.civico) payload.civico = String(payload.civico);
 
+    if (!this.usaClienteGenerico && this.clienteSelezionatoId) {
+      payload.cliente = { id: this.clienteSelezionatoId };
+    } else {
+      payload.cliente = null;
+    }
+
     this.indirizzoService.create(payload).subscribe({
-      next: (res) => {
-        this.modalCtrl.dismiss({ creato: true, data: res });
-      },
-      error: (err) => console.error('Errore creazione indirizzo', err),
+      next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
+      error: (err) => this.showToast('Errore creazione cantiere', 'danger'),
     });
   }
 
-  // Helper per validare il form
-  isFormValid(): boolean {
-    const isIndirizzoValid = this.indirizzo.via && this.indirizzo.citta;
-
-    if (this.mode === 'esistente') {
-      return !!(isIndirizzoValid && this.clienteSelezionatoId);
-    } else {
-      return !!(isIndirizzoValid && this.nuovoCliente.nome);
-    }
+  async showToast(msg: string, color: string) {
+    const t = await this.toastCtrl.create({ message: msg, color, duration: 3000 });
+    t.present();
   }
 }
