@@ -9,7 +9,8 @@ import {
   IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
   IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
   IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
-  IonDatetimeButton, IonModal, IonToggle
+  IonDatetimeButton, IonModal, IonToggle,
+  IonPopover
 } from '@ionic/angular/standalone';
 import { FatturaService } from '../services/fattura.service';
 import { Fattura, TipoFattura } from '../interfaces/models';
@@ -41,7 +42,7 @@ interface GruppoFatture {
     IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
     IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
     IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
-    IonDatetimeButton, IonModal, IonToggle
+    IonDatetimeButton, IonModal, IonToggle, IonPopover
   ],
 })
 

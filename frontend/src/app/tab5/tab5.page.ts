@@ -8,7 +8,7 @@ import {
   IonIcon, IonList, IonItem, IonLabel, IonNote, IonFab, IonFabButton,
   IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol,
   IonDatetime, IonDatetimeButton, IonModal, IonToggle, IonInput, IonTextarea,
-  IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge
+  IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge, IonCardSubtitle
 } from '@ionic/angular/standalone';
 import { AuthService } from '../services/auth.service';
 import { HttpClient } from '@angular/common/http';
@@ -35,7 +35,7 @@ import {
     IonIcon, IonList, IonItem, IonLabel, IonNote, IonFab, IonFabButton,
     IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonGrid, IonRow, IonCol,
     IonDatetime, IonDatetimeButton, IonModal, IonToggle, IonInput, IonTextarea,
-    IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge
+    IonSelect, IonSelectOption, IonItemDivider, IonItemGroup, IonText, IonBadge, IonCardSubtitle
   ],
 })
 
