@@ -1,21 +1,19 @@
 import { Component, OnInit } from '@angular/core';
+// RIMOZIONE DI IonicModule E IMPORT DEI SINGOLI COMPONENTI
 import {
-  IonicModule,
   ModalController,
   PopoverController,
-} from '@ionic/angular';
+  IonHeader, IonToolbar, IonTitle, IonChip, IonLabel, IonSearchbar, IonButton, 
+  IonIcon, IonContent, IonRefresher, IonRefresherContent, IonList, IonItem, 
+  IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ClienteService } from '../services/cliente.service';
 import { IndirizzoService } from '../services/indirizzo.service';
 import { PreferencesService, ViewSettings } from '../services/preferences';
-import {
-  Appuntamento,
-  Cliente,
-  Commessa,
-  Indirizzo,
-} from '../interfaces/models';
+import { Appuntamento, Cliente, Commessa, Indirizzo } from '../interfaces/models';
 import { NuovoClienteModalComponent } from '../components/nuovo-cliente-modal/nuovo-cliente-modal.component';
 import { NuovoCantiereGlobaleModalComponent } from '../components/nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
 import { NuovaCommessaGlobaleModalComponent } from '../components/nuova-commessa-globale-modal/nuova-commessa-globale-modal.component';
@@ -23,22 +21,9 @@ import { NuovoAppuntamentoGlobaleModalComponent } from '../components/nuovo-appu
 import { ListSettingsPopoverComponent } from '../components/list-settings-popover/list-settings-popover.component';
 import { addIcons } from 'ionicons';
 import {
-  add,
-  searchOutline,
-  locationOutline,
-  personOutline,
-  filterOutline,
-  businessOutline,
-  personAddOutline,
-  callOutline,
-  documentsOutline,
-  calendarOutline,
-  peopleOutline,
-  chevronForward,
-  location,
-  documents,
-  storefrontOutline,
-  attachOutline,
+  add, searchOutline, locationOutline, personOutline, filterOutline, businessOutline,
+  personAddOutline, callOutline, documentsOutline, calendarOutline, peopleOutline,
+  chevronForward, location, documents, storefrontOutline, attachOutline, folderOpenOutline, calendarNumberOutline
 } from 'ionicons/icons';
 import { CommessaService } from '../services/commessa.service';
 import { AppuntamentoService } from '../services/appuntamento.service';
@@ -63,8 +48,16 @@ interface GruppoAppuntamenti {
   templateUrl: 'tab3.page.html',
   styleUrls: ['tab3.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, RouterModule],
+  imports: [
+    CommonModule, 
+    FormsModule, 
+    RouterModule,
+    IonHeader, IonToolbar, IonTitle, IonChip, IonLabel, IonSearchbar, IonButton, 
+    IonIcon, IonContent, IonRefresher, IonRefresherContent, IonList, IonItem, 
+    IonAvatar, IonNote, IonItemGroup, IonItemDivider, IonFab, IonFabButton, IonBadge
+  ],
 })
+
 export class Tab3Page implements OnInit {
   vistaCorrente: 'clienti' | 'cantieri' | 'commesse' | 'appuntamenti' =
     'clienti';
@@ -136,6 +129,8 @@ export class Tab3Page implements OnInit {
       documents,
       storefrontOutline,
       attachOutline,
+      folderOpenOutline,
+      calendarNumberOutline,
     });
   }
 

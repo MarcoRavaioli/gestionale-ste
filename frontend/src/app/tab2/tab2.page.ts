@@ -1,10 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+// RIMOZIONE DI IonicModule E IMPORT DEI SINGOLI COMPONENTI
 import {
-  IonicModule,
   ModalController,
   ToastController,
   Platform,
-} from '@ionic/angular';
+  IonHeader, IonToolbar, IonButton, IonIcon, IonContent, IonFab, IonFabButton, 
+  IonModal, IonDatetime, IonItem, IonLabel, IonDatetimeButton, IonTitle, IonButtons,
+  IonBadge, IonText, IonRippleEffect
+} from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -17,35 +20,15 @@ import { Share } from '@capacitor/share';
 import { NuovoAppuntamentoGlobaleModalComponent } from '../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 import { addIcons } from 'ionicons';
 import {
-  chevronBackOutline,
-  chevronForwardOutline,
-  chevronDownOutline,
-  chevronUpOutline,
-  calendarOutline,
-  timeOutline,
-  locationOutline,
-  personOutline,
-  add,
-  documentsOutline,
-  gridOutline,
-  calendarNumberOutline,
-  todayOutline,
-  shareSocialOutline,
-  downloadOutline,
+  chevronBackOutline, chevronForwardOutline, chevronDownOutline, chevronUpOutline,
+  calendarOutline, timeOutline, locationOutline, personOutline, add, documentsOutline,
+  gridOutline, calendarNumberOutline, todayOutline, shareSocialOutline, downloadOutline,
   createOutline,
 } from 'ionicons/icons';
 
 import {
-  format,
-  startOfWeek,
-  endOfWeek,
-  eachDayOfInterval,
-  addWeeks,
-  subWeeks,
-  isSameDay,
-  isToday,
-  startOfMonth,
-  endOfMonth,
+  format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks,
+  isSameDay, isToday, startOfMonth, endOfMonth,
 } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Router } from '@angular/router';
@@ -55,8 +38,17 @@ import { Router } from '@angular/router';
   templateUrl: 'tab2.page.html',
   styleUrls: ['tab2.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule, 
+    FormsModule,
+    // INSERIMENTO DEI COMPONENTI GRAFICI IONIC QUI
+    IonHeader, IonToolbar, IonButton, IonIcon, IonContent, IonFab, IonFabButton, 
+    IonModal, IonDatetime, IonItem, IonLabel, IonDatetimeButton, IonTitle, IonButtons,
+    IonBadge, IonText, IonRippleEffect
+  ],
 })
+
+
 export class Tab2Page implements OnInit {
   // STATO CALENDARIO
   viewMode: 'week' | 'month' = 'week';
