@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, DeleteDateColumn } from 'typeorm';
 import { Commessa } from './commessa.entity';
 import { Fattura } from './fattura.entity';
 
@@ -29,4 +29,7 @@ export class Allegato {
     nullable: true,
   })
   fattura: Fattura;
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

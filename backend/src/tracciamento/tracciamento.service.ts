@@ -155,6 +155,6 @@ export class TracciamentoService {
     if (!tracciamento) {
       throw new Error('Rapportino non trovato o non autorizzato');
     }
-    return this.repo.remove(tracciamento);
+    return this.repo.softDelete(tracciamento);
   }
 }

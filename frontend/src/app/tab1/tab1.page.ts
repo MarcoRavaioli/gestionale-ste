@@ -3,10 +3,18 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http'; // <--- IMPORT HTTP
 import { environment } from 'src/environments/environment'; // <--- IMPORT ENV
-import { 
-  IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, 
-  IonRefresherContent, IonButton, IonIcon, IonRippleEffect,
-  ModalController, ToastController 
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonRefresher,
+  IonRefresherContent,
+  IonButton,
+  IonIcon,
+  IonRippleEffect,
+  ModalController,
+  ToastController,
 } from '@ionic/angular/standalone';
 
 // Services
@@ -56,7 +64,18 @@ import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal
   templateUrl: 'tab1.page.html',
   styleUrls: ['tab1.page.scss'],
   standalone: true,
-  imports: [IonHeader, IonToolbar, IonTitle, IonContent, IonRefresher, IonRefresherContent, IonButton, IonIcon, IonRippleEffect, CommonModule],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonRefresher,
+    IonRefresherContent,
+    IonButton,
+    IonIcon,
+    IonRippleEffect,
+    CommonModule,
+  ],
 })
 export class Tab1Page implements OnInit {
   userNome = 'Utente';
@@ -83,7 +102,7 @@ export class Tab1Page implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private router: Router,
-    private http: HttpClient // <--- INIEZIONE HTTP
+    private http: HttpClient, // <--- INIEZIONE HTTP
   ) {
     addIcons({
       calendar,
@@ -157,13 +176,13 @@ export class Tab1Page implements OnInit {
     // Recupera le impostazioni salvate nella Tab 5 (localStorage)
     const savedPasto = parseFloat(localStorage.getItem('costoPasto') || '5.29');
     const savedRates = JSON.parse(
-      localStorage.getItem('tariffeCollaboratori') || '{}'
+      localStorage.getItem('tariffeCollaboratori') || '{}',
     );
 
     this.http
-      .get<any[]>(
-        `${environment.apiUrl}/tracciamento/report?anno=${anno}&mese=${mese}`
-      )
+      .get<
+        any[]
+      >(`${environment.apiUrl}/tracciamento/report?anno=${anno}&mese=${mese}`)
       .subscribe((data) => {
         this.teamStats = data.map((col) => {
           const tariffa = savedRates[col.id] || 10; // Default 10€
@@ -178,7 +197,7 @@ export class Tab1Page implements OnInit {
         this.teamStats.sort((a, b) => b.costoTotale - a.costoTotale);
         this.totaleCostoTeam = this.teamStats.reduce(
           (acc, curr) => acc + curr.costoTotale,
-          0
+          0,
         );
       });
   }
@@ -238,7 +257,7 @@ export class Tab1Page implements OnInit {
         })
         .sort(
           (a, b) =>
-            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime()
+            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
         );
 
       this.appuntamentiSettimana = data
@@ -249,38 +268,29 @@ export class Tab1Page implements OnInit {
         })
         .sort(
           (a, b) =>
-            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime()
+            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
         );
     });
   }
 
-  goToAppuntamento(app: Appuntamento) {
-    if (app.commessa?.indirizzo?.cliente?.id) {
-      this.router.navigate(
-        ['/cliente-dettaglio', app.commessa.indirizzo.cliente.id],
-        {
-          queryParams: {
-            cantiereId: app.commessa.indirizzo.id,
-            commessaId: app.commessa.id,
-            appuntamentoId: app.id,
-          },
-        }
-      );
-    } else {
-      this.toastCtrl
-        .create({
-          message:
-            'Impossibile aprire: Appuntamento non collegato a un cliente.',
-          duration: 2000,
-          color: 'warning',
-        })
-        .then((t) => t.present());
+  async goToAppuntamento(app: Appuntamento) {
+    // È generico: Apriamo il modale in modifica invece di bloccarlo!
+    const modal = await this.modalCtrl.create({
+      component: NuovoAppuntamentoGlobaleModalComponent,
+      componentProps: { appuntamento: app },
+    });
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    // Se l'abbiamo modificato o salvato, ricarichiamo la Dashboard
+    if (data && (data.creato || data.aggiornato)) {
+      this.caricaDati();
     }
   }
 
   async openProfilo() {
     const modal = await this.modalCtrl.create({
-      component: ProfiloModalComponent
+      component: ProfiloModalComponent,
     });
     await modal.present();
   }
@@ -317,8 +327,6 @@ export class Tab1Page implements OnInit {
     }
   }
 
-  
-
   goToCharts() {
     this.toastCtrl
       .create({
@@ -335,5 +343,4 @@ export class Tab1Page implements OnInit {
     });
     await modal.present();
   }
-  
 }

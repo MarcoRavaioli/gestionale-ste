@@ -52,7 +52,7 @@ export class CommessaService {
   }
 
   async remove(id: number) {
-    await this.commessaRepository.delete(id);
+    await this.commessaRepository.softDelete(id);
     return { deleted: true };
   }
 }

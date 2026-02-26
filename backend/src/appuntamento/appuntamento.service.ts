@@ -44,7 +44,8 @@ export class AppuntamentoService {
   update(id: number, updateDto: any) {
     return this.appuntamentoRepository.update(id, updateDto);
   }
+
   remove(id: number) {
-    return this.appuntamentoRepository.delete(id);
+    return this.appuntamentoRepository.softDelete(id);
   }
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, DeleteDateColumn } from 'typeorm';
 import { Collaboratore } from './collaboratore.entity';
 
 @Entity()
@@ -23,4 +23,7 @@ export class TracciamentoPersonale {
     onDelete: 'CASCADE',
   })
   collaboratore: Collaboratore;
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, DeleteDateColumn } from 'typeorm';
 import { Indirizzo } from './indirizzo.entity';
 import { Fattura } from './fattura.entity';
 
@@ -21,4 +21,7 @@ export class Cliente {
 
   @OneToMany(() => Fattura, (fattura) => fattura.cliente)
   fatture: Fattura[];
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

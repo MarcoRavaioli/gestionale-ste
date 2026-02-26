@@ -74,7 +74,7 @@ export class FatturaService {
   }
 
   remove(id: number) {
-    return this.fatturaRepository.delete(id);
+    return this.fatturaRepository.softDelete(id);
   }
 
   // --- CORREZIONE QUI SOTTO ---

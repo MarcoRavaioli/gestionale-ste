@@ -129,6 +129,6 @@ async seedUsers() {
   }
 
   remove(id: number) {
-    return this.collaboratoreRepository.delete(id);
+    return this.collaboratoreRepository.softDelete(id);
   }
 }

@@ -4,7 +4,8 @@ import {
   Column,
   ManyToOne,
   ManyToMany,
-  JoinTable, // <--- 1. IMPORTA QUESTO
+  JoinTable,
+  DeleteDateColumn, // <--- 1. IMPORTA QUESTO
 } from 'typeorm';
 import { Commessa } from './commessa.entity';
 import { Collaboratore } from './collaboratore.entity';
@@ -37,4 +38,7 @@ export class Appuntamento {
   )
   @JoinTable() // <--- 2. AGGIUNGI QUESTO! Fondamentale.
   collaboratori: Collaboratore[];
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

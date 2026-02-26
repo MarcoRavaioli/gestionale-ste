@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Cliente } from './cliente.entity';
 import { Commessa } from './commessa.entity';
@@ -57,4 +58,7 @@ export class Fattura {
     nullable: true,
   })
   allegati: Allegato[] | null;
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

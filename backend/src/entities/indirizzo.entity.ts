@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Cliente } from './cliente.entity';
 import { Commessa } from './commessa.entity';
@@ -40,4 +41,7 @@ export class Indirizzo {
 
   @OneToMany(() => Commessa, (commessa) => commessa.indirizzo)
   commesse: Commessa[];
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

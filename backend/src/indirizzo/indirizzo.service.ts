@@ -34,6 +34,6 @@ export class IndirizzoService {
   }
 
   remove(id: number) {
-    return this.indirizzoRepository.delete(id);
+    return this.indirizzoRepository.softDelete(id);
   }
 }

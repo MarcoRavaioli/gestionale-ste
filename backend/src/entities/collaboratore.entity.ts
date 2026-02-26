@@ -4,6 +4,7 @@ import {
   Column,
   OneToMany,
   ManyToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { TracciamentoPersonale } from './tracciamento.entity';
 import { Appuntamento } from './appuntamento.entity';
@@ -41,4 +42,7 @@ export class Collaboratore {
 
   @ManyToMany(() => Appuntamento, (appuntamento) => appuntamento.collaboratori)
   appuntamenti: Appuntamento[];
+
+  @DeleteDateColumn({ select: false })
+  deletedAt: Date;
 }

@@ -48,6 +48,6 @@ export class ClienteService {
   }
 
   remove(id: number) {
-    return this.clienteRepository.delete(id);
+    return this.clienteRepository.softDelete(id);
   }
 }

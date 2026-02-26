@@ -73,6 +73,6 @@ export class AllegatoService {
     }
 
     // 2. Rimuovi il record dal DB
-    return this.allegatoRepository.remove(allegato);
+    return this.allegatoRepository.softDelete(allegato);
   }
 }
