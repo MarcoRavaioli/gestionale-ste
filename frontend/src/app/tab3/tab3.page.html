@@ -58,13 +58,7 @@
 
   <div *ngIf="vistaCorrente === 'clienti'">
     <ion-list lines="none" class="custom-list">
-      <ion-item
-        *ngFor="let cliente of clientiVisualizzati"
-        button
-        detail="true"
-        (click)="goToDettaglioElemento(cliente, 'cliente')"
-        class="list-item"
-      >
+      <ion-item *ngFor="let cliente of clientiVisualizzati" button detail="false" (click)="goToDettaglioElemento(cliente, 'cliente')" class="list-item">
         <ion-avatar slot="start" class="item-avatar">
           <div class="avatar-placeholder">{{ cliente.nome.charAt(0) }}</div>
         </ion-avatar>
@@ -88,13 +82,7 @@
 
   <div *ngIf="vistaCorrente === 'cantieri'">
     <ion-list lines="none" class="custom-list" *ngIf="!isCantieriGrouped">
-      <ion-item
-        *ngFor="let cantiere of cantieriLista"
-        button
-        detail="true"
-        (click)="goToDettaglioElemento(cantiere, 'cantiere')"
-        class="list-item"
-      >
+      <ion-item *ngFor="let cantiere of cantieriLista" button detail="false" (click)="goToDettaglioElemento(cantiere, 'cantiere')" class="list-item">
         <div slot="start" class="list-icon-box box-secondary">
           <ion-icon name="location"></ion-icon>
         </div>
@@ -119,13 +107,7 @@
         <ion-item-divider sticky="true" class="custom-divider">
           <ion-label>{{ gruppo.nome | uppercase }}</ion-label>
         </ion-item-divider>
-        <ion-item
-          *ngFor="let item of gruppo.items"
-          button
-          detail="true"
-          (click)="goToDettaglioElemento(item, 'cantiere')"
-          class="list-item"
-        >
+        <ion-item *ngFor="let item of gruppo.items" button detail="false" (click)="goToDettaglioElemento(item, 'cantiere')" class="list-item">
           <div slot="start" class="list-icon-box box-secondary">
             <ion-icon name="location"></ion-icon>
           </div>
@@ -147,13 +129,7 @@
 
   <div *ngIf="vistaCorrente === 'commesse'">
     <ion-list lines="none" class="custom-list" *ngIf="!isCommesseGrouped">
-      <ion-item
-        *ngFor="let item of commesseLista"
-        button
-        detail="true"
-        (click)="goToDettaglioElemento(item, 'commessa')"
-        class="list-item"
-      >
+      <ion-item *ngFor="let item of commesseLista" button detail="false" (click)="goToDettaglioElemento(item, 'commessa')" class="list-item">
         <div slot="start" class="list-icon-box box-tertiary">
           <ion-icon name="documents"></ion-icon>
         </div>
@@ -261,13 +237,7 @@
 
   <div *ngIf="vistaCorrente === 'appuntamenti'">
     <ion-list lines="none" class="custom-list" *ngIf="!isAppuntamentiGrouped">
-      <ion-item
-        *ngFor="let app of appuntamentiLista"
-        button
-        detail="true"
-        (click)="goToDettaglioElemento(app, 'appuntamento')"
-        class="list-item"
-      >
+      <ion-item *ngFor="let app of appuntamentiLista" button detail="false" (click)="goToDettaglioElemento(app, 'appuntamento')" class="list-item">
         <div slot="start" class="list-icon-box box-warning">
           <ion-icon name="calendar"></ion-icon>
         </div>
