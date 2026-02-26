@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
   IonContent, IonIcon, IonInput, IonTextarea, IonToggle, IonItem,
-  ModalController, ToastController
+  ModalController, ToastController,
+  AlertController
 } from '@ionic/angular/standalone';
 import { AppuntamentoService } from '../../services/appuntamento.service';
 import { CommessaService } from '../../services/commessa.service';
@@ -47,7 +48,8 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private appService: AppuntamentoService,
-    private comService: CommessaService
+    private comService: CommessaService,
+    private alertCtrl: AlertController,
   ) {
     addIcons({ calendarOutline, documentsOutline, closeOutline, add });
   }
@@ -128,5 +130,43 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   async mostraToast(msg: string, color: string) {
     const toast = await this.toastCtrl.create({ message: msg, color, duration: 2000 });
     toast.present();
+  }
+
+  async elimina() {
+    // Feedback tattile di avviso
+    const alert = await this.alertCtrl.create({
+      header: 'Elimina Appuntamento',
+      message: 'Sei sicuro di voler eliminare questo appuntamento? L\'azione è irreversibile.',
+      buttons: [
+        { 
+          text: 'Annulla', 
+          role: 'cancel' 
+        },
+        {
+          text: 'Elimina',
+          role: 'destructive', // Su iOS lo colora automaticamente di rosso
+          handler: () => {
+            this.confermaEliminazione();
+          }
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  confermaEliminazione() {
+    if (!this.appuntamento) return;
+
+    this.appService.delete(this.appuntamento.id).subscribe({
+      next: async () => {
+        this.mostraToast('Appuntamento eliminato con successo', 'success');
+        // Chiudiamo il modale passando un flag per dire alla pagina di ricaricare i dati
+        this.modalCtrl.dismiss({ eliminato: true }); 
+      },
+      error: async (err) => {
+        console.error(err);
+        this.mostraToast('Errore durante l\'eliminazione', 'danger');
+      }
+    });
   }
 }

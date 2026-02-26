@@ -632,7 +632,9 @@ export class Tab3Page implements OnInit {
         });
         await modal.present();
         const { data } = await modal.onWillDismiss();
-        if (data && (data.creato || data.aggiornato)) this.caricaDati();
+        if (data && (data.creato || data.aggiornato || data.eliminato)) {
+          this.caricaDati();
+        }
       }
     }
   }

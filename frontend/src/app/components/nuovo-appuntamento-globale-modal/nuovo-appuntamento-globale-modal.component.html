@@ -65,4 +65,15 @@
   >
     {{ isEditing ? 'SALVA MODIFICHE' : 'CREA APPUNTAMENTO' }}
   </ion-button>
+  <ion-button
+    *ngIf="isEditing"
+    expand="block"
+    color="danger"
+    fill="clear"
+    class="ion-margin-top"
+    (click)="elimina()"
+  >
+    <ion-icon name="trash-outline" slot="start"></ion-icon>
+    Elimina Appuntamento
+  </ion-button>
 </ion-content>
