@@ -3,19 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-  IonContent, IonIcon, IonInput, IonTextarea, IonToggle, IonItem,
-  ModalController, ToastController,
-  AlertController
+  IonContent, IonIcon, IonInput, IonTextarea, IonItem,
+  ModalController, ToastController, AlertController, IonSegment, IonSegmentButton
 } from '@ionic/angular/standalone';
 import { AppuntamentoService } from '../../services/appuntamento.service';
 import { CommessaService } from '../../services/commessa.service';
+import { IndirizzoService } from '../../services/indirizzo.service';
+import { ClienteService } from '../../services/cliente.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import { Appuntamento, Commessa } from '../../interfaces/models';
-// IMPORTIAMO IL MODALE DELLA COMMESSA CHE GIA' ESISTE!
-import { NuovaCommessaGlobaleModalComponent } from '../nuova-commessa-globale-modal/nuova-commessa-globale-modal.component'; 
+import { Appuntamento, Commessa, Indirizzo, Cliente } from '../../interfaces/models';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 import { addIcons } from 'ionicons';
-import { calendarOutline, documentsOutline, closeOutline, add } from 'ionicons/icons';
+import { calendarOutline, documentsOutline, closeOutline, add, trashOutline, locationOutline, personOutline, linkOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-appuntamento-globale-modal',
@@ -24,19 +24,26 @@ import { calendarOutline, documentsOutline, closeOutline, add } from 'ionicons/i
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-    IonContent, IonIcon, IonInput, IonTextarea, IonToggle, IonItem,
+    IonContent, IonIcon, IonInput, IonTextarea, IonItem,
     CommonModule, FormsModule, GenericSelectorComponent,
+    IonSegment, IonSegmentButton
   ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   @Input() appuntamento?: Appuntamento;
   isEditing = false;
 
+  // SCELTA MULTIPLA (Le 4 opzioni di collegamento)
+  tipoCollegamento: 'commessa' | 'cantiere' | 'cliente' | 'nessuno' = 'commessa';
+
   listaCommesse: Commessa[] = [];
   selectedCommessaId: number | null = null;
   
-  // LA SOLUZIONE ALLA RICHIESTA DEL TUO CLIENTE:
-  usaCommessaGenerica = false; 
+  listaCantieri: Indirizzo[] = [];
+  selectedCantiereId: number | null = null;
+
+  listaClienti: Cliente[] = [];
+  selectedClienteId: number | null = null;
 
   formDati = {
     nome: '',
@@ -47,11 +54,13 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
     private appService: AppuntamentoService,
     private comService: CommessaService,
-    private alertCtrl: AlertController,
+    private indService: IndirizzoService,
+    private clienteService: ClienteService
   ) {
-    addIcons({ calendarOutline, documentsOutline, closeOutline, add });
+    addIcons({ calendarOutline, documentsOutline, closeOutline, add, trashOutline, locationOutline, personOutline, linkOutline });
   }
 
   ngOnInit() {
@@ -63,42 +72,36 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
         data_ora: this.appuntamento.data_ora ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16) : '',
         descrizione: this.appuntamento.descrizione || '',
       };
+      
+      // Ripristina la selezione corretta in base ai dati esistenti
       if (this.appuntamento.commessa) {
+        this.tipoCollegamento = 'commessa';
         this.selectedCommessaId = this.appuntamento.commessa.id;
+      } else if (this.appuntamento.indirizzo) {
+        this.tipoCollegamento = 'cantiere';
+        this.selectedCantiereId = this.appuntamento.indirizzo.id;
+      } else if (this.appuntamento.cliente) {
+        this.tipoCollegamento = 'cliente';
+        this.selectedClienteId = this.appuntamento.cliente.id;
       } else {
-        this.usaCommessaGenerica = true;
+        this.tipoCollegamento = 'nessuno';
       }
     }
   }
 
   caricaDatiBase() {
     this.comService.getAll().subscribe((res) => (this.listaCommesse = res));
+    this.indService.getAll().subscribe((res) => (this.listaCantieri = res));
+    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
   }
 
-  chiudi() {
-    this.modalCtrl.dismiss();
-  }
-
-  // --- IL CUORE DEL REFACTORING: USIAMO IL MODALE GIA' FATTO! ---
-  async creaNuovaCommessaAlVolo() {
-    const modal = await this.modalCtrl.create({
-      component: NuovaCommessaGlobaleModalComponent,
-    });
-    await modal.present();
-    
-    // Quando il modale si chiude, intercettiamo i dati
-    const { data } = await modal.onWillDismiss();
-    if (data && data.creato && data.data) {
-      // Aggiungiamo la nuova commessa alla lista e la auto-selezioniamo!
-      this.listaCommesse.unshift(data.data);
-      this.selectedCommessaId = data.data.id;
-    }
-  }
+  chiudi() { this.modalCtrl.dismiss(); }
 
   isValid(): boolean {
     if (!this.formDati.data_ora) return false;
-    // Se è generica, la data basta. Se non è generica, serve aver selezionato una commessa.
-    if (!this.usaCommessaGenerica && !this.selectedCommessaId) return false;
+    if (this.tipoCollegamento === 'commessa' && !this.selectedCommessaId) return false;
+    if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId) return false;
+    if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId) return false;
     return true;
   }
 
@@ -106,13 +109,21 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     const payload: any = { ...this.formDati };
     if (!payload.nome || payload.nome.trim() === '') payload.nome = 'Intervento';
 
-    // Gestione intelligente della Commessa
-    if (!this.usaCommessaGenerica && this.selectedCommessaId) {
+    // Reset di tutti i legami
+    payload.commessa = null;
+    payload.indirizzo = null;
+    payload.cliente = null;
+
+    // Assegnazione in base alla scelta (uno esclude l'altro a livello diretto)
+    if (this.tipoCollegamento === 'commessa' && this.selectedCommessaId) {
       payload.commessa = { id: this.selectedCommessaId };
-    } else {
-      // Se il tuo backend crasha con null, cambia questa riga in: payload.commessa = { id: 1 }; (ID di una tua commessa fissa)
-      payload.commessa = null; 
+    } else if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
+      payload.indirizzo = { id: this.selectedCantiereId };
+    } else if (this.tipoCollegamento === 'cliente' && this.selectedClienteId) {
+      payload.cliente = { id: this.selectedClienteId };
     }
+
+    if (Haptics) Haptics.impact({ style: ImpactStyle.Light });
 
     if (this.isEditing && this.appuntamento) {
       this.appService.update(this.appuntamento.id, payload).subscribe({
@@ -127,28 +138,14 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     }
   }
 
-  async mostraToast(msg: string, color: string) {
-    const toast = await this.toastCtrl.create({ message: msg, color, duration: 2000 });
-    toast.present();
-  }
-
   async elimina() {
-    // Feedback tattile di avviso
+    if (Haptics) Haptics.impact({ style: ImpactStyle.Medium });
     const alert = await this.alertCtrl.create({
       header: 'Elimina Appuntamento',
-      message: 'Sei sicuro di voler eliminare questo appuntamento? L\'azione è irreversibile.',
+      message: 'Sei sicuro di voler eliminare questo appuntamento?',
       buttons: [
-        { 
-          text: 'Annulla', 
-          role: 'cancel' 
-        },
-        {
-          text: 'Elimina',
-          role: 'destructive', // Su iOS lo colora automaticamente di rosso
-          handler: () => {
-            this.confermaEliminazione();
-          }
-        }
+        { text: 'Annulla', role: 'cancel' },
+        { text: 'Elimina', role: 'destructive', handler: () => this.confermaEliminazione() }
       ]
     });
     await alert.present();
@@ -156,17 +153,18 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
   confermaEliminazione() {
     if (!this.appuntamento) return;
-
     this.appService.delete(this.appuntamento.id).subscribe({
       next: async () => {
-        this.mostraToast('Appuntamento eliminato con successo', 'success');
-        // Chiudiamo il modale passando un flag per dire alla pagina di ricaricare i dati
+        if (Haptics) await Haptics.notification({ type: 'SUCCESS' } as any);
+        this.mostraToast('Appuntamento eliminato', 'success');
         this.modalCtrl.dismiss({ eliminato: true }); 
       },
-      error: async (err) => {
-        console.error(err);
-        this.mostraToast('Errore durante l\'eliminazione', 'danger');
-      }
+      error: async () => this.mostraToast('Errore', 'danger')
     });
+  }
+
+  async mostraToast(msg: string, color: string) {
+    const toast = await this.toastCtrl.create({ message: msg, color, duration: 2000 });
+    toast.present();
   }
 }
