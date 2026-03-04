@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Indirizzo } from '../interfaces/models';
+import { Indirizzo, PaginatedResult } from '../interfaces/models';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -27,6 +27,18 @@ export class IndirizzoService {
 
   getAll(): Observable<Indirizzo[]> {
     return this.http.get<Indirizzo[]>(this.apiUrl);
+  }
+
+  getPaginated(page: number = 1, limit: number = 15, search: string = ''): Observable<PaginatedResult<Indirizzo>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+      
+    if (search) {
+      params = params.set('search', search);
+    }
+    
+    return this.http.get<PaginatedResult<Indirizzo>>(`${this.apiUrl}/paginated`, { params });
   }
 }
 

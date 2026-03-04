@@ -1,0 +1,43 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="secondary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dettaglio Cantiere</ion-title>
+    
+    <ion-buttons slot="end" *ngIf="hasManagerAccess">
+      <ion-button (click)="apriModalIndirizzo()">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="light-bg" *ngIf="indirizzo">
+  
+  <div class="site-header-card ion-padding ion-margin" style="background: var(--ion-card-background); border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div style="background: rgba(var(--ion-color-secondary-rgb), 0.1); padding: 15px; border-radius: 50%;">
+        <ion-icon name="location" color="secondary" style="font-size: 32px;"></ion-icon>
+      </div>
+      <div>
+        <h2 style="margin: 0; font-weight: bold; color: var(--ion-color-dark);">{{ indirizzo.via }} {{ indirizzo.civico }}</h2>
+        <p style="margin: 5px 0 0 0; color: var(--ion-color-medium);">{{ indirizzo.cap }} - {{ indirizzo.citta }} ({{ indirizzo.provincia }})</p>
+        <p style="margin: 5px 0 0 0; color: var(--ion-color-primary); font-size: 0.9rem;" *ngIf="indirizzo.cliente">Committente: {{ indirizzo.cliente.nome }}</p>
+        <p style="margin: 5px 0 0 0; color: var(--ion-color-medium); font-size: 0.9rem; font-style: italic" *ngIf="!indirizzo.cliente">Cantiere Interno (Nessun Committente)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sites-section">
+    <app-indirizzo-accordion
+      [indirizzo]="indirizzo"
+      [hasManagerAccess]="hasManagerAccess"
+      (onAddCommessa)="apriModalCommessa($event)"
+      (onEditCommessa)="apriModalCommessa(indirizzo.id, $event)"
+      (onDeleteCommessa)="eliminaCommessa($event)"
+      (onRefresh)="caricaDati(indirizzo.id)">
+    </app-indirizzo-accordion>
+  </div>
+
+</ion-content>

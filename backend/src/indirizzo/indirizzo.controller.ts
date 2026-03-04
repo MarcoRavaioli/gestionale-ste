@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { IndirizzoService } from './indirizzo.service';
 import { CreateIndirizzoDto } from './dto/create-indirizzo.dto';
@@ -30,6 +31,15 @@ export class IndirizzoController {
   @Get()
   findAll() {
     return this.indirizzoService.findAll();
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 15,
+    @Query('search') search: string = ''
+  ) {
+    return this.indirizzoService.findPaginated(+page, +limit, search);
   }
 
   @Get(':id')

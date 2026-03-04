@@ -121,7 +121,7 @@
     </div>
 
     <div *ngIf="vistaCorrente === 'cantieri'">
-      <ion-list lines="none" class="custom-list" *ngIf="!isCantieriGrouped">
+      <ion-list lines="none" class="custom-list">
         <ion-item
           *ngFor="let cantiere of cantieriLista"
           button
@@ -142,54 +142,36 @@
             </p>
           </ion-label>
           <ion-icon
-            [name]="cantiere.cliente?.id ? 'chevron-forward' : 'create-outline'"
+            name="chevron-forward"
             slot="end"
-            [color]="cantiere.cliente?.id ? 'medium' : 'primary'"
+            color="medium"
             class="arrow-icon"
           ></ion-icon>
         </ion-item>
       </ion-list>
-      <ion-list lines="none" class="custom-list" *ngIf="isCantieriGrouped">
-        <ion-item-group *ngFor="let gruppo of cantieriGruppi">
-          <ion-item-divider sticky="true" class="custom-divider"
-            ><ion-label
-              >{{ gruppo.nome | uppercase }}</ion-label
-            ></ion-item-divider
-          >
-          <ion-item
-            *ngFor="let item of gruppo.items"
-            button
-            detail="false"
-            (click)="goToDettaglioElemento(item, 'cantiere')"
-            class="list-item"
-          >
-            <div slot="start" class="list-icon-box box-secondary">
-              <ion-icon name="location"></ion-icon>
-            </div>
-            <ion-label>
-              <h2 class="item-title">{{ item.via }} {{ item.civico }}</h2>
-              <p class="item-subtitle">
-                {{ item.cliente?.nome || 'Cantiere Interno' }}
-              </p>
-            </ion-label>
-            <ion-icon
-              [name]="item.cliente?.id ? 'chevron-forward' : 'create-outline'"
-              slot="end"
-              [color]="item.cliente?.id ? 'medium' : 'primary'"
-              class="arrow-icon"
-            ></ion-icon>
-          </ion-item>
-        </ion-item-group>
-      </ion-list>
-      <div
-        *ngIf="cantieriLista.length === 0 && cantieriGruppi.length === 0"
-        class="empty-state"
-      >
+
+      <ion-infinite-scroll (ionInfinite)="caricaAltraPaginaCantieri($event)">
+        <ion-infinite-scroll-content
+          loadingSpinner="bubbles"
+          loadingText="Caricamento altri cantieri..."
+        ></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
+
+      <div *ngIf="cantieriLista.length === 0 && !isLoading" class="empty-state">
         <ion-icon
           name="business-outline"
           style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
         ></ion-icon>
-        <p>Nessun cantiere trovato.</p>
+        <h3 style="color: var(--ion-color-dark)">Nessun cantiere</h3>
+        <p style="color: var(--ion-color-medium)">Nessun indirizzo trovato.</p>
+        <ion-button
+          fill="outline"
+          shape="round"
+          class="ion-margin-top"
+          (click)="apriNuovoCantiere()"
+          ><ion-icon slot="start" name="add"></ion-icon> Nuovo
+          Cantiere</ion-button
+        >
       </div>
     </div>
 

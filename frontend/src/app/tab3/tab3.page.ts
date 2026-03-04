@@ -147,6 +147,11 @@ export class Tab3Page implements OnInit {
   clientiTotalPages = 1;
   clientiSearchSubject = new Subject<string>();
 
+  cantieriPage = 1;
+  cantieriLimit = 15;
+  cantieriTotalPages = 1;
+  cantieriSearchSubject = new Subject<string>();
+
   settingsClienti: ViewSettings = { orderBy: 'nome', orderDirection: 'asc' };
   settingsCantieri: ViewSettings = {
     orderBy: 'citta',
@@ -225,6 +230,14 @@ export class Tab3Page implements OnInit {
       this.caricaClientiPaginati(null, true);
     });
 
+    this.cantieriSearchSubject.pipe(
+      debounceTime(500), distinctUntilChanged()
+    ).subscribe(searchTerm => {
+      this.ricerca = searchTerm;
+      this.cantieriPage = 1;
+      this.caricaCantieriPaginati(null, true);
+    });
+
     this.caricaDatiGlobale();
   }
 
@@ -233,14 +246,14 @@ export class Tab3Page implements OnInit {
   }
 
   caricaDatiGlobale(event?: any) {
-    // Gestione differenziata in base al Tab
     if (this.vistaCorrente === 'clienti') {
       this.clientiPage = 1;
       this.caricaClientiPaginati(event, true);
+    } else if (this.vistaCorrente === 'cantieri') {
+      this.cantieriPage = 1;
+      this.caricaCantieriPaginati(event, true);
     } else {
-      // Per cantieri, commesse e appuntamenti per ora usiamo il vecchio metodo totale
       this.isLoading = true;
-      this.indirizzoService.getAll().subscribe(res => { this.tuttiCantieri = res; this.elaboraCantieri(); });
       this.commessaService.getAll().subscribe(res => { this.tutteCommesse = res; this.elaboraCommesse(); });
       this.appService.getAll().subscribe(res => { this.tuttiAppuntamenti = res; this.elaboraAppuntamenti(); this.isLoading = false; });
       if (event) event.target.complete();
@@ -249,7 +262,7 @@ export class Tab3Page implements OnInit {
 
   elaboraDati() {
     if (this.vistaCorrente === 'clienti') this.caricaClientiPaginati();
-    else if (this.vistaCorrente === 'cantieri') this.elaboraCantieri();
+    else if (this.vistaCorrente === 'cantieri') this.caricaCantieriPaginati();
     else if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
     else this.elaboraAppuntamenti();
   }
@@ -313,13 +326,44 @@ export class Tab3Page implements OnInit {
     }
   }
 
+  caricaCantieriPaginati(event?: any, isFirstLoad: boolean = false) {
+    if (isFirstLoad) this.isLoading = true;
+
+    this.indirizzoService.getPaginated(this.cantieriPage, this.cantieriLimit, this.ricerca).subscribe({
+      next: (res) => {
+        if (this.cantieriPage === 1) this.cantieriLista = res.data;
+        else this.cantieriLista = [...this.cantieriLista, ...res.data];
+        
+        this.cantieriTotalPages = res.totalPages;
+        this.isLoading = false;
+
+        if (event) {
+          event.target.complete();
+          if (this.cantieriPage >= this.cantieriTotalPages) event.target.disabled = true;
+        }
+      },
+      error: () => { this.isLoading = false; if (event) event.target.complete(); }
+    });
+  }
+
+  caricaAltraPaginaCantieri(event: any) {
+    if (this.cantieriPage < this.cantieriTotalPages) {
+      this.cantieriPage++;
+      this.caricaCantieriPaginati(event, false);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
   gestisciRicerca(testo: string) {
     if (this.vistaCorrente === 'clienti') {
-      this.clientiSearchSubject.next(testo); // Manda il testo al Debounce
+      this.clientiSearchSubject.next(testo); 
+    } else if (this.vistaCorrente === 'cantieri') {
+      this.cantieriSearchSubject.next(testo); // <--- DEBOUNCE CANTIERI
     } else {
       this.ricerca = testo;
-      if (this.vistaCorrente === 'cantieri') this.elaboraCantieri();
-      else if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
+      if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
       else this.elaboraAppuntamenti();
     }
   }
@@ -328,51 +372,6 @@ export class Tab3Page implements OnInit {
     this.vistaCorrente = nuovaVista;
     this.ricerca = ''; // Azzera la ricerca cambiando tab
     this.caricaDatiGlobale(); // Ricarica/Ri-elabora
-  }
-
-  elaboraCantieri() {
-    let dati = [...this.tuttiCantieri];
-    const term = this.ricerca.toLowerCase();
-
-    if (term) {
-      dati = dati.filter(
-        (i) =>
-          i.via.toLowerCase().includes(term) ||
-          i.citta.toLowerCase().includes(term) ||
-          i.cliente?.nome.toLowerCase().includes(term),
-      );
-    }
-
-    dati = this.ordinaLista(
-      dati,
-      this.settingsCantieri.orderBy,
-      this.settingsCantieri.orderDirection,
-    );
-
-    if (this.settingsCantieri.groupBy) {
-      this.isCantieriGrouped = true;
-      const field = this.settingsCantieri.groupBy;
-      const gruppi: { [key: string]: Indirizzo[] } = {};
-
-      dati.forEach((item) => {
-        let key = 'Altro';
-        if (field === 'cliente') key = item.cliente?.nome || 'Nessun Cliente';
-        else key = (item as any)[field] || 'Altro';
-        key = key.toString().toUpperCase();
-
-        if (!gruppi[key]) gruppi[key] = [];
-        gruppi[key].push(item);
-      });
-
-      this.cantieriGruppi = Object.keys(gruppi)
-        .sort()
-        .map((key) => ({ nome: key, items: gruppi[key] }));
-      this.cantieriLista = [];
-    } else {
-      this.isCantieriGrouped = false;
-      this.cantieriLista = dati;
-      this.cantieriGruppi = [];
-    }
   }
 
   elaboraCommesse() {
@@ -687,13 +686,8 @@ export class Tab3Page implements OnInit {
           .then((t) => t.present());
         return;
       } else if (tipo === 'cantiere') {
-        this.toastCtrl
-          .create({
-            message: 'Questo è un Cantiere Interno',
-            duration: 2000,
-            color: 'primary',
-          })
-          .then((t) => t.present());
+        // ROTTA AL NUOVO DETTAGLIO CANTIERE ORFANO!
+        this.router.navigate(['/cantiere-dettaglio', item.id]);
         return;
       }
 

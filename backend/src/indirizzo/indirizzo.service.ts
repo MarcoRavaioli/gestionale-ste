@@ -36,4 +36,33 @@ export class IndirizzoService {
   remove(id: number) {
     return this.indirizzoRepository.softDelete(id);
   }
+
+  async findPaginated(page: number, limit: number, search: string) {
+    const skip = (page - 1) * limit;
+
+    const query = this.indirizzoRepository.createQueryBuilder('indirizzo')
+      .leftJoinAndSelect('indirizzo.cliente', 'cliente') // Carica anche il cliente per l'interfaccia
+
+    // Ricerca flessibile: cerca nella via, nella città, o nel nome del cliente
+    if (search) {
+      query.where(
+        'indirizzo.via ILIKE :search OR indirizzo.citta ILIKE :search OR cliente.nome ILIKE :search',
+        { search: `%${search}%` }
+      );
+    }
+
+    query.orderBy('indirizzo.citta', 'ASC') // Ordine di default
+         .skip(skip)
+         .take(limit);
+
+    const [data, total] = await query.getManyAndCount();
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
 }
