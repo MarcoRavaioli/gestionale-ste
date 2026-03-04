@@ -5,11 +5,11 @@ import { FormsModule } from '@angular/forms';
 import {
   ModalController, ToastController, AlertController, NavController,
   IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle,
-  IonButton, IonIcon, IonContent, IonInput, IonSearchbar,
+  IonButton, IonIcon, IonContent, IonInput, IonSearchbar, IonList,
   IonAccordionGroup, IonAccordion, IonItem, IonBadge, IonSegment, IonSegmentButton, IonLabel
 } from '@ionic/angular/standalone';
 
-import { IonicSafeString, IonList, ViewDidEnter } from '@ionic/angular';
+import { IonicSafeString, ViewDidEnter } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 import { ClienteService } from '../../services/cliente.service';
