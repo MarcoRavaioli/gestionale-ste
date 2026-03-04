@@ -1,6 +1,9 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, DeleteDateColumn } from 'typeorm';
 import { Commessa } from './commessa.entity';
 import { Fattura } from './fattura.entity';
+import { Cliente } from './cliente.entity';
+import { Indirizzo } from './indirizzo.entity';
+import { Appuntamento } from './appuntamento.entity';
 
 @Entity()
 export class Allegato {
@@ -8,26 +11,31 @@ export class Allegato {
   id: number;
 
   @Column()
-  nome_file: string; // Es: "Contratto_Firmato.pdf"
+  nome_file: string;
 
   @Column()
-  percorso: string; // Es: "/uploads/2025/commessa_1/12345-contratto.pdf"
+  percorso: string;
 
   @Column({ nullable: true })
-  tipo_file: string; // Es: "application/pdf" o "image/jpeg"
+  tipo_file: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   data_caricamento: Date;
 
-  @ManyToOne(() => Commessa, (commessa) => commessa.allegati, {
-    onDelete: 'CASCADE',
-  })
+  // RELAZIONI FLESSIBILI (Tutte opzionali)
+  @ManyToOne(() => Cliente, (cliente) => cliente.allegati, { onDelete: 'CASCADE', nullable: true })
+  cliente: Cliente;
+
+  @ManyToOne(() => Indirizzo, (indirizzo) => indirizzo.allegati, { onDelete: 'CASCADE', nullable: true })
+  indirizzo: Indirizzo;
+
+  @ManyToOne(() => Commessa, (commessa) => commessa.allegati, { onDelete: 'CASCADE', nullable: true })
   commessa: Commessa;
 
-  @ManyToOne(() => Fattura, (fattura) => fattura.allegati, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
+  @ManyToOne(() => Appuntamento, (appuntamento) => appuntamento.allegati, { onDelete: 'CASCADE', nullable: true })
+  appuntamento: Appuntamento;
+
+  @ManyToOne(() => Fattura, (fattura) => fattura.allegati, { onDelete: 'CASCADE', nullable: true })
   fattura: Fattura;
 
   @DeleteDateColumn({ select: false })

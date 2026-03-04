@@ -1,15 +1,9 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  OneToMany,
-  DeleteDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, DeleteDateColumn } from 'typeorm';
 import { Indirizzo } from './indirizzo.entity';
 import { Appuntamento } from './appuntamento.entity';
 import { Fattura } from './fattura.entity';
 import { Allegato } from './allegato.entity';
+import { Cliente } from './cliente.entity';
 
 @Entity()
 export class Commessa {
@@ -28,10 +22,11 @@ export class Commessa {
   @Column({ nullable: true, type: 'float' })
   valore_totale: number;
 
-  @ManyToOne(() => Indirizzo, (indirizzo) => indirizzo.commesse, {
-    onDelete: 'CASCADE',
-    nullable: true,
-  })
+  // Collegamento diretto al Cliente (Opzionale)
+  @ManyToOne(() => Cliente, (cliente) => cliente.commesse, { onDelete: 'CASCADE', nullable: true })
+  cliente: Cliente;
+
+  @ManyToOne(() => Indirizzo, (indirizzo) => indirizzo.commesse, { onDelete: 'CASCADE', nullable: true })
   indirizzo: Indirizzo;
 
   @OneToMany(() => Appuntamento, (app) => app.commessa)
