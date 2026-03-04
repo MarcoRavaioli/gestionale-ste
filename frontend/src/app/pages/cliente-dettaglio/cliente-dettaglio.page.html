@@ -5,12 +5,18 @@
     </ion-buttons>
     <ion-title>{{ cliente?.nome }}</ion-title>
 
+
     <ion-buttons slot="end" *ngIf="hasManagerAccess">
       <ion-button *ngIf="!isEditing" (click)="abilitaModifica()"><ion-icon slot="icon-only" name="pencil-outline"></ion-icon></ion-button>
       <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light"><ion-icon slot="icon-only" name="close-outline"></ion-icon></ion-button>
       <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning"><ion-icon slot="icon-only" name="save-outline"></ion-icon></ion-button>
       <ion-button *ngIf="!isEditing" (click)="chiediConfermaCancellazione()" color="danger"><ion-icon slot="icon-only" name="trash-outline" style="color: #ffcccc"></ion-icon></ion-button>
     </ion-buttons>
+
+    <div class="quick-contact ion-padding-horizontal ion-padding-top" style="display: flex; gap: 15px; color: var(--ion-color-medium); font-size: 0.9rem;">
+      <span *ngIf="cliente.telefono"><ion-icon name="call-outline"></ion-icon> {{ cliente.telefono }}</span>
+      <span *ngIf="cliente.email"><ion-icon name="mail-outline"></ion-icon> {{ cliente.email }}</span>
+    </div>
   </ion-toolbar>
 
   <ion-toolbar *ngIf="cliente && !isEditing">
@@ -48,10 +54,7 @@
 
   <div class="sites-section fade-in" *ngIf="currentTab === 'cantieri' && !isEditing">
     
-    <div class="quick-contact ion-padding-horizontal ion-padding-top" style="display: flex; gap: 15px; color: var(--ion-color-medium); font-size: 0.9rem;">
-      <span *ngIf="cliente.telefono"><ion-icon name="call-outline"></ion-icon> {{ cliente.telefono }}</span>
-      <span *ngIf="cliente.email"><ion-icon name="mail-outline"></ion-icon> {{ cliente.email }}</span>
-    </div>
+    
 
     <div class="section-header-row ion-padding-horizontal">
       <h3>Cantieri Operativi</h3>

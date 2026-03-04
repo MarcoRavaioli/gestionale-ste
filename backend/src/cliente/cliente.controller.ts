@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ClienteService } from './cliente.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
@@ -26,6 +27,15 @@ export class ClienteController {
   @Post()
   create(@Body() createClienteDto: CreateClienteDto) {
     return this.clienteService.create(createClienteDto);
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 15,
+    @Query('search') search: string = ''
+  ) {
+    return this.clienteService.findPaginated(+page, +limit, search);
   }
 
   @Get()

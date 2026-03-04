@@ -1,5 +1,13 @@
 export type RuoloUtente = 'ADMIN' | 'MANAGER' | 'COLLABORATORE';
 
+export interface PaginatedResult<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 export interface Utente {
   id: number;
   nickname: string;

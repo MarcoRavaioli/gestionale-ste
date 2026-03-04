@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Cliente } from '../interfaces/models';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Cliente, PaginatedResult } from '../interfaces/models';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -31,5 +31,17 @@ export class ClienteService {
 
   delete(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  getPaginated(page: number = 1, limit: number = 15, search: string = ''): Observable<PaginatedResult<Cliente>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+      
+    if (search) {
+      params = params.set('search', search);
+    }
+    
+    return this.http.get<PaginatedResult<Cliente>>(`${this.apiUrl}/paginated`, { params });
   }
 }
