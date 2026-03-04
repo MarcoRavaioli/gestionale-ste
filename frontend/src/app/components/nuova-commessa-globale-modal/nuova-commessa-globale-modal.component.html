@@ -11,27 +11,46 @@
 
   <div class="section-box">
     <div class="header-toggle">
-      <h3><ion-icon name="location-outline"></ion-icon> Cantiere</h3>
+      <h3><ion-icon name="link-outline"></ion-icon> Collegamento</h3>
     </div>
 
-    <ion-item lines="none" class="ion-margin-bottom">
-      <ion-toggle mode="ios" [(ngModel)]="usaCantiereGenerico" color="medium">
-        Commessa Interna (Senza Cantiere)
-      </ion-toggle>
-    </ion-item>
+    <ion-segment [(ngModel)]="tipoCollegamento" class="ion-margin-bottom">
+      <ion-segment-button value="cantiere">
+        <ion-label>Cantiere</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cliente">
+        <ion-label>Solo Cliente</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="nessuno">
+        <ion-label>Interna</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-    <div *ngIf="!usaCantiereGenerico" class="fade-in">
+    <div *ngIf="tipoCollegamento === 'cantiere'" class="fade-in">
       <app-generic-selector 
         label="Cerca e seleziona Indirizzo Cantiere..."
         type="cantiere"
         [items]="listaCantieri"
         [(selectedId)]="selectedCantiereId">
       </app-generic-selector>
+    </div>
 
-      <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="creaNuovoCantiereAlVolo()">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Crea Nuovo Cantiere
-      </ion-button>
+    <div *ngIf="tipoCollegamento === 'cliente'" class="fade-in">
+      <app-generic-selector 
+        label="Cerca e seleziona Cliente..."
+        type="cliente"
+        [items]="listaClienti"
+        [(selectedId)]="selectedClienteId">
+      </app-generic-selector>
+      <p style="font-size: 0.8rem; color: var(--ion-color-medium); margin-top: 8px;">
+        Usa questa opzione se la commessa non ha un cantiere fisico ma è intestata a un cliente.
+      </p>
+    </div>
+
+    <div *ngIf="tipoCollegamento === 'nessuno'" class="fade-in">
+      <p style="font-size: 0.8rem; color: var(--ion-color-medium); margin-top: 8px; text-align: center;">
+        Commessa di gestione interna. Nessun collegamento.
+      </p>
     </div>
   </div>
 
@@ -43,7 +62,7 @@
       <ion-textarea label="Descrizione Lavoro" label-placement="floating" fill="outline" rows="2" [(ngModel)]="commessa.descrizione"></ion-textarea>
       
       <div style="display: flex; gap: 10px;">
-        <ion-input label="Valore Tot. (€)" type="number" label-placement="floating" fill="outline" [(ngModel)]="commessa.valore_totale"></ion-input>
+        <ion-input label="Valore Tot. (€)" type="number" inputmode="decimal" label-placement="floating" fill="outline" [(ngModel)]="commessa.valore_totale"></ion-input>
         <ion-select label="Stato *" label-placement="floating" fill="outline" [(ngModel)]="commessa.stato">
           <ion-select-option value="APERTA">APERTA</ion-select-option>
           <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
