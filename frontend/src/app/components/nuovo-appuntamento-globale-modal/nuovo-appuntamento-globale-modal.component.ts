@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-  IonContent, IonIcon, IonInput, IonTextarea, IonItem,
-  ModalController, ToastController, AlertController, IonSegment, IonSegmentButton
+  IonContent, IonIcon, IonInput, IonTextarea,
+  ModalController, ToastController, AlertController, 
+  IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
 } from '@ionic/angular/standalone';
 import { AppuntamentoService } from '../../services/appuntamento.service';
 import { CommessaService } from '../../services/commessa.service';
@@ -24,16 +25,15 @@ import { calendarOutline, documentsOutline, closeOutline, add, trashOutline, loc
   standalone: true,
   imports: [
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-    IonContent, IonIcon, IonInput, IonTextarea, IonItem,
+    IonContent, IonIcon, IonInput, IonTextarea,
     CommonModule, FormsModule, GenericSelectorComponent,
-    IonSegment, IonSegmentButton
+    IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
   ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   @Input() appuntamento?: Appuntamento;
   isEditing = false;
 
-  // SCELTA MULTIPLA (Le 4 opzioni di collegamento)
   tipoCollegamento: 'commessa' | 'cantiere' | 'cliente' | 'nessuno' = 'commessa';
 
   listaCommesse: Commessa[] = [];
@@ -73,7 +73,6 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
         descrizione: this.appuntamento.descrizione || '',
       };
       
-      // Ripristina la selezione corretta in base ai dati esistenti
       if (this.appuntamento.commessa) {
         this.tipoCollegamento = 'commessa';
         this.selectedCommessaId = this.appuntamento.commessa.id;
@@ -109,12 +108,10 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     const payload: any = { ...this.formDati };
     if (!payload.nome || payload.nome.trim() === '') payload.nome = 'Intervento';
 
-    // Reset di tutti i legami
     payload.commessa = null;
     payload.indirizzo = null;
     payload.cliente = null;
 
-    // Assegnazione in base alla scelta (uno esclude l'altro a livello diretto)
     if (this.tipoCollegamento === 'commessa' && this.selectedCommessaId) {
       payload.commessa = { id: this.selectedCommessaId };
     } else if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
