@@ -4,18 +4,17 @@ import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
   IonContent, IonIcon, IonInput, IonTextarea, IonSelect,
-  IonSelectOption, ModalController, ToastController, IonItem, IonToggle
+  IonSelectOption, ModalController, ToastController, IonSegment, IonSegmentButton
 } from '@ionic/angular/standalone';
 import { CommessaService } from '../../services/commessa.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
+import { ClienteService } from '../../services/cliente.service'; // <-- AGGIUNTO
 import { AllegatoService } from '../../services/allegato.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import { Indirizzo } from '../../interfaces/models';
-// IMPORTIAMO IL MODALE DEL CANTIERE
-import { NuovoCantiereGlobaleModalComponent } from '../nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
+import { Indirizzo, Cliente } from '../../interfaces/models'; // <-- AGGIUNTO Cliente
 
 import { addIcons } from 'ionicons';
-import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add } from 'ionicons/icons';
+import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuova-commessa-globale-modal',
@@ -26,13 +25,18 @@ import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUp
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
     IonContent, IonIcon, IonInput, IonTextarea, IonSelect,
     IonSelectOption, CommonModule, FormsModule, GenericSelectorComponent,
-    IonItem, IonToggle
+    IonSegment, IonSegmentButton // <-- AGGIUNTI
   ],
 })
 export class NuovaCommessaGlobaleModalComponent implements OnInit {
+  // LA NUOVA LOGICA DI SCELTA MULTIPLA
+  tipoCollegamento: 'cantiere' | 'cliente' | 'nessuno' = 'cantiere';
+  
   listaCantieri: Indirizzo[] = [];
   selectedCantiereId: number | null = null;
-  usaCantiereGenerico = false;
+
+  listaClienti: Cliente[] = [];
+  selectedClienteId: number | null = null;
 
   commessa = { seriale: '', descrizione: '', valore_totale: null as number | null, stato: 'APERTA' };
   selectedFile: File | null = null;
@@ -41,30 +45,23 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private indService: IndirizzoService,
+    private clienteService: ClienteService,
     private commessaService: CommessaService,
     private allegatoService: AllegatoService
   ) {
-    addIcons({ locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add });
+    addIcons({ locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline });
   }
 
-  ngOnInit() { this.caricaCantieri(); }
+  ngOnInit() { 
+    this.caricaDati(); 
+  }
 
-  caricaCantieri() {
+  caricaDati() {
     this.indService.getAll().subscribe((res) => (this.listaCantieri = res));
+    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
   }
 
   chiudi() { this.modalCtrl.dismiss(); }
-
-  // MODAL STACKING: Creiamo il cantiere e lo selezioniamo!
-  async creaNuovoCantiereAlVolo() {
-    const modal = await this.modalCtrl.create({ component: NuovoCantiereGlobaleModalComponent });
-    await modal.present();
-    const { data } = await modal.onWillDismiss();
-    if (data && data.creato && data.data) {
-      this.listaCantieri.unshift(data.data);
-      this.selectedCantiereId = data.data.id;
-    }
-  }
 
   // --- LOGICA ALLEGATI RIMASTA INVARIATA ---
   triggerFileInput() { document.getElementById('fileInputGlobal')?.click(); }
@@ -89,17 +86,25 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
 
   isValid(): boolean {
     if (!this.commessa.seriale || this.commessa.seriale.trim() === '' || !this.commessa.stato) return false;
-    if (!this.usaCantiereGenerico && !this.selectedCantiereId) return false;
+    
+    // Controlli basati sulla scelta
+    if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId) return false;
+    if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId) return false;
+    
     return true;
   }
 
   salva() {
     const payload: any = { ...this.commessa };
     
-    if (!this.usaCantiereGenerico && this.selectedCantiereId) {
+    // Assegnazione flessibile
+    payload.indirizzo = null;
+    payload.cliente = null;
+
+    if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
       payload.indirizzo = { id: this.selectedCantiereId };
-    } else {
-      payload.indirizzo = null;
+    } else if (this.tipoCollegamento === 'cliente' && this.selectedClienteId) {
+      payload.cliente = { id: this.selectedClienteId };
     }
 
     this.commessaService.create(payload).subscribe({

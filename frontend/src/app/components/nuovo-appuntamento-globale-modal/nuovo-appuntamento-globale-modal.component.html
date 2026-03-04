@@ -11,27 +11,55 @@
   
   <div class="section-box">
     <div class="header-toggle">
-      <h3><ion-icon name="documents-outline"></ion-icon> Riferimento</h3>
+      <h3><ion-icon name="link-outline"></ion-icon> Collega a...</h3>
     </div>
 
-    <ion-item lines="none" class="ion-margin-bottom">
-      <ion-toggle mode="ios" [(ngModel)]="usaCommessaGenerica" color="medium">
-        Lavoro generico (Nessuna commessa)
-      </ion-toggle>
-    </ion-item>
+    <ion-segment scrollable="true" [(ngModel)]="tipoCollegamento" class="ion-margin-bottom">
+      <ion-segment-button value="commessa">
+        <ion-label>Commessa</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cantiere">
+        <ion-label>Cantiere</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cliente">
+        <ion-label>Cliente</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="nessuno">
+        <ion-label>Nessuno</ion-label>
+      </ion-segment-button>
+    </ion-segment>
 
-    <div *ngIf="!usaCommessaGenerica" class="fade-in">
+    <div *ngIf="tipoCollegamento === 'commessa'" class="fade-in">
       <app-generic-selector
         label="Cerca e seleziona commessa..."
         type="commessa"
         [items]="listaCommesse"
         [(selectedId)]="selectedCommessaId">
       </app-generic-selector>
+    </div>
 
-      <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="creaNuovaCommessaAlVolo()">
-        <ion-icon name="add" slot="start"></ion-icon>
-        Crea Commessa Mancante
-      </ion-button>
+    <div *ngIf="tipoCollegamento === 'cantiere'" class="fade-in">
+      <app-generic-selector
+        label="Cerca e seleziona cantiere..."
+        type="cantiere"
+        [items]="listaCantieri"
+        [(selectedId)]="selectedCantiereId">
+      </app-generic-selector>
+    </div>
+
+    <div *ngIf="tipoCollegamento === 'cliente'" class="fade-in">
+      <app-generic-selector
+        label="Cerca e seleziona cliente..."
+        type="cliente"
+        [items]="listaClienti"
+        [(selectedId)]="selectedClienteId">
+      </app-generic-selector>
+    </div>
+
+    <div *ngIf="tipoCollegamento === 'nessuno'" class="fade-in">
+      <p style="font-size: 0.8rem; color: var(--ion-color-medium); text-align: center; margin-top: 8px;">
+        Appuntamento generico (es. riunione in ufficio).
+      </p>
     </div>
   </div>
 
@@ -47,7 +75,7 @@
       </ion-input>
 
       <ion-textarea
-        label="Note"
+        label="Note e Titolo Lavoro"
         label-placement="floating"
         fill="outline"
         rows="3"
@@ -65,6 +93,7 @@
   >
     {{ isEditing ? 'SALVA MODIFICHE' : 'CREA APPUNTAMENTO' }}
   </ion-button>
+
   <ion-button
     *ngIf="isEditing"
     expand="block"

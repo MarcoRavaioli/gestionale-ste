@@ -19,6 +19,22 @@ export interface TokenPayload {
   exp: number;
 }
 
+// Sposto Allegato in alto perché ora è usato da quasi tutti
+export interface Allegato {
+  id: number;
+  nome_file: string;
+  percorso: string;
+  tipo_file?: string;
+  data_caricamento: string;
+  
+  // FASE 1: Tutti i collegamenti padre opzionali
+  cliente?: Cliente;
+  indirizzo?: Indirizzo;
+  commessa?: Commessa;
+  appuntamento?: Appuntamento;
+  fattura?: Fattura;
+}
+
 export interface Indirizzo {
   id: number;
   via: string;
@@ -27,20 +43,28 @@ export interface Indirizzo {
   cap: string;
   provincia?: string;
   stato: string;
-  commesse?: Commessa[];
+  
   cliente?: Cliente;
+  commesse?: Commessa[];
+  
+  // FASE 1: Nuovi figli diretti
+  appuntamenti?: Appuntamento[]; 
+  allegati?: Allegato[];         
 }
 
-// --- MODIFICA QUI ---
 export interface Commessa {
   id: number;
   seriale: string;
   descrizione?: string;
   stato: 'APERTA' | 'CHIUSA' | 'IN_CORSO';
   valore_totale?: number;
+  
   indirizzo?: Indirizzo; 
+  cliente?: Cliente; // <--- FASE 1: Commessa diretta senza cantiere
+  
   appuntamenti?: Appuntamento[]; 
-  allegati?: Allegato[]; // <--- AGGIUNTO: Ora TypeScript sa che esistono!
+  allegati?: Allegato[]; 
+  fatture?: Fattura[];
 }
 
 export interface Cliente {
@@ -48,7 +72,14 @@ export interface Cliente {
   nome: string;
   telefono?: string;
   email?: string;
+  
   indirizzi?: Indirizzo[];
+  
+  // FASE 1: Nuovi figli diretti (saltano il cantiere)
+  commesse?: Commessa[];         
+  appuntamenti?: Appuntamento[]; 
+  fatture?: Fattura[];
+  allegati?: Allegato[];
 }
 
 export interface Appuntamento {
@@ -56,8 +87,14 @@ export interface Appuntamento {
   nome: string;
   data_ora: string;
   descrizione?: string;
+  
+  // FASE 1: Le 3 opzioni di collegamento
   commessa?: Commessa; 
-  commessaId?: number;
+  indirizzo?: Indirizzo;         
+  cliente?: Cliente;             
+  
+  allegati?: Allegato[];
+  commessaId?: number; // Mantenuto per compatibilità con vecchi form
 }
 
 export interface User {
@@ -73,14 +110,6 @@ export enum TipoFattura {
   USCITA = 'uscita',
 }
 
-export interface Allegato {
-  id: number;
-  nome_file: string;
-  percorso: string;
-  tipo_file?: string;
-  data_caricamento: string;
-}
-
 export interface Fattura {
   id: number;
   numero_fattura: string;
@@ -90,6 +119,7 @@ export interface Fattura {
   tipo: TipoFattura;
   data_scadenza?: string;
   incassata: boolean;
+  
   cliente?: Cliente;
   commessa?: Commessa;
   allegati?: Allegato[];
