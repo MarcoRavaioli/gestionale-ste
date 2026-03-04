@@ -4,17 +4,18 @@ import { FormsModule } from '@angular/forms';
 import {
   IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
   IonContent, IonIcon, IonInput, IonTextarea, IonSelect,
-  IonSelectOption, ModalController, ToastController, IonSegment, IonSegmentButton
+  IonSelectOption, ModalController, ToastController, 
+  IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
 } from '@ionic/angular/standalone';
 import { CommessaService } from '../../services/commessa.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
-import { ClienteService } from '../../services/cliente.service'; // <-- AGGIUNTO
+import { ClienteService } from '../../services/cliente.service'; 
 import { AllegatoService } from '../../services/allegato.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import { Indirizzo, Cliente } from '../../interfaces/models'; // <-- AGGIUNTO Cliente
+import { Indirizzo, Cliente } from '../../interfaces/models'; 
 
 import { addIcons } from 'ionicons';
-import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline } from 'ionicons/icons';
+import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline, linkOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuova-commessa-globale-modal',
@@ -25,11 +26,10 @@ import { locationOutline, documentsOutline, closeOutline, searchOutline, cloudUp
     IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
     IonContent, IonIcon, IonInput, IonTextarea, IonSelect,
     IonSelectOption, CommonModule, FormsModule, GenericSelectorComponent,
-    IonSegment, IonSegmentButton // <-- AGGIUNTI
+    IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
   ],
 })
 export class NuovaCommessaGlobaleModalComponent implements OnInit {
-  // LA NUOVA LOGICA DI SCELTA MULTIPLA
   tipoCollegamento: 'cantiere' | 'cliente' | 'nessuno' = 'cantiere';
   
   listaCantieri: Indirizzo[] = [];
@@ -49,7 +49,7 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
     private commessaService: CommessaService,
     private allegatoService: AllegatoService
   ) {
-    addIcons({ locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline });
+    addIcons({ locationOutline, documentsOutline, closeOutline, searchOutline, cloudUploadOutline, documentAttachOutline, closeCircle, add, personOutline, linkOutline });
   }
 
   ngOnInit() { 
@@ -63,7 +63,6 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
 
   chiudi() { this.modalCtrl.dismiss(); }
 
-  // --- LOGICA ALLEGATI RIMASTA INVARIATA ---
   triggerFileInput() { document.getElementById('fileInputGlobal')?.click(); }
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
@@ -86,18 +85,13 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
 
   isValid(): boolean {
     if (!this.commessa.seriale || this.commessa.seriale.trim() === '' || !this.commessa.stato) return false;
-    
-    // Controlli basati sulla scelta
     if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId) return false;
     if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId) return false;
-    
     return true;
   }
 
   salva() {
     const payload: any = { ...this.commessa };
-    
-    // Assegnazione flessibile
     payload.indirizzo = null;
     payload.cliente = null;
 
