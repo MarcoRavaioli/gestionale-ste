@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
   IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
-  IonIcon, ToastController, ModalController, AlertController, NavController
+  IonIcon, ToastController, ModalController, AlertController, NavController, IonButton // <--- AGGIUNTO IonButton
 } from '@ionic/angular/standalone';
 
 import { IndirizzoService } from 'src/app/services/indirizzo.service';
@@ -27,7 +27,7 @@ import { IonicSafeString } from '@ionic/angular';
   standalone: true,
   imports: [
     CommonModule, FormsModule, IndirizzoAccordionComponent,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonIcon
+    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonIcon, IonButton // <--- AGGIUNTO IonButton
   ]
 })
 export class CantiereDettaglioPage implements OnInit {
@@ -60,14 +60,18 @@ export class CantiereDettaglioPage implements OnInit {
   }
 
   caricaDati(id: number) {
-    // Al momento il tuo indirizzoService.getOne non esiste, se usi findOne/getById cambialo col nome corretto del tuo service
-    this.indirizzoService.getOne ? 
-      this.indirizzoService.getOne(id).subscribe(res => this.indirizzo = res) :
-      // Se si chiama findOne:
-      (this.indirizzoService as any).findOne(id).subscribe((res: any) => this.indirizzo = res);
+    // FIX: Usiamo direttamente il metodo corretto findOne() che hai nel servizio!
+    this.indirizzoService.findOne(id).subscribe({
+      next: (res: Indirizzo) => {
+        this.indirizzo = res;
+      },
+      error: (err) => {
+        console.error('Errore caricamento cantiere', err);
+        this.navCtrl.navigateRoot('/tabs/tab3');
+      }
+    });
   }
 
-  // --- REPLICA DEI METODI DEL CANTIERE ---
   async apriModalIndirizzo() {
     const m = await this.modalCtrl.create({ component: NuovoIndirizzoModalComponent, componentProps: { indirizzoEsistente: this.indirizzo } });
     await m.present();

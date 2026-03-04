@@ -29,6 +29,10 @@ export class IndirizzoService {
     return this.http.get<Indirizzo[]>(this.apiUrl);
   }
 
+  findOne(id: number): Observable<Indirizzo> {
+    return this.http.get<Indirizzo>(`${this.apiUrl}/${id}`);
+  }
+
   getPaginated(page: number = 1, limit: number = 15, search: string = ''): Observable<PaginatedResult<Indirizzo>> {
     let params = new HttpParams()
       .set('page', page.toString())
