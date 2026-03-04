@@ -13,9 +13,7 @@ export class ClienteService {
   ) {}
 
   create(createClienteDto: CreateClienteDto) {
-    // Crea l'oggetto ma non lo salva ancora
     const nuovoCliente = this.clienteRepository.create(createClienteDto);
-    // Lo salva nel DB
     return this.clienteRepository.save(nuovoCliente);
   }
 
@@ -25,6 +23,8 @@ export class ClienteService {
         'indirizzi',
         'indirizzi.commesse',
         'indirizzi.commesse.appuntamenti',
+        'commesse',     // <--- FASE 2: Commesse dirette del cliente
+        'appuntamenti', // <--- FASE 2: Appuntamenti diretti del cliente
       ],
     });
   }
@@ -32,12 +32,17 @@ export class ClienteService {
   findOne(id: number) {
     return this.clienteRepository.findOne({
       where: { id },
-      // ANCHE QUI, carica a cascata: Cliente -> Indirizzi -> Commesse
       relations: [
+        // Ramo standard: Cliente -> Cantiere -> Commessa -> App/All
         'indirizzi',
         'indirizzi.commesse',
         'indirizzi.commesse.appuntamenti',
         'indirizzi.commesse.allegati',
+        // Nuovi rami diretti
+        'commesse',               // Commesse slegate da cantiere
+        'commesse.appuntamenti',  // Appuntamenti di commesse slegate
+        'appuntamenti',           // Appuntamenti isolati solo col cliente
+        'allegati',               // Allegati generali del cliente
       ],
     });
   }

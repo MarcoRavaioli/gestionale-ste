@@ -20,4 +20,11 @@ export class CreateAppuntamentoDto {
 
   @IsOptional()
   commessa?: any;
+
+  // FASE 2: Collegamenti diretti opzionali
+  @IsOptional()
+  indirizzo?: any; 
+
+  @IsOptional()
+  cliente?: any;
 }

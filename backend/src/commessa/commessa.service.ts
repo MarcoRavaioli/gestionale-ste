@@ -19,10 +19,12 @@ export class CommessaService {
 
   findAll() {
     return this.commessaRepository.find({
-      // CORREZIONE QUI: Aggiunto 'allegati' per popolare l'array nel frontend
-      relations: ['indirizzo', 'indirizzo.cliente', 'allegati'],
-
-      // Opzionale: Ordina per data creazione o seriale
+      relations: [
+        'indirizzo', 
+        'indirizzo.cliente', 
+        'cliente', // <--- FASE 2: Estrae il cliente se la commessa è diretta
+        'allegati'
+      ],
       order: { id: 'DESC' },
     });
   }
@@ -33,6 +35,7 @@ export class CommessaService {
       relations: [
         'indirizzo',
         'indirizzo.cliente',
+        'cliente', // <--- FASE 2: Estrae il cliente diretto
         'appuntamenti',
         'allegati',
         'fatture',

@@ -18,11 +18,14 @@ export class AppuntamentoService {
 
   findAll() {
     return this.appuntamentoRepository.find({
-      // Risaliamo la corrente: Appuntamento -> Commessa -> Indirizzo -> Cliente
       relations: [
         'commessa',
         'commessa.indirizzo',
         'commessa.indirizzo.cliente',
+        'commessa.cliente', // Nel caso in cui la commessa sia diretta
+        'indirizzo',        // Appuntamento diretto al cantiere
+        'indirizzo.cliente',// Cliente del cantiere diretto
+        'cliente',          // Appuntamento diretto al cliente
         'collaboratori',
       ],
     });
@@ -35,12 +38,15 @@ export class AppuntamentoService {
         'commessa',
         'commessa.indirizzo',
         'commessa.indirizzo.cliente',
+        'commessa.cliente',
+        'indirizzo',
+        'indirizzo.cliente',
+        'cliente',
         'collaboratori',
       ],
     });
   }
 
-  // update e remove standard...
   update(id: number, updateDto: any) {
     return this.appuntamentoRepository.update(id, updateDto);
   }

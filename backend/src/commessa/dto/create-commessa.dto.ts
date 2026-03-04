@@ -16,12 +16,16 @@ export class CreateCommessaDto {
 
   @IsNumber()
   @IsOptional()
-  valore_totale?: number; // <--- Fondamentale
+  valore_totale?: number;
 
   @IsString()
   @IsOptional()
-  stato?: string; // <--- Fondamentale (APERTA/CHIUSA...)
+  stato?: string;
 
   @IsOptional()
   indirizzo?: any;
+
+  // FASE 2: Aggiunto il collegamento diretto e opzionale al Cliente
+  @IsOptional()
+  cliente?: any; 
 }
