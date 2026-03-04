@@ -9,7 +9,7 @@ import {
   IonAccordionGroup, IonAccordion, IonItem, IonBadge, IonSegment, IonSegmentButton, IonLabel
 } from '@ionic/angular/standalone';
 
-import { IonicSafeString, ViewDidEnter } from '@ionic/angular';
+import { IonicSafeString, IonList, ViewDidEnter } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 import { ClienteService } from '../../services/cliente.service';
@@ -40,7 +40,7 @@ import {
   imports: [
     CommonModule, FormsModule, IndirizzoAccordionComponent, CommessaItemComponent,
     IonHeader, IonToolbar, IonButtons, IonBackButton, IonTitle,
-    IonButton, IonIcon, IonContent, IonInput, IonSearchbar,
+    IonButton, IonIcon, IonContent, IonInput, IonSearchbar, IonList,
     IonAccordionGroup, IonAccordion, IonItem, IonBadge, IonSegment, IonSegmentButton, IonLabel
   ],
 })
