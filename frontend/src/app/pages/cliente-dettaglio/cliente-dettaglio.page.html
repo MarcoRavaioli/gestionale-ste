@@ -14,8 +14,8 @@
     </ion-buttons>
 
     <div class="quick-contact ion-padding-horizontal ion-padding-top" style="display: flex; gap: 15px; color: var(--ion-color-medium); font-size: 0.9rem;">
-      <span *ngIf="cliente.telefono"><ion-icon name="call-outline"></ion-icon> {{ cliente.telefono }}</span>
-      <span *ngIf="cliente.email"><ion-icon name="mail-outline"></ion-icon> {{ cliente.email }}</span>
+      <span *ngIf="cliente?.telefono"><ion-icon name="call-outline"></ion-icon> {{ cliente?.telefono }}</span>
+      <span *ngIf="cliente?.email"><ion-icon name="mail-outline"></ion-icon> {{ cliente?.email }}</span>
     </div>
   </ion-toolbar>
 
