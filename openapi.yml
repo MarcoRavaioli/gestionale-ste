@@ -1,0 +1,590 @@
+openapi: 3.0.3
+info:
+  title: GS Pose API
+  description: Complete OpenAPI specification for GS Pose system. Suitable for E2E automated testing via Postman, Newman or Swagger.
+  version: 1.0.0
+servers:
+  - url: https://apigspose.marcoravaiolii.xyz
+    description: Production Server
+  - url: http://localhost:3000
+    description: Local Server
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      required: false
+      schema:
+        type: integer
+        default: 1
+    LimitParam:
+      name: limit
+      in: query
+      description: Number of items per page
+      required: false
+      schema:
+        type: integer
+        default: 10
+    IdParam:
+      name: id
+      in: path
+      description: Unique identifier of the resource
+      required: true
+      schema:
+        type: string
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: marco123
+        password:
+          type: string
+          example: adminMarco
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5..."
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        total:
+          type: integer
+          example: 100
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        totalPages:
+          type: integer
+          example: 10
+    GenericError:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        message:
+          type: string
+        error:
+          type: string
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: User Login
+      description: Authenticate a user and receive a JWT token.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenericError"
+
+  /collaboratore:
+    get:
+      summary: Get all collaboratori
+      tags: [Collaboratore]
+      responses:
+        "200":
+          description: List of collaboratori
+    post:
+      summary: Create a new collaboratore
+      tags: [Collaboratore]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /collaboratore/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Get a specific collaboratore by ID
+      tags: [Collaboratore]
+      responses:
+        "200":
+          description: Collaboratore details
+    patch:
+      summary: Update a collaboratore
+      tags: [Collaboratore]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete a collaboratore
+      tags: [Collaboratore]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /indirizzo:
+    get:
+      summary: Get all indirizzi
+      tags: [Indirizzo]
+      responses:
+        "200":
+          description: List of indirizzi
+    post:
+      summary: Create a new indirizzo
+      tags: [Indirizzo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /indirizzo/paginated:
+    get:
+      summary: Get paginated indirizzi
+      tags: [Indirizzo]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Paginated results successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /indirizzo/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Get indirizzo by ID
+      tags: [Indirizzo]
+      responses:
+        "200":
+          description: Indirizzo details
+    patch:
+      summary: Update indirizzo
+      tags: [Indirizzo]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete indirizzo
+      tags: [Indirizzo]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /cliente:
+    get:
+      summary: Get all clienti
+      tags: [Cliente]
+      responses:
+        "200":
+          description: List of clienti
+    post:
+      summary: Create a new cliente
+      tags: [Cliente]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /cliente/paginated:
+    get:
+      summary: Get paginated clienti
+      tags: [Cliente]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Paginated results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /cliente/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Get cliente by ID
+      tags: [Cliente]
+      responses:
+        "200":
+          description: Cliente details
+    patch:
+      summary: Update cliente
+      tags: [Cliente]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete cliente
+      tags: [Cliente]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /commessa:
+    get:
+      summary: Get all commesse
+      tags: [Commessa]
+      responses:
+        "200":
+          description: List of commesse
+    post:
+      summary: Create a new commessa
+      tags: [Commessa]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /commessa/paginated:
+    get:
+      summary: Get paginated commesse
+      tags: [Commessa]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Paginated results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /commessa/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Get commessa by ID
+      tags: [Commessa]
+      responses:
+        "200":
+          description: Commessa details
+    patch:
+      summary: Update commessa
+      tags: [Commessa]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete commessa
+      tags: [Commessa]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /appuntamento:
+    get:
+      summary: Get all appuntamenti
+      tags: [Appuntamento]
+      responses:
+        "200":
+          description: List of appuntamenti
+    post:
+      summary: Create a new appuntamento
+      tags: [Appuntamento]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /appuntamento/paginated:
+    get:
+      summary: Get paginated appuntamenti
+      tags: [Appuntamento]
+      parameters:
+        - $ref: "#/components/parameters/PageParam"
+        - $ref: "#/components/parameters/LimitParam"
+      responses:
+        "200":
+          description: Paginated results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /appuntamento/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Get appuntamento by ID
+      tags: [Appuntamento]
+      responses:
+        "200":
+          description: Appuntamento details
+    patch:
+      summary: Update appuntamento
+      tags: [Appuntamento]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete appuntamento
+      tags: [Appuntamento]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /fattura:
+    get:
+      summary: Get all fatture
+      tags: [Fattura]
+      responses:
+        "200":
+          description: List of fatture
+    post:
+      summary: Create a new fattura
+      tags: [Fattura]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /fattura/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    patch:
+      summary: Update fattura
+      tags: [Fattura]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete fattura
+      tags: [Fattura]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /allegato/upload:
+    post:
+      summary: Upload new allegato
+      tags: [Allegato]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201":
+          description: File uploaded
+  /allegato:
+    get:
+      summary: Get allegati
+      tags: [Allegato]
+      responses:
+        "200":
+          description: List of allegati
+  /allegato/{id}/download:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    get:
+      summary: Download allegato
+      tags: [Allegato]
+      responses:
+        "200":
+          description: File stream
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /allegato/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    delete:
+      summary: Delete allegato
+      tags: [Allegato]
+      responses:
+        "200":
+          description: Successfully deleted
+
+  /uploads/{folder}/{filename}:
+    parameters:
+      - name: folder
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: filename
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Statically access an uploaded file (Should act as Protected endpoint)
+      tags: [Uploads]
+      security: []
+      responses:
+        "200":
+          description: File stream
+        "401":
+          description: Unauthorized access
+
+  /tracciamento:
+    post:
+      summary: Start generic tracciamento
+      tags: [Tracciamento]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "201":
+          description: Successfully created
+  /tracciamento/me:
+    get:
+      summary: Get personal tracciamenti
+      tags: [Tracciamento]
+      responses:
+        "200":
+          description: List of personal tracciamenti
+  /tracciamento/report:
+    get:
+      summary: Generate tracciamento report
+      tags: [Tracciamento]
+      responses:
+        "200":
+          description: Report data
+  /tracciamento/completamento:
+    get:
+      summary: Get completion status for tracciamenti
+      tags: [Tracciamento]
+      responses:
+        "200":
+          description: Completion details
+  /tracciamento/{id}:
+    parameters:
+      - $ref: "#/components/parameters/IdParam"
+    patch:
+      summary: Update specific tracciamento
+      tags: [Tracciamento]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        "200":
+          description: Successfully updated
+    delete:
+      summary: Delete tracciamento
+      tags: [Tracciamento]
+      responses:
+        "200":
+          description: Successfully deleted
