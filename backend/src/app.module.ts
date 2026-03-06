@@ -4,9 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-// --- 1. IMPORTA IL THROTTLER ---
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-
 // ... altri import (Cliente, Indirizzo, ecc...) rimangono uguali
 import { Cliente } from './entities/cliente.entity';
 import { Indirizzo } from './entities/indirizzo.entity';
@@ -32,16 +29,6 @@ import { UploadsController } from './uploads/uploads.controller';
 
 @Module({
   imports: [
-    // --- 2. CONFIGURAZIONE RATE LIMITING GLOBALE ---
-    // Impostiamo una regola base: Max 100 richieste ogni 60 secondi per IP.
-    // Questo protegge da attacchi DDoS generici su tutta l'app.
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000, // 60 secondi (in millisecondi)
-        limit: 100, // Limite richieste
-      },
-    ]),
-
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -54,10 +41,16 @@ import { UploadsController } from './uploads/uploads.controller';
       password: process.env.DB_PASSWORD || 'super_segreto',
       database: process.env.DB_NAME || 'gestionale_db',
       entities: [
-        Cliente, Indirizzo, Commessa, Appuntamento,
-        Fattura, Collaboratore, TracciamentoPersonale, Allegato,
+        Cliente,
+        Indirizzo,
+        Commessa,
+        Appuntamento,
+        Fattura,
+        Collaboratore,
+        TracciamentoPersonale,
+        Allegato,
       ],
-      synchronize: true, 
+      synchronize: true,
       migrationsRun: true,
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     }),
@@ -80,12 +73,6 @@ import { UploadsController } from './uploads/uploads.controller';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
-    },
-    // --- 4. ATTIVAZIONE GUARDIA THROTTLER (Nuova) ---
-    // Questa guardia controlla ogni richiesta rispetto alle regole impostate
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
     },
   ],
 })

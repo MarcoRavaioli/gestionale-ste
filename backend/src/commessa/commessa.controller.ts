@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { CommessaService } from './commessa.service';
 import { CreateCommessaDto } from './dto/create-commessa.dto';
@@ -30,6 +31,19 @@ export class CommessaController {
   @Get()
   findAll() {
     return this.commessaService.findAll();
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+  ) {
+    return this.commessaService.findPaginated(
+      Number(page),
+      Number(limit),
+      search,
+    );
   }
 
   @Get(':id')

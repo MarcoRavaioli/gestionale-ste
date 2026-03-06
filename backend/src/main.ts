@@ -7,6 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
+import { DataMaskingInterceptor } from './common/interceptors/data-masking.interceptor';
 
 async function bootstrap() {
   // 1. CONFIGURAZIONE WINSTON LOGGER
@@ -77,10 +78,8 @@ async function bootstrap() {
     }),
   );
 
-  // 4. ASSET STATICI (Uploads)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
-  });
+  // 4. DATA MASKING INTERCEPTOR (Log Sicuri)
+  app.useGlobalInterceptors(new DataMaskingInterceptor());
 
   // 5. PORTA DINAMICA O FALLBACK
   const port = process.env.PORT || 3000;

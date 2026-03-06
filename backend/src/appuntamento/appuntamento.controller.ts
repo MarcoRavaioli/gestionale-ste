@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { AppuntamentoService } from './appuntamento.service';
 import { CreateAppuntamentoDto } from './dto/create-appuntamento.dto';
@@ -26,6 +27,19 @@ export class AppuntamentoController {
   @Get()
   findAll() {
     return this.appuntamentoService.findAll();
+  }
+
+  @Get('paginated')
+  findPaginated(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+  ) {
+    return this.appuntamentoService.findPaginated(
+      Number(page),
+      Number(limit),
+      search,
+    );
   }
 
   @Get(':id')

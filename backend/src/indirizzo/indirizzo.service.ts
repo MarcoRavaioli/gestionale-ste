@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { CreateIndirizzoDto } from './dto/create-indirizzo.dto';
 import { UpdateIndirizzoDto } from './dto/update-indirizzo.dto';
 import { Indirizzo } from '../entities/indirizzo.entity';
@@ -10,12 +10,34 @@ export class IndirizzoService {
   constructor(
     @InjectRepository(Indirizzo)
     private readonly indirizzoRepository: Repository<Indirizzo>,
+    private readonly dataSource: DataSource,
   ) {}
 
-  create(createDto: CreateIndirizzoDto) {
-    // TypeORM gestisce automaticamente la relazione se l'oggetto è formato bene
-    const nuovoIndirizzo = this.indirizzoRepository.create(createDto as any);
-    return this.indirizzoRepository.save(nuovoIndirizzo);
+  async create(createDto: CreateIndirizzoDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const nuovoIndirizzo = queryRunner.manager.create(
+        Indirizzo,
+        createDto as any,
+      );
+      const savedIndirizzo = await queryRunner.manager.save(
+        Indirizzo,
+        nuovoIndirizzo,
+      );
+      await queryRunner.commitTransaction();
+      return savedIndirizzo;
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        "Errore durante la creazione dell'indirizzo. Transazione annullata.",
+        err.message,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   findAll() {
@@ -29,8 +51,25 @@ export class IndirizzoService {
     });
   }
 
-  update(id: number, updateDto: UpdateIndirizzoDto) {
-    return this.indirizzoRepository.update(id, updateDto as any);
+  async update(id: number, updateDto: UpdateIndirizzoDto) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      await queryRunner.manager.update(Indirizzo, id, updateDto as any);
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        "Errore durante l'aggiornamento dell'indirizzo. Transazione annullata.",
+        err.message,
+      );
+    } finally {
+      await queryRunner.release();
+    }
+
+    return this.findOne(id);
   }
 
   remove(id: number) {
@@ -40,20 +79,22 @@ export class IndirizzoService {
   async findPaginated(page: number, limit: number, search: string) {
     const skip = (page - 1) * limit;
 
-    const query = this.indirizzoRepository.createQueryBuilder('indirizzo')
-      .leftJoinAndSelect('indirizzo.cliente', 'cliente') // Carica anche il cliente per l'interfaccia
+    const query = this.indirizzoRepository
+      .createQueryBuilder('indirizzo')
+      .leftJoinAndSelect('indirizzo.cliente', 'cliente'); // Carica anche il cliente per l'interfaccia
 
     // Ricerca flessibile: cerca nella via, nella città, o nel nome del cliente
     if (search) {
       query.where(
         'indirizzo.via ILIKE :search OR indirizzo.citta ILIKE :search OR cliente.nome ILIKE :search',
-        { search: `%${search}%` }
+        { search: `%${search}%` },
       );
     }
 
-    query.orderBy('indirizzo.citta', 'ASC') // Ordine di default
-         .skip(skip)
-         .take(limit);
+    query
+      .orderBy('indirizzo.citta', 'ASC') // Ordine di default
+      .skip(skip)
+      .take(limit);
 
     const [data, total] = await query.getManyAndCount();
 
@@ -62,7 +103,7 @@ export class IndirizzoService {
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   }
 }
