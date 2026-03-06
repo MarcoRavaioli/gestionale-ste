@@ -19,26 +19,50 @@ export const routes: Routes = [
     path: 'cliente-dettaglio',
     loadComponent: () =>
       import('./pages/cliente-dettaglio/cliente-dettaglio.page').then(
-        (m) => m.ClienteDettaglioPage
+        (m) => m.ClienteDettaglioPage,
       ),
   },
   {
     path: 'cliente-dettaglio/:id', // :id è il parametro dinamico
     loadComponent: () =>
       import('./pages/cliente-dettaglio/cliente-dettaglio.page').then(
-        (m) => m.ClienteDettaglioPage
+        (m) => m.ClienteDettaglioPage,
       ),
   },
   {
     path: 'tab4',
-    loadComponent: () => import('./tab4/tab4.page').then( m => m.Tab4Page)
+    loadComponent: () => import('./tab4/tab4.page').then((m) => m.Tab4Page),
   },
   {
     path: 'tab5',
-    loadComponent: () => import('./tab5/tab5.page').then( m => m.Tab5Page)
+    loadComponent: () => import('./tab5/tab5.page').then((m) => m.Tab5Page),
   },
   {
     path: 'cantiere-dettaglio',
-    loadComponent: () => import('./pages/cantiere-dettaglio/cantiere-dettaglio.page').then( m => m.CantiereDettaglioPage)
+    loadComponent: () =>
+      import('./pages/cantiere-dettaglio/cantiere-dettaglio.page').then(
+        (m) => m.CantiereDettaglioPage,
+      ),
+  },
+  {
+    path: 'cantiere-dettaglio/:id',
+    loadComponent: () =>
+      import('./pages/cantiere-dettaglio/cantiere-dettaglio.page').then(
+        (m) => m.CantiereDettaglioPage,
+      ),
+  },
+  {
+    path: 'commessa-dettaglio/:id',
+    loadComponent: () =>
+      import('./pages/commessa-dettaglio/commessa-dettaglio.page').then(
+        (m) => m.CommessaDettaglioPage,
+      ),
+  },
+  {
+    path: 'appuntamento-dettaglio/:id',
+    loadComponent: () =>
+      import('./pages/appuntamento-dettaglio/appuntamento-dettaglio.page').then(
+        (m) => m.AppuntamentoDettaglioPage,
+      ),
   },
 ];

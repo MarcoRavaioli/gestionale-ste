@@ -1,0 +1,126 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="warning">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dettaglio Appuntamento</ion-title>
+
+    <ion-buttons slot="end" *ngIf="hasManagerAccess">
+      <ion-button (click)="apriModalAppuntamento()">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="light-bg" *ngIf="appuntamento">
+  <div
+    class="site-header-card ion-padding ion-margin"
+    style="
+      background: var(--ion-card-background);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    "
+  >
+    <div style="display: flex; align-items: flex-start; gap: 15px">
+      <div
+        style="
+          background: rgba(var(--ion-color-warning-rgb), 0.1);
+          padding: 15px;
+          border-radius: 50%;
+        "
+      >
+        <ion-icon
+          name="calendar"
+          color="warning"
+          style="font-size: 32px"
+        ></ion-icon>
+      </div>
+      <div style="flex-grow: 1">
+        <h2 style="margin: 0; font-weight: bold; color: var(--ion-color-dark)">
+          {{ appuntamento.nome }}
+        </h2>
+        <p
+          style="
+            margin: 8px 0 0 0;
+            color: var(--ion-color-medium);
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          "
+        >
+          <ion-icon name="time-outline"></ion-icon>
+          <strong>{{ appuntamento.data_ora | date:'dd/MM/yyyy HH:mm' }}</strong>
+        </p>
+        <p
+          style="
+            margin: 8px 0 0 0;
+            color: var(--ion-color-medium);
+            font-size: 1rem;
+          "
+          *ngIf="appuntamento.descrizione"
+        >
+          {{ appuntamento.descrizione }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Coordinate</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+      >
+        <ion-icon name="person-outline"></ion-icon>
+        <strong>Riferimento:</strong>
+        <span
+          >{{ appuntamento.cliente?.nome ||
+          appuntamento.indirizzo?.cliente?.nome ||
+          appuntamento.commessa?.cliente?.nome ||
+          appuntamento.commessa?.indirizzo?.cliente?.nome || 'Generico' }}</span
+        >
+      </p>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+      >
+        <ion-icon name="location-outline"></ion-icon>
+        <strong>Luogo:</strong>
+        <span
+          >{{ appuntamento.indirizzo?.via ||
+          appuntamento.commessa?.indirizzo?.via || 'N.D.' }}</span
+        >
+      </p>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+        *ngIf="appuntamento.commessa"
+      >
+        <ion-icon name="document-text-outline"></ion-icon>
+        <strong>Commessa:</strong>
+        <span
+          >{{ appuntamento.commessa.seriale }} {{
+          appuntamento.commessa.descrizione ? ' - ' +
+          appuntamento.commessa.descrizione : '' }}</span
+        >
+      </p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

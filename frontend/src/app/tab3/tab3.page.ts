@@ -1,4 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, effect, computed } from '@angular/core';
+import { ListaClientiComponent } from '../components/lista-clienti/lista-clienti.component';
+import { ListaCantieriComponent } from '../components/lista-cantieri/lista-cantieri.component';
+import { ListaCommesseComponent } from '../components/lista-commesse/lista-commesse.component';
+import { ListaAppuntamentiComponent } from '../components/lista-appuntamenti/lista-appuntamenti.component';
+
 import {
   ModalController,
   PopoverController,
@@ -116,6 +121,10 @@ interface GruppoAppuntamenti {
     IonSkeletonText,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
+    ListaClientiComponent,
+    ListaCantieriComponent,
+    ListaCommesseComponent,
+    ListaAppuntamentiComponent,
   ],
 })
 export class Tab3Page implements OnInit {
@@ -125,13 +134,17 @@ export class Tab3Page implements OnInit {
   isLoading = true;
 
   tuttiClienti: Cliente[] = [];
-  tuttiCantieri: Indirizzo[] = [];
+  // tuttiCantieri rimossa
   tutteCommesse: Commessa[] = [];
   tuttiAppuntamenti: Appuntamento[] = [];
 
-  clientiVisualizzati: Cliente[] = [];
+  get clientiVisualizzati() {
+    return this.clienteService.clientiState();
+  }
 
-  cantieriLista: Indirizzo[] = [];
+  get cantieriLista() {
+    return this.indirizzoService.cantieriState();
+  }
   cantieriGruppi: GruppoCantieri[] = [];
   commesseLista: Commessa[] = [];
   commesseGruppi: GruppoCommesse[] = [];
@@ -220,23 +233,25 @@ export class Tab3Page implements OnInit {
       'settings_appuntamenti',
       this.settingsAppuntamenti,
     );
-    
-    this.clientiSearchSubject.pipe(
-      debounceTime(500), // Aspetta 500ms dopo l'ultimo tasto premuto
-      distinctUntilChanged() // Ignora se la parola è identica a prima
-    ).subscribe(searchTerm => {
-      this.ricerca = searchTerm;
-      this.clientiPage = 1; // Se fa una nuova ricerca, ripartiamo da pagina 1
-      this.caricaClientiPaginati(null, true);
-    });
 
-    this.cantieriSearchSubject.pipe(
-      debounceTime(500), distinctUntilChanged()
-    ).subscribe(searchTerm => {
-      this.ricerca = searchTerm;
-      this.cantieriPage = 1;
-      this.caricaCantieriPaginati(null, true);
-    });
+    this.clientiSearchSubject
+      .pipe(
+        debounceTime(500), // Aspetta 500ms dopo l'ultimo tasto premuto
+        distinctUntilChanged(), // Ignora se la parola è identica a prima
+      )
+      .subscribe((searchTerm) => {
+        this.ricerca = searchTerm;
+        this.clientiPage = 1; // Se fa una nuova ricerca, ripartiamo da pagina 1
+        this.caricaClientiPaginati(null, true);
+      });
+
+    this.cantieriSearchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchTerm) => {
+        this.ricerca = searchTerm;
+        this.cantieriPage = 1;
+        this.caricaCantieriPaginati(null, true);
+      });
 
     this.caricaDatiGlobale();
   }
@@ -254,8 +269,15 @@ export class Tab3Page implements OnInit {
       this.caricaCantieriPaginati(event, true);
     } else {
       this.isLoading = true;
-      this.commessaService.getAll().subscribe(res => { this.tutteCommesse = res; this.elaboraCommesse(); });
-      this.appService.getAll().subscribe(res => { this.tuttiAppuntamenti = res; this.elaboraAppuntamenti(); this.isLoading = false; });
+      this.commessaService.getAll().subscribe((res) => {
+        this.tutteCommesse = res;
+        this.elaboraCommesse();
+      });
+      this.appService.getAll().subscribe((res) => {
+        this.tuttiAppuntamenti = res;
+        this.elaboraAppuntamenti();
+        this.isLoading = false;
+      });
       if (event) event.target.complete();
     }
   }
@@ -287,33 +309,27 @@ export class Tab3Page implements OnInit {
   caricaClientiPaginati(event?: any, isFirstLoad: boolean = false) {
     if (isFirstLoad) this.isLoading = true;
 
-    this.clienteService.getPaginated(this.clientiPage, this.clientiLimit, this.ricerca).subscribe({
-      next: (res) => {
-        if (this.clientiPage === 1) {
-          // Sovrascrive (ricerca nuova o primo caricamento)
-          this.clientiVisualizzati = res.data;
-        } else {
-          // Appende in fondo alla lista (Infinite scroll)
-          this.clientiVisualizzati = [...this.clientiVisualizzati, ...res.data];
-        }
-        
-        this.clientiTotalPages = res.totalPages;
-        this.isLoading = false;
+    this.clienteService
+      .getPaginated(this.clientiPage, this.clientiLimit, this.ricerca)
+      .subscribe({
+        next: (res) => {
+          this.clientiTotalPages = res.totalPages;
+          this.isLoading = false;
 
-        // Ferma la rotellina dell'infinite scroll
-        if (event) {
-          event.target.complete();
-          // Se siamo all'ultima pagina, disabilita lo spinner per non cercare a vuoto
-          if (this.clientiPage >= this.clientiTotalPages) {
-            event.target.disabled = true;
+          // Ferma la rotellina dell'infinite scroll
+          if (event) {
+            event.target.complete();
+            // Se siamo all'ultima pagina, disabilita lo spinner per non cercare a vuoto
+            if (this.clientiPage >= this.clientiTotalPages) {
+              event.target.disabled = true;
+            }
           }
-        }
-      },
-      error: () => {
-        this.isLoading = false;
-        if (event) event.target.complete();
-      }
-    });
+        },
+        error: () => {
+          this.isLoading = false;
+          if (event) event.target.complete();
+        },
+      });
   }
 
   caricaAltraPaginaClienti(event: any) {
@@ -329,21 +345,24 @@ export class Tab3Page implements OnInit {
   caricaCantieriPaginati(event?: any, isFirstLoad: boolean = false) {
     if (isFirstLoad) this.isLoading = true;
 
-    this.indirizzoService.getPaginated(this.cantieriPage, this.cantieriLimit, this.ricerca).subscribe({
-      next: (res) => {
-        if (this.cantieriPage === 1) this.cantieriLista = res.data;
-        else this.cantieriLista = [...this.cantieriLista, ...res.data];
-        
-        this.cantieriTotalPages = res.totalPages;
-        this.isLoading = false;
+    this.indirizzoService
+      .getPaginated(this.cantieriPage, this.cantieriLimit, this.ricerca)
+      .subscribe({
+        next: (res) => {
+          this.cantieriTotalPages = res.totalPages;
+          this.isLoading = false;
 
-        if (event) {
-          event.target.complete();
-          if (this.cantieriPage >= this.cantieriTotalPages) event.target.disabled = true;
-        }
-      },
-      error: () => { this.isLoading = false; if (event) event.target.complete(); }
-    });
+          if (event) {
+            event.target.complete();
+            if (this.cantieriPage >= this.cantieriTotalPages)
+              event.target.disabled = true;
+          }
+        },
+        error: () => {
+          this.isLoading = false;
+          if (event) event.target.complete();
+        },
+      });
   }
 
   caricaAltraPaginaCantieri(event: any) {
@@ -358,7 +377,7 @@ export class Tab3Page implements OnInit {
 
   gestisciRicerca(testo: string) {
     if (this.vistaCorrente === 'clienti') {
-      this.clientiSearchSubject.next(testo); 
+      this.clientiSearchSubject.next(testo);
     } else if (this.vistaCorrente === 'cantieri') {
       this.cantieriSearchSubject.next(testo); // <--- DEBOUNCE CANTIERI
     } else {

@@ -1,0 +1,118 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="tertiary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Dettaglio Commessa</ion-title>
+
+    <ion-buttons slot="end" *ngIf="hasManagerAccess">
+      <ion-button (click)="apriModalCommessa()">
+        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="light-bg" *ngIf="commessa">
+  <div
+    class="site-header-card ion-padding ion-margin"
+    style="
+      background: var(--ion-card-background);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    "
+  >
+    <div style="display: flex; align-items: flex-start; gap: 15px">
+      <div
+        style="
+          background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+          padding: 15px;
+          border-radius: 50%;
+        "
+      >
+        <ion-icon
+          name="documents"
+          color="tertiary"
+          style="font-size: 32px"
+        ></ion-icon>
+      </div>
+      <div style="flex-grow: 1">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+          "
+        >
+          <h2
+            style="margin: 0; font-weight: bold; color: var(--ion-color-dark)"
+          >
+            {{ commessa.seriale }}
+          </h2>
+          <ion-badge [color]="getColoreStato(commessa.stato)"
+            >{{ commessa.stato }}</ion-badge
+          >
+        </div>
+        <p
+          style="
+            margin: 8px 0 0 0;
+            color: var(--ion-color-medium);
+            font-size: 1.1rem;
+          "
+        >
+          {{ commessa.descrizione || 'Nessuna descrizione pattuita.' }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Dettagli Riferimento</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+      >
+        <ion-icon name="barcode-outline"></ion-icon>
+        <strong>ID Sistema:</strong> {{ commessa.id }}
+      </p>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+      >
+        <ion-icon name="person-outline"></ion-icon>
+        <strong>Committente:</strong>
+        <span
+          >{{ commessa.cliente?.nome || commessa.indirizzo?.cliente?.nome ||
+          'Commessa Interna' }}</span
+        >
+      </p>
+      <p
+        style="
+          margin-bottom: 12px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        "
+        *ngIf="commessa.indirizzo"
+      >
+        <ion-icon name="location-outline"></ion-icon>
+        <strong>Cantiere:</strong>
+        <span
+          >{{ commessa.indirizzo.via }} {{ commessa.indirizzo.civico }}, {{
+          commessa.indirizzo.citta }}</span
+        >
+      </p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>
