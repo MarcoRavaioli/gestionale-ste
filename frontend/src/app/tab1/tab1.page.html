@@ -70,12 +70,11 @@
         <h4>{{ app.commessa?.descrizione }}</h4>
         <ion-icon name="location"></ion-icon>
         <span
-            >{{ app.commessa?.indirizzo?.via }}, {{
-            app.commessa?.indirizzo?.citta }}</span
-          >
+          >{{ app.commessa?.indirizzo?.via }}, {{ app.commessa?.indirizzo?.citta
+          }}</span
+        >
         <p class="desc" *ngIf="app.descrizione">"{{ app.descrizione }}"</p>
         <div class="info-row" *ngIf="app.commessa?.indirizzo?.cliente">
-          
           <ion-icon name="person-outline"></ion-icon>
           <span class="truncate"
             >{{ app.commessa?.indirizzo?.cliente?.nome }}</span
@@ -85,9 +84,7 @@
           <ion-icon name="briefcase-outline"></ion-icon>
           <span class="truncate">Comm. {{ app.commessa.seriale }}</span>
         </div>
-        <div class="info-row location" *ngIf="app.commessa?.indirizzo">
-        </div>
-        
+        <div class="info-row location" *ngIf="app.commessa?.indirizzo"></div>
       </div>
     </div>
     <div style="min-width: 10px"></div>
