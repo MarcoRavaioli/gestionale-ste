@@ -2,23 +2,58 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // 1. RIMOZIONE DI IonicModule E IMPORT DEI COMPONENTI STANDALONE
-import { 
+import {
   ModalController,
-  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
-  IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSearchbar,
-  IonList, IonItem, IonNote, IonBadge, IonFab, IonFabButton,
-  IonRefresher, IonRefresherContent, IonItemDivider, IonItemGroup,
-  IonCard, IonCardContent, IonGrid, IonRow, IonCol, IonDatetime, 
-  IonDatetimeButton, IonModal, IonToggle,
-  IonPopover
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel,
+  IonSearchbar,
+  IonList,
+  IonItem,
+  IonNote,
+  IonBadge,
+  IonFab,
+  IonFabButton,
+  IonRefresher,
+  IonRefresherContent,
+  IonItemDivider,
+  IonItemGroup,
+  IonCard,
+  IonCardContent,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonDatetime,
+  IonDatetimeButton,
+  IonModal,
+  IonToggle,
+  IonPopover,
 } from '@ionic/angular/standalone';
 import { FatturaService } from '../services/fattura.service';
 import { Fattura, TipoFattura } from '../interfaces/models';
 import { addIcons } from 'ionicons';
 import {
-  arrowUpCircle, arrowDownCircle, filterOutline, add, alertCircleOutline,
-  checkmarkCircleOutline, timeOutline, walletOutline, chevronDownOutline,
-  searchOutline, calendarOutline, calendar, closeCircle, closeCircleOutline,
+  arrowUpCircle,
+  arrowDownCircle,
+  filterOutline,
+  add,
+  alertCircleOutline,
+  checkmarkCircleOutline,
+  timeOutline,
+  walletOutline,
+  chevronDownOutline,
+  searchOutline,
+  calendarOutline,
+  calendar,
+  closeCircle,
+  closeCircleOutline,
 } from 'ionicons/icons';
 import { NuovaFatturaModalComponent } from '../components/nuova-fattura-modal/nuova-fattura-modal.component';
 import { FatturaDettaglioModalComponent } from '../components/fattura-dettaglio-modal/fattura-dettaglio-modal.component';
@@ -34,16 +69,32 @@ interface GruppoFatture {
   styleUrls: ['./tab4.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButton,
-    IonIcon, IonSegment, IonSegmentButton, IonLabel, IonSearchbar,
-    IonList, IonItem, IonBadge, IonFab, IonFabButton,
-    IonRefresher, IonRefresherContent, IonDatetime, 
-    IonDatetimeButton, IonModal, IonToggle, IonPopover
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
+    IonSearchbar,
+    IonList,
+    IonItem,
+    IonBadge,
+    IonFab,
+    IonFabButton,
+    IonRefresher,
+    IonRefresherContent,
+    IonDatetime,
+    IonDatetimeButton,
+    IonModal,
+    IonToggle,
+    IonPopover,
   ],
 })
-
 export class Tab4Page implements OnInit {
   tutteFatture: Fattura[] = [];
   gruppiFatture: GruppoFatture[] = [];
@@ -64,7 +115,7 @@ export class Tab4Page implements OnInit {
 
   constructor(
     private fatturaService: FatturaService,
-    private modalCtrl: ModalController
+    private modalCtrl: ModalController,
   ) {
     // REGISTRA LE NUOVE ICONE QUI
     addIcons({
@@ -137,6 +188,13 @@ export class Tab4Page implements OnInit {
     this.aggiornaLista();
   }
 
+  parseVal(val: any): number {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const parsed = Number(val.toString().replace(',', '.'));
+    return isNaN(parsed) ? 0 : parsed;
+  }
+
   calcolaTotali() {
     let pool = this.applicaFiltroTemporale(this.tutteFatture);
     if (this.mostraSoloIncassati) {
@@ -144,10 +202,10 @@ export class Tab4Page implements OnInit {
     }
     this.totaleEntrate = pool
       .filter((f) => f.tipo === TipoFattura.ENTRATA)
-      .reduce((acc, curr) => acc + Number(curr.totale), 0);
+      .reduce((acc, curr) => acc + this.parseVal(curr.totale), 0);
     this.totaleUscite = pool
       .filter((f) => f.tipo === TipoFattura.USCITA)
-      .reduce((acc, curr) => acc + Number(curr.totale), 0);
+      .reduce((acc, curr) => acc + this.parseVal(curr.totale), 0);
     this.bilancio = this.totaleEntrate - this.totaleUscite;
   }
 
@@ -161,7 +219,7 @@ export class Tab4Page implements OnInit {
         (f) =>
           (f.cliente?.nome && f.cliente.nome.toLowerCase().includes(q)) ||
           (f.numero_fattura && f.numero_fattura.toLowerCase().includes(q)) ||
-          (f.descrizione && f.descrizione.toLowerCase().includes(q))
+          (f.descrizione && f.descrizione.toLowerCase().includes(q)),
       );
     }
 
@@ -176,7 +234,7 @@ export class Tab4Page implements OnInit {
       case 'scadute':
         filtrati = filtrati.filter(
           (f) =>
-            !f.incassata && f.data_scadenza && new Date(f.data_scadenza) < oggi
+            !f.incassata && f.data_scadenza && new Date(f.data_scadenza) < oggi,
         );
         break;
     }

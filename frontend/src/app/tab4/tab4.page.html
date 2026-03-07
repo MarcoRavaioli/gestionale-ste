@@ -20,14 +20,16 @@
       </div>
     </div>
 
-    <div class="balance-value">€ {{ bilancio | number:'1.2-2' }}</div>
+    <div class="balance-value">€ {{ (bilancio || 0) | number:'1.2-2' }}</div>
 
     <div class="stats-row">
       <div class="stat-item in">
         <ion-icon name="arrow-up-circle"></ion-icon>
         <div class="stat-text">
           <span class="label">Entrate</span>
-          <span class="value">€ {{ totaleEntrate | number:'1.0-0' }}</span>
+          <span class="value"
+            >€ {{ (totaleEntrate || 0) | number:'1.0-0' }}</span
+          >
         </div>
       </div>
       <div class="stat-divider"></div>
@@ -35,7 +37,9 @@
         <ion-icon name="arrow-down-circle"></ion-icon>
         <div class="stat-text">
           <span class="label">Uscite</span>
-          <span class="value">€ {{ totaleUscite | number:'1.0-0' }}</span>
+          <span class="value"
+            >€ {{ (totaleUscite || 0) | number:'1.0-0' }}</span
+          >
         </div>
       </div>
     </div>
@@ -53,29 +57,29 @@
     </div>
 
     <div class="date-container">
-      
       <div class="date-btn-wrapper" [class.active]="isFiltroDataAttivo">
-        
-        <ion-button 
-          id="trigger-date-popover" 
-          fill="clear" 
+        <ion-button
+          id="trigger-date-popover"
+          fill="clear"
           class="main-date-btn"
-          [class.has-clear]="isFiltroDataAttivo">
-          
-          <ion-icon [name]="isFiltroDataAttivo ? 'calendar' : 'calendar-outline'" slot="start"></ion-icon>
+          [class.has-clear]="isFiltroDataAttivo"
+        >
+          <ion-icon
+            [name]="isFiltroDataAttivo ? 'calendar' : 'calendar-outline'"
+            slot="start"
+          ></ion-icon>
           {{ labelFiltroData }}
         </ion-button>
 
-        <ion-button 
-          *ngIf="isFiltroDataAttivo" 
-          fill="clear" 
-          class="clear-date-btn" 
-          (click)="resetDate()">
+        <ion-button
+          *ngIf="isFiltroDataAttivo"
+          fill="clear"
+          class="clear-date-btn"
+          (click)="resetDate()"
+        >
           <ion-icon name="close-circle" slot="icon-only"></ion-icon>
         </ion-button>
-
       </div>
-
     </div>
   </div>
 
