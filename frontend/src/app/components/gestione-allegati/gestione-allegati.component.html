@@ -1,14 +1,14 @@
 <div class="allegati-container ion-margin-top">
   <div class="header-row">
-    <h3>Allegati</h3>
     <ion-button
       fill="clear"
       size="small"
+      class="add-btn"
       (click)="triggerFileInput()"
-      [disabled]="isUploading"
+      [disabled]="isUploading()"
     >
       <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
-      Aggiungi
+      Carica File
     </ion-button>
     <input
       type="file"
@@ -21,74 +21,69 @@
 
   <div class="list-wrapper">
     <ion-list class="custom-list" lines="none">
-      <!-- LOADING SPINNER -->
-      <ion-item *ngIf="isUploading" class="list-item">
-        <ion-spinner slot="start" color="primary"></ion-spinner>
-        <ion-label>Caricamento in corso...</ion-label>
-      </ion-item>
+      @if (isUploading()) {
+        <ion-item class="list-item loading-item">
+          <ion-spinner slot="start" color="primary"></ion-spinner>
+          <ion-label>Caricamento in corso...</ion-label>
+        </ion-item>
+      }
 
-      <!-- ALLEGATI PENDING (DA CARICARE) -->
-      <ion-item
-        *ngFor="let file of pendingFiles; let i = index"
-        class="list-item pending-item"
-      >
-        <div slot="start" class="list-icon-box box-medium">
-          <ion-icon name="document-text-outline"></ion-icon>
-        </div>
-        <ion-label>
-          <h2 class="item-title">{{ file.name }}</h2>
-          <p class="item-subtitle text-warning">
-            Da caricare ({{ file.size / 1024 / 1024 | number: "1.2-2" }} MB)
-          </p>
-        </ion-label>
-        <ion-button
-          slot="end"
-          fill="clear"
-          color="danger"
-          (click)="rimuoviPendingFile(i, $event)"
+      @for (file of pendingFiles(); track file.name; let i = $index) {
+        <ion-item class="list-item pending-item">
+          <div slot="start" class="list-icon-box box-medium">
+            <ion-icon name="document-text-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <h2 class="item-title">{{ file.name }}</h2>
+            <p class="item-subtitle text-warning">
+              Da caricare ({{ file.size / 1024 / 1024 | number: "1.2-2" }} MB)
+            </p>
+          </ion-label>
+          <ion-button
+            slot="end"
+            fill="clear"
+            color="danger"
+            (click)="rimuoviPendingFile(i, $event)"
+          >
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
+
+      @for (allegato of allegati(); track allegato.id) {
+        <ion-item
+          class="list-item downloaded-item"
+          button
+          detail="false"
+          (click)="apriAllegato(allegato.id)"
         >
-          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-item>
+          <div slot="start" class="list-icon-box box-primary">
+            <ion-icon name="document-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <h2 class="item-title ion-text-wrap">{{ allegato.nome_file }}</h2>
+            <p class="item-subtitle">
+              {{ allegato.data_caricamento | date: "dd/MM/yyyy HH:mm" }}
+            </p>
+          </ion-label>
+          <ion-button
+            slot="end"
+            fill="clear"
+            color="danger"
+            (click)="eliminaAllegatoEsistente(allegato.id, $event)"
+          >
+            <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-item>
+      }
 
-      <!-- ALLEGATI ESISTENTI -->
-      <ion-item
-        *ngFor="let allegato of allegatiEsistenti"
-        class="list-item"
-        button
-        detail="false"
-        (click)="apriAllegato(allegato.id)"
-      >
-        <div slot="start" class="list-icon-box box-primary">
-          <ion-icon name="document-outline"></ion-icon>
+      @if (
+        allegati().length === 0 && pendingFiles().length === 0 && !isUploading()
+      ) {
+        <div class="empty-state-mini">
+          <p>Nessun allegato presente.</p>
         </div>
-        <ion-label>
-          <h2 class="item-title ion-text-wrap">{{ allegato.nome_file }}</h2>
-          <p class="item-subtitle">
-            {{ allegato.data_caricamento | date: "dd/MM/yyyy HH:mm" }}
-          </p>
-        </ion-label>
-        <ion-button
-          slot="end"
-          fill="clear"
-          color="danger"
-          (click)="eliminaAllegatoEsistente(allegato.id, $event)"
-        >
-          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-        </ion-button>
-      </ion-item>
-
-      <!-- EMPTY STATE -->
-      <div
-        *ngIf="
-          allegatiEsistenti.length === 0 &&
-          pendingFiles.length === 0 &&
-          !isUploading
-        "
-        class="empty-state-mini"
-      >
-        <p>Nessun allegato presente.</p>
-      </div>
+      }
     </ion-list>
   </div>
 </div>

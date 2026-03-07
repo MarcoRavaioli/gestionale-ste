@@ -1,6 +1,11 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -11,9 +16,22 @@ import {
   IonInput,
   IonItem,
   ModalController,
+  IonIcon,
+  IonSpinner,
+  IonFooter,
 } from '@ionic/angular/standalone';
+
 import { ClienteService } from '../../services/cliente.service';
 import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
+import { Cliente } from '../../interfaces/models';
+import { addIcons } from 'ionicons';
+import {
+  closeOutline,
+  saveOutline,
+  personOutline,
+  mailOutline,
+  callOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-cliente-modal',
@@ -22,7 +40,7 @@ import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegat
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -31,15 +49,17 @@ import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegat
     IonContent,
     IonInput,
     IonItem,
+    IonIcon,
+    IonSpinner,
+    IonFooter,
     GestioneAllegatiComponent,
   ],
 })
-export class NuovoClienteModalComponent {
-  cliente: any = {
-    nome: '',
-    telefono: '',
-    email: '',
-  };
+export class NuovoClienteModalComponent implements OnInit {
+  @Input() cliente?: Cliente;
+
+  form!: FormGroup;
+  isSubmitting = false;
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -47,41 +67,64 @@ export class NuovoClienteModalComponent {
   constructor(
     private modalCtrl: ModalController,
     private clienteService: ClienteService,
-  ) {}
+    private fb: FormBuilder,
+  ) {
+    addIcons({
+      closeOutline,
+      saveOutline,
+      personOutline,
+      mailOutline,
+      callOutline,
+    });
+  }
+
+  ngOnInit() {
+    this.form = this.fb.group({
+      nome: [
+        this.cliente?.nome || '',
+        [Validators.required, Validators.minLength(2)],
+      ],
+      telefono: [this.cliente?.telefono || ''],
+      email: [this.cliente?.email || '', [Validators.email]],
+    });
+  }
 
   chiudi() {
     this.modalCtrl.dismiss();
   }
 
   salva() {
-    if (!this.cliente.nome) return;
-
-    // --- CORREZIONE: Pulizia Dati ---
-    // Creiamo un payload pulito. Se un campo è vuoto (""), non lo inviamo proprio.
-    const payload: any = {
-      nome: this.cliente.nome,
-    };
-
-    if (this.cliente.telefono && this.cliente.telefono.trim() !== '') {
-      payload.telefono = this.cliente.telefono;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
     }
 
-    if (this.cliente.email && this.cliente.email.trim() !== '') {
-      payload.email = this.cliente.email;
-    }
+    this.isSubmitting = true;
+    const values = this.form.value;
+    const payload: any = { nome: values.nome };
 
-    // Ora inviamo 'payload' invece di 'this.cliente'
-    this.clienteService.create(payload).subscribe({
-      next: async (nuovoCliente) => {
+    if (values.telefono?.trim()) payload.telefono = values.telefono;
+    if (values.email?.trim()) payload.email = values.email;
+
+    const req$ = this.cliente
+      ? this.clienteService.update(this.cliente.id, payload)
+      : this.clienteService.create(payload);
+
+    req$.subscribe({
+      next: async (resCliente) => {
         if (this.gestioneAllegati) {
-          await this.gestioneAllegati.uploadAllPendingFiles(nuovoCliente.id);
+          await this.gestioneAllegati.uploadAllPendingFiles(resCliente.id);
         }
-        this.modalCtrl.dismiss({ creato: true, data: nuovoCliente });
+        this.isSubmitting = false;
+        this.modalCtrl.dismiss({
+          [this.cliente ? 'aggiornato' : 'creato']: true,
+          data: resCliente,
+        });
       },
       error: (err) => {
         console.error(err);
-        // Suggerimento: mostra l'errore specifico se disponibile
-        const msg = err.error?.message || 'Errore salvataggio cliente';
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Errore salvataggio committente';
         alert(Array.isArray(msg) ? msg[0] : msg);
       },
     });

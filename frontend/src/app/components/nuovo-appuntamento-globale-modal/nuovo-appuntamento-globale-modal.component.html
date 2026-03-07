@@ -1,132 +1,165 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header class="ion-no-border">
+  <ion-toolbar class="modal-toolbar">
     <ion-title>{{
       isEditing ? "Modifica Appuntamento" : "Nuovo Appuntamento"
     }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="chiudi()">Annulla</ion-button>
+      <ion-button
+        (click)="chiudi()"
+        color="medium"
+        [disabled]="isSubmitting || isDeleting"
+      >
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="section-box">
-    <div class="header-toggle">
-      <h3><ion-icon name="link-outline"></ion-icon> Collega a...</h3>
+<ion-content class="modal-content">
+  <form [formGroup]="form" (ngSubmit)="salva()" class="modern-form">
+    <div class="form-section">
+      <div class="section-title">Collega a...</div>
+
+      @if (isCollegamentoVincolato) {
+        <ion-item lines="none" class="readonly-item">
+          <ion-icon name="link-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <p>Contesto Vincolato ({{ tipoCollegamento | titlecase }})</p>
+            <h2>{{ getPreselectedName() }}</h2>
+          </ion-label>
+        </ion-item>
+      } @else {
+        <ion-segment
+          scrollable="true"
+          mode="ios"
+          [(ngModel)]="tipoCollegamento"
+          [ngModelOptions]="{ standalone: true }"
+          class="ion-margin-bottom"
+        >
+          <ion-segment-button value="commessa">
+            <ion-label>Commessa</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="cantiere">
+            <ion-label>Cantiere</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="cliente">
+            <ion-label>Cliente</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="nessuno">
+            <ion-label>Nessuno</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        @if (tipoCollegamento === "commessa") {
+          <div class="fade-in">
+            <app-generic-selector
+              label="Cerca e seleziona commessa..."
+              type="commessa"
+              [items]="listaCommesse"
+              [(selectedId)]="selectedCommessaId"
+            ></app-generic-selector>
+          </div>
+        }
+        @if (tipoCollegamento === "cantiere") {
+          <div class="fade-in">
+            <app-generic-selector
+              label="Cerca e seleziona cantiere..."
+              type="cantiere"
+              [items]="listaCantieri"
+              [(selectedId)]="selectedCantiereId"
+            ></app-generic-selector>
+          </div>
+        }
+        @if (tipoCollegamento === "cliente") {
+          <div class="fade-in">
+            <app-generic-selector
+              label="Cerca e seleziona cliente..."
+              type="cliente"
+              [items]="listaClienti"
+              [(selectedId)]="selectedClienteId"
+            ></app-generic-selector>
+          </div>
+        }
+        @if (tipoCollegamento === "nessuno") {
+          <div class="fade-in">
+            <p class="helper-text text-center">
+              Appuntamento generico (es. riunione in ufficio).
+            </p>
+          </div>
+        }
+      }
     </div>
 
-    <ion-segment
-      scrollable="true"
-      [(ngModel)]="tipoCollegamento"
-      class="ion-margin-bottom"
-    >
-      <ion-segment-button value="commessa">
-        <ion-label>Commessa</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="cantiere">
-        <ion-label>Cantiere</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="cliente">
-        <ion-label>Cliente</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="nessuno">
-        <ion-label>Nessuno</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="form-section">
+      <div class="section-title">Dettagli Appuntamento</div>
 
-    <div *ngIf="tipoCollegamento === 'commessa'" class="fade-in">
-      <app-generic-selector
-        label="Cerca e seleziona commessa..."
-        type="commessa"
-        [items]="listaCommesse"
-        [(selectedId)]="selectedCommessaId"
-      >
-      </app-generic-selector>
+      <ion-item class="modern-input" lines="none">
+        <ion-icon
+          name="calendar-outline"
+          slot="start"
+          color="warning"
+        ></ion-icon>
+        <ion-input
+          formControlName="data_ora"
+          label="Data e Ora *"
+          type="datetime-local"
+          label-placement="floating"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="modern-input" lines="none">
+        <ion-textarea
+          formControlName="descrizione"
+          label="Note e Titolo Lavoro"
+          label-placement="floating"
+          rows="3"
+        ></ion-textarea>
+      </ion-item>
     </div>
 
-    <div *ngIf="tipoCollegamento === 'cantiere'" class="fade-in">
-      <app-generic-selector
-        label="Cerca e seleziona cantiere..."
-        type="cantiere"
-        [items]="listaCantieri"
-        [(selectedId)]="selectedCantiereId"
-      >
-      </app-generic-selector>
+    <div class="form-section allegati-section">
+      <div class="section-title">Documenti e Allegati</div>
+      <app-gestione-allegati
+        entityType="appuntamento"
+        [entityId]="appuntamento?.id"
+        [allegatiEsistenti]="appuntamento?.allegati || []"
+      ></app-gestione-allegati>
     </div>
-
-    <div *ngIf="tipoCollegamento === 'cliente'" class="fade-in">
-      <app-generic-selector
-        label="Cerca e seleziona cliente..."
-        type="cliente"
-        [items]="listaClienti"
-        [(selectedId)]="selectedClienteId"
-      >
-      </app-generic-selector>
-    </div>
-
-    <div *ngIf="tipoCollegamento === 'nessuno'" class="fade-in">
-      <p
-        style="
-          font-size: 0.8rem;
-          color: var(--ion-color-medium);
-          text-align: center;
-          margin-top: 8px;
-        "
-      >
-        Appuntamento generico (es. riunione in ufficio).
-      </p>
-    </div>
-  </div>
-
-  <div class="section-box ion-margin-top">
-    <h3><ion-icon name="calendar-outline"></ion-icon> Dettagli Appuntamento</h3>
-    <div class="form-grid">
-      <ion-input
-        label="Data e Ora *"
-        type="datetime-local"
-        label-placement="floating"
-        fill="outline"
-        [(ngModel)]="formDati.data_ora"
-      >
-      </ion-input>
-
-      <ion-textarea
-        label="Note e Titolo Lavoro"
-        label-placement="floating"
-        fill="outline"
-        rows="3"
-        [(ngModel)]="formDati.descrizione"
-      >
-      </ion-textarea>
-    </div>
-  </div>
-
-  <app-gestione-allegati
-    [entityType]="'appuntamento'"
-    [entityId]="appuntamento?.id"
-    [allegatiEsistenti]="appuntamento?.allegati || []"
-  >
-  </app-gestione-allegati>
-
-  <ion-button
-    expand="block"
-    class="ion-margin-top"
-    size="large"
-    (click)="salva()"
-    [disabled]="!isValid()"
-  >
-    {{ isEditing ? "SALVA MODIFICHE" : "CREA APPUNTAMENTO" }}
-  </ion-button>
-
-  <ion-button
-    *ngIf="isEditing"
-    expand="block"
-    color="danger"
-    fill="clear"
-    class="ion-margin-top"
-    (click)="elimina()"
-  >
-    <ion-icon name="trash-outline" slot="start"></ion-icon>
-    Elimina Appuntamento
-  </ion-button>
+  </form>
 </ion-content>
+
+<ion-footer class="ion-no-border modal-footer">
+  <ion-toolbar class="footer-actions">
+    <ion-button
+      expand="block"
+      class="submit-btn"
+      (click)="salva()"
+      [disabled]="!isValid() || isSubmitting || isDeleting"
+    >
+      @if (isSubmitting) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ isEditing ? "SALVA MODIFICHE" : "CREA APPUNTAMENTO" }}
+      }
+    </ion-button>
+
+    @if (isEditing) {
+      <ion-button
+        expand="block"
+        color="danger"
+        fill="clear"
+        class="ion-margin-top"
+        (click)="elimina()"
+        [disabled]="isSubmitting || isDeleting"
+      >
+        @if (isDeleting) {
+          <ion-spinner name="dots"></ion-spinner>
+        } @else {
+          <ion-icon name="trash-outline" slot="start"></ion-icon>
+          Elimina Appuntamento
+        }
+      </ion-button>
+    }
+  </ion-toolbar>
+</ion-footer>

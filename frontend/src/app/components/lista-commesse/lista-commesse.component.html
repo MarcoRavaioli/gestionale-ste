@@ -1,62 +1,87 @@
-<ion-list lines="none" class="custom-list">
-  <ion-item
-    *ngFor="let item of commesseLista"
-    button
-    detail="false"
-    (click)="itemClick.emit(item)"
-    class="list-item animate-enter"
-  >
-    <div slot="start" class="list-icon-box box-tertiary">
-      <ion-icon name="documents"></ion-icon>
+@if (isLoading) {
+  <ion-list lines="none" class="custom-list">
+    @for (i of [1, 2, 3, 4, 5]; track $index) {
+      <ion-item class="list-item">
+        <div slot="start" class="list-icon-box box-tertiary"></div>
+        <ion-label>
+          <h2>
+            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+          </h2>
+          <p>
+            <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+          </p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+} @else {
+  <ion-list lines="none" class="custom-list">
+    @for (item of commesseLista; track item.id) {
+      <ion-item
+        button
+        detail="false"
+        (click)="itemClick.emit(item)"
+        class="list-item animate-enter"
+      >
+        <div slot="start" class="list-icon-box box-tertiary">
+          <ion-icon name="documents"></ion-icon>
+        </div>
+        <ion-label>
+          <div class="meta-row">
+            <span class="serial-code">{{ item.seriale }}</span>
+            <ion-badge
+              [color]="getColoreStato(item.stato)"
+              class="status-badge"
+              >{{ item.stato }}</ion-badge
+            >
+          </div>
+          <h2 class="item-title">
+            {{ item.descrizione || "Nessuna descrizione" }}
+          </h2>
+          <p class="item-subtitle icon-text">
+            <ion-icon name="person-outline"></ion-icon>
+            {{
+              item.cliente?.nome ||
+                item.indirizzo?.cliente?.nome ||
+                "Commessa Interna"
+            }}
+            @if (item.indirizzo) {
+              <span class="sub-location">• {{ item.indirizzo.citta }}</span>
+            }
+          </p>
+        </ion-label>
+        <ion-icon
+          [name]="
+            item.cliente?.id || item.indirizzo?.cliente?.id
+              ? 'chevron-forward'
+              : 'create-outline'
+          "
+          slot="end"
+          [color]="
+            item.cliente?.id || item.indirizzo?.cliente?.id
+              ? 'medium'
+              : 'primary'
+          "
+          class="arrow-icon"
+        ></ion-icon>
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (commesseLista.length === 0) {
+    <div class="empty-state">
+      <ion-icon
+        name="folder-open-outline"
+        style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
+      ></ion-icon>
+      <p>Nessuna commessa trovata.</p>
     </div>
-    <ion-label>
-      <div class="meta-row">
-        <span class="serial-code">{{ item.seriale }}</span>
-        <ion-badge [color]="getColoreStato(item.stato)" class="status-badge">{{
-          item.stato
-        }}</ion-badge>
-      </div>
-      <h2 class="item-title">
-        {{ item.descrizione || "Nessuna descrizione" }}
-      </h2>
-      <p class="item-subtitle icon-text">
-        <ion-icon name="person-outline"></ion-icon>
-        {{
-          item.cliente?.nome ||
-            item.indirizzo?.cliente?.nome ||
-            "Commessa Interna"
-        }}
-        <span *ngIf="item.indirizzo" class="sub-location"
-          >• {{ item.indirizzo.citta }}</span
-        >
-      </p>
-    </ion-label>
-    <ion-icon
-      [name]="
-        item.cliente?.id || item.indirizzo?.cliente?.id
-          ? 'chevron-forward'
-          : 'create-outline'
-      "
-      slot="end"
-      [color]="
-        item.cliente?.id || item.indirizzo?.cliente?.id ? 'medium' : 'primary'
-      "
-      class="arrow-icon"
-    ></ion-icon>
-  </ion-item>
-</ion-list>
+  }
 
-<div *ngIf="commesseLista.length === 0" class="empty-state">
-  <ion-icon
-    name="folder-open-outline"
-    style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
-  ></ion-icon>
-  <p>Nessuna commessa trovata.</p>
-</div>
-
-<ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
-  <ion-infinite-scroll-content
-    loadingSpinner="bubbles"
-    loadingText="Caricamento commesse..."
-  ></ion-infinite-scroll-content>
-</ion-infinite-scroll>
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Caricamento commesse..."
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+}

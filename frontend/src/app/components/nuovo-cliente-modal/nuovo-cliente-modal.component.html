@@ -1,49 +1,85 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Nuovo Committente</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="modal-toolbar">
+    <ion-title>{{
+      cliente ? "Modifica Committente" : "Nuovo Committente"
+    }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="chiudi()">Chiudi</ion-button>
+      <ion-button (click)="chiudi()" color="medium">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <ion-item>
-    <ion-input
-      label="Nome *"
-      label-placement="floating"
-      [(ngModel)]="cliente.nome"
-    ></ion-input>
-  </ion-item>
+<ion-content class="modal-content">
+  <form [formGroup]="form" (ngSubmit)="salva()" class="modern-form">
+    <div class="form-section">
+      <div class="section-title">Anagrafica principale</div>
 
-  <ion-item>
-    <ion-input
-      label="Telefono"
-      type="tel"
-      label-placement="floating"
-      [(ngModel)]="cliente.telefono"
-    ></ion-input>
-  </ion-item>
+      <ion-item class="modern-input" lines="none">
+        <ion-icon name="person-outline" slot="start" color="primary"></ion-icon>
+        <ion-input
+          formControlName="nome"
+          label="Nome / Ragione Sociale *"
+          label-placement="floating"
+          placeholder="Es. Mario Rossi o Rossi Srl"
+        ></ion-input>
+      </ion-item>
+      @if (form.get("nome")?.invalid && form.get("nome")?.touched) {
+        <div class="error-msg">Il nome è obbligatorio (min 2 caratteri).</div>
+      }
 
-  <ion-item>
-    <ion-input
-      label="Email"
-      type="email"
-      label-placement="floating"
-      [(ngModel)]="cliente.email"
-    ></ion-input>
-  </ion-item>
+      <ion-item class="modern-input" lines="none">
+        <ion-icon name="call-outline" slot="start" color="medium"></ion-icon>
+        <ion-input
+          formControlName="telefono"
+          label="Telefono"
+          type="tel"
+          label-placement="floating"
+          placeholder="Es. +39 340 1234567"
+        ></ion-input>
+      </ion-item>
 
-  <app-gestione-allegati
-    [entityType]="'cliente'"
-    [entityId]="cliente['id']"
-    [allegatiEsistenti]="cliente['allegati'] || []"
-  >
-  </app-gestione-allegati>
+      <ion-item class="modern-input" lines="none">
+        <ion-icon name="mail-outline" slot="start" color="medium"></ion-icon>
+        <ion-input
+          formControlName="email"
+          label="Email"
+          type="email"
+          label-placement="floating"
+          placeholder="es. mario@example.com"
+        ></ion-input>
+      </ion-item>
+      @if (form.get("email")?.invalid && form.get("email")?.touched) {
+        <div class="error-msg">Inserisci un indirizzo email valido.</div>
+      }
+    </div>
 
-  <div class="ion-margin-top">
-    <ion-button expand="block" (click)="salva()" [disabled]="!cliente.nome">
-      SALVA COMMITTENTE
-    </ion-button>
-  </div>
+    <div class="form-section allegati-section">
+      <div class="section-title">Documenti e Allegati</div>
+      <app-gestione-allegati
+        entityType="cliente"
+        [entityId]="cliente?.id"
+        [allegatiEsistenti]="cliente?.allegati || []"
+      ></app-gestione-allegati>
+    </div>
+  </form>
 </ion-content>
+
+<ion-footer class="ion-no-border modal-footer">
+  <ion-toolbar>
+    <ion-button
+      expand="block"
+      class="submit-btn"
+      (click)="salva()"
+      [disabled]="form.invalid || isSubmitting"
+    >
+      @if (isSubmitting) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ cliente ? "AGGIORNA COMMITTENTE" : "SALVA COMMITTENTE" }}
+      }
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

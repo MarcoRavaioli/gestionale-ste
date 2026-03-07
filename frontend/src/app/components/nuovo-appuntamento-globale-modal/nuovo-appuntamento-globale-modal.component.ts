@@ -1,6 +1,12 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -16,7 +22,10 @@ import {
   AlertController,
   IonSegment,
   IonSegmentButton,
-  IonLabel, // <--- AGGIUNTO IonLabel
+  IonLabel,
+  IonSpinner,
+  IonFooter,
+  IonItem,
 } from '@ionic/angular/standalone';
 import { AppuntamentoService } from '../../services/appuntamento.service';
 import { CommessaService } from '../../services/commessa.service';
@@ -42,6 +51,7 @@ import {
   locationOutline,
   personOutline,
   linkOutline,
+  saveOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -50,6 +60,9 @@ import {
   styleUrls: ['./nuovo-appuntamento-globale-modal.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -59,36 +72,38 @@ import {
     IonIcon,
     IonInput,
     IonTextarea,
-    CommonModule,
-    FormsModule,
-    GenericSelectorComponent,
     IonSegment,
     IonSegmentButton,
     IonLabel,
-    GestioneAllegatiComponent, // <--- AGGIUNTO GestioneAllegatiComponent
+    IonSpinner,
+    IonFooter,
+    IonItem,
+    GenericSelectorComponent,
+    GestioneAllegatiComponent,
   ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   @Input() appuntamento?: Appuntamento;
+  @Input() commessaIdPreselezionato?: number;
+  @Input() cantiereIdPreselezionato?: number;
+  @Input() clienteIdPreselezionato?: number;
+
   isEditing = false;
+  isSubmitting = false;
+  isDeleting = false;
 
   tipoCollegamento: 'commessa' | 'cantiere' | 'cliente' | 'nessuno' =
     'commessa';
+  isCollegamentoVincolato = false;
 
   listaCommesse: Commessa[] = [];
   selectedCommessaId: number | null = null;
-
   listaCantieri: Indirizzo[] = [];
   selectedCantiereId: number | null = null;
-
   listaClienti: Cliente[] = [];
   selectedClienteId: number | null = null;
 
-  formDati = {
-    nome: '',
-    data_ora: '',
-    descrizione: '',
-  };
+  form!: FormGroup;
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -101,6 +116,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     private comService: CommessaService,
     private indService: IndirizzoService,
     private clienteService: ClienteService,
+    private fb: FormBuilder,
   ) {
     addIcons({
       calendarOutline,
@@ -111,21 +127,15 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       locationOutline,
       personOutline,
       linkOutline,
+      saveOutline,
     });
   }
 
   ngOnInit() {
     this.caricaDatiBase();
+
     if (this.appuntamento) {
       this.isEditing = true;
-      this.formDati = {
-        nome: this.appuntamento.nome,
-        data_ora: this.appuntamento.data_ora
-          ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16)
-          : '',
-        descrizione: this.appuntamento.descrizione || '',
-      };
-
       if (this.appuntamento.commessa) {
         this.tipoCollegamento = 'commessa';
         this.selectedCommessaId = this.appuntamento.commessa.id;
@@ -138,7 +148,29 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       } else {
         this.tipoCollegamento = 'nessuno';
       }
+    } else if (this.commessaIdPreselezionato) {
+      this.tipoCollegamento = 'commessa';
+      this.selectedCommessaId = this.commessaIdPreselezionato;
+      this.isCollegamentoVincolato = true;
+    } else if (this.cantiereIdPreselezionato) {
+      this.tipoCollegamento = 'cantiere';
+      this.selectedCantiereId = this.cantiereIdPreselezionato;
+      this.isCollegamentoVincolato = true;
+    } else if (this.clienteIdPreselezionato) {
+      this.tipoCollegamento = 'cliente';
+      this.selectedClienteId = this.clienteIdPreselezionato;
+      this.isCollegamentoVincolato = true;
     }
+
+    this.form = this.fb.group({
+      data_ora: [
+        this.appuntamento?.data_ora
+          ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16)
+          : '',
+        [Validators.required],
+      ],
+      descrizione: [this.appuntamento?.descrizione || ''],
+    });
   }
 
   caricaDatiBase() {
@@ -152,7 +184,7 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (!this.formDati.data_ora) return false;
+    if (this.form.invalid) return false;
     if (this.tipoCollegamento === 'commessa' && !this.selectedCommessaId)
       return false;
     if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId)
@@ -163,9 +195,14 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   }
 
   salva() {
-    const payload: any = { ...this.formDati };
-    if (!payload.nome || payload.nome.trim() === '')
-      payload.nome = 'Intervento';
+    if (!this.isValid()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    const payload: any = { ...this.form.value };
+    payload.nome = 'Intervento'; // default name
 
     payload.commessa = null;
     payload.indirizzo = null;
@@ -184,27 +221,27 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
     if (Haptics) Haptics.impact({ style: ImpactStyle.Light });
 
-    if (this.isEditing && this.appuntamento) {
-      this.appService.update(this.appuntamento.id, payload).subscribe({
-        next: async (res) => {
-          if (this.gestioneAllegati) {
-            await this.gestioneAllegati.uploadAllPendingFiles(res.id);
-          }
-          this.modalCtrl.dismiss({ creato: true, data: res });
-        },
-        error: () => this.mostraToast('Errore aggiornamento', 'danger'),
-      });
-    } else {
-      this.appService.create(payload).subscribe({
-        next: async (res) => {
-          if (this.gestioneAllegati) {
-            await this.gestioneAllegati.uploadAllPendingFiles(res.id);
-          }
-          this.modalCtrl.dismiss({ creato: true, data: res });
-        },
-        error: () => this.mostraToast('Errore creazione', 'danger'),
-      });
-    }
+    const req$ =
+      this.isEditing && this.appuntamento
+        ? this.appService.update(this.appuntamento.id, payload)
+        : this.appService.create(payload);
+
+    req$.subscribe({
+      next: async (res) => {
+        if (this.gestioneAllegati) {
+          await this.gestioneAllegati.uploadAllPendingFiles(res.id);
+        }
+        this.isSubmitting = false;
+        this.modalCtrl.dismiss({
+          [this.isEditing ? 'aggiornato' : 'creato']: true,
+          data: res,
+        });
+      },
+      error: () => {
+        this.isSubmitting = false;
+        this.mostraToast('Errore salvataggio', 'danger');
+      },
+    });
   }
 
   async elimina() {
@@ -226,13 +263,18 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
   confermaEliminazione() {
     if (!this.appuntamento) return;
+    this.isDeleting = true;
     this.appService.delete(this.appuntamento.id).subscribe({
       next: async () => {
         if (Haptics) await Haptics.notification({ type: 'SUCCESS' } as any);
         this.mostraToast('Appuntamento eliminato', 'success');
+        this.isDeleting = false;
         this.modalCtrl.dismiss({ eliminato: true });
       },
-      error: async () => this.mostraToast('Errore', 'danger'),
+      error: async () => {
+        this.isDeleting = false;
+        this.mostraToast('Errore eliminazione', 'danger');
+      },
     });
   }
 
@@ -243,5 +285,24 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       duration: 2000,
     });
     toast.present();
+  }
+
+  getPreselectedName(): string {
+    if (this.tipoCollegamento === 'commessa') {
+      const c = this.listaCommesse.find(
+        (l) => l.id === this.selectedCommessaId,
+      );
+      return c
+        ? c.seriale + (c.descrizione ? ' - ' + c.descrizione : '')
+        : 'Commessa Selezionata';
+    } else if (this.tipoCollegamento === 'cantiere') {
+      const c = this.listaCantieri.find(
+        (l) => l.id === this.selectedCantiereId,
+      );
+      return c ? `${c.via} ${c.civico}` : 'Cantiere Selezionato';
+    } else {
+      const c = this.listaClienti.find((l) => l.id === this.selectedClienteId);
+      return c ? c.nome : 'Cliente Selezionato';
+    }
   }
 }

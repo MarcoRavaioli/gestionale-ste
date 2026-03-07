@@ -1,6 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -14,12 +20,15 @@ import {
   ToastController,
   IonItem,
   IonToggle,
+  IonSpinner,
+  IonFooter,
+  IonLabel,
 } from '@ionic/angular/standalone';
+
 import { ClienteService } from '../../services/cliente.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import { Cliente } from '../../interfaces/models';
-// IMPORTIAMO IL MODALE DEL CLIENTE
+import { Cliente, Indirizzo } from '../../interfaces/models';
 import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
 import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
 
@@ -30,6 +39,9 @@ import {
   closeOutline,
   searchOutline,
   add,
+  saveOutline,
+  businessOutline,
+  personOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -38,6 +50,9 @@ import {
   styleUrls: ['./nuovo-cantiere-globale-modal.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -46,27 +61,25 @@ import {
     IonContent,
     IonIcon,
     IonInput,
-    CommonModule,
-    FormsModule,
     GenericSelectorComponent,
     IonItem,
     IonToggle,
     GestioneAllegatiComponent,
+    IonSpinner,
+    IonFooter,
+    IonLabel,
   ],
 })
 export class NuovoCantiereGlobaleModalComponent implements OnInit {
+  @Input() cantiere?: Indirizzo;
+  @Input() clienteIdPreselezionato?: number;
+
+  form!: FormGroup;
+  isSubmitting = false;
+
   listaClienti: Cliente[] = [];
   clienteSelezionatoId: number | null = null;
   usaClienteGenerico = false;
-
-  indirizzo = {
-    via: '',
-    civico: '',
-    citta: '',
-    cap: '',
-    provincia: '',
-    stato: 'Italia',
-  };
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -76,6 +89,7 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
     private toastCtrl: ToastController,
     private clienteService: ClienteService,
     private indirizzoService: IndirizzoService,
+    private fb: FormBuilder,
   ) {
     addIcons({
       personAddOutline,
@@ -83,22 +97,36 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
       closeOutline,
       searchOutline,
       add,
+      saveOutline,
+      businessOutline,
+      personOutline,
     });
   }
 
   ngOnInit() {
-    this.caricaClienti();
-  }
-
-  caricaClienti() {
     this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+
+    if (this.cantiere) {
+      this.clienteSelezionatoId = this.cantiere.cliente?.id || null;
+      this.usaClienteGenerico = !this.clienteSelezionatoId;
+    } else if (this.clienteIdPreselezionato) {
+      this.clienteSelezionatoId = this.clienteIdPreselezionato;
+      this.usaClienteGenerico = false;
+    }
+
+    this.form = this.fb.group({
+      via: [this.cantiere?.via || '', [Validators.required]],
+      civico: [this.cantiere?.civico || '', [Validators.required]],
+      citta: [this.cantiere?.citta || '', [Validators.required]],
+      cap: [this.cantiere?.cap || ''],
+      provincia: [this.cantiere?.provincia || ''],
+    });
   }
 
   chiudi() {
     this.modalCtrl.dismiss();
   }
 
-  // MODAL STACKING: Creiamo il cliente e lo selezioniamo!
   async creaNuovoClienteAlVolo() {
     const modal = await this.modalCtrl.create({
       component: NuovoClienteModalComponent,
@@ -112,20 +140,29 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (
-      !this.indirizzo.via ||
-      this.indirizzo.via.trim() === '' ||
-      !this.indirizzo.citta
-    )
-      return false;
+    if (this.form.invalid) return false;
     if (!this.usaClienteGenerico && !this.clienteSelezionatoId) return false;
     return true;
   }
 
   salva() {
-    const payload: any = { ...this.indirizzo };
-    if (payload.cap) payload.cap = String(payload.cap);
-    if (payload.civico) payload.civico = String(payload.civico);
+    if (!this.isValid()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    const values = this.form.value;
+
+    const payload: any = {
+      via: values.via,
+      civico: String(values.civico),
+      citta: values.citta,
+      stato: 'Italia',
+    };
+
+    if (values.cap) payload.cap = String(values.cap);
+    if (values.provincia) payload.provincia = values.provincia;
 
     if (!this.usaClienteGenerico && this.clienteSelezionatoId) {
       payload.cliente = { id: this.clienteSelezionatoId };
@@ -133,23 +170,39 @@ export class NuovoCantiereGlobaleModalComponent implements OnInit {
       payload.cliente = null;
     }
 
-    this.indirizzoService.create(payload).subscribe({
+    const req$ = this.cantiere
+      ? this.indirizzoService.update(this.cantiere.id, payload)
+      : this.indirizzoService.create(payload);
+
+    req$.subscribe({
       next: async (res) => {
         if (this.gestioneAllegati) {
           await this.gestioneAllegati.uploadAllPendingFiles(res.id);
         }
-        this.modalCtrl.dismiss({ creato: true, data: res });
+        this.isSubmitting = false;
+        this.modalCtrl.dismiss({
+          [this.cantiere ? 'aggiornato' : 'creato']: true,
+          data: res,
+        });
       },
-      error: (err) => this.showToast('Errore creazione cantiere', 'danger'),
+      error: async (err) => {
+        console.error(err);
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Errore salvataggio cantiere';
+        const t = await this.toastCtrl.create({
+          message: Array.isArray(msg) ? msg[0] : msg,
+          color: 'danger',
+          duration: 3000,
+        });
+        t.present();
+      },
     });
   }
 
-  async showToast(msg: string, color: string) {
-    const t = await this.toastCtrl.create({
-      message: msg,
-      color,
-      duration: 3000,
-    });
-    t.present();
+  get preselectedClienteNome(): string {
+    return (
+      this.listaClienti.find((c) => c.id === this.clienteIdPreselezionato)
+        ?.nome || 'Cliente Preselezionato'
+    );
   }
 }

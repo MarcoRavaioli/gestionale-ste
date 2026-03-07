@@ -1,24 +1,22 @@
-import {
-  Component,
-  OnInit,
-  signal,
-  effect,
-  computed,
-  ViewChild,
-} from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+
+// Componenti Liste
 import { ListaClientiComponent } from '../components/lista-clienti/lista-clienti.component';
 import { ListaCantieriComponent } from '../components/lista-cantieri/lista-cantieri.component';
 import { ListaCommesseComponent } from '../components/lista-commesse/lista-commesse.component';
 import { ListaAppuntamentiComponent } from '../components/lista-appuntamenti/lista-appuntamenti.component';
 import { ListaDocumentiComponent } from '../components/lista-documenti/lista-documenti.component';
 
+// Componenti Ionic
 import {
   ModalController,
   PopoverController,
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonChip,
   IonLabel,
   IonSearchbar,
   IonButton,
@@ -29,17 +27,18 @@ import {
   IonList,
   IonItem,
   IonAvatar,
-  IonItemGroup,
-  IonItemDivider,
   IonFab,
   IonFabButton,
   IonSkeletonText,
+  IonSegment,
+  IonSegmentButton,
 } from '@ionic/angular/standalone';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+
+// Servizi & Modelli
 import { ClienteService } from '../services/cliente.service';
 import { IndirizzoService } from '../services/indirizzo.service';
+import { CommessaService } from '../services/commessa.service';
+import { AppuntamentoService } from '../services/appuntamento.service';
 import { PreferencesService, ViewSettings } from '../services/preferences';
 import {
   Appuntamento,
@@ -47,11 +46,15 @@ import {
   Commessa,
   Indirizzo,
 } from '../interfaces/models';
+
+// Modali
 import { NuovoClienteModalComponent } from '../components/nuovo-cliente-modal/nuovo-cliente-modal.component';
 import { NuovoCantiereGlobaleModalComponent } from '../components/nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
 import { NuovaCommessaGlobaleModalComponent } from '../components/nuova-commessa-globale-modal/nuova-commessa-globale-modal.component';
 import { NuovoAppuntamentoGlobaleModalComponent } from '../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 import { ListSettingsPopoverComponent } from '../components/list-settings-popover/list-settings-popover.component';
+
+// Icone
 import { addIcons } from 'ionicons';
 import {
   add,
@@ -74,11 +77,17 @@ import {
   calendarNumberOutline,
   createOutline,
 } from 'ionicons/icons';
-import { CommessaService } from '../services/commessa.service';
-import { AppuntamentoService } from '../services/appuntamento.service';
-import { ToastController } from '@ionic/angular';
+
+// RxJS
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+type VistaType =
+  | 'clienti'
+  | 'cantieri'
+  | 'commesse'
+  | 'appuntamenti'
+  | 'documenti';
 
 @Component({
   selector: 'app-tab3',
@@ -92,7 +101,6 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonChip,
     IonLabel,
     IonSearchbar,
     IonButton,
@@ -106,6 +114,8 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
     IonFab,
     IonFabButton,
     IonSkeletonText,
+    IonSegment,
+    IonSegmentButton,
     ListaClientiComponent,
     ListaCantieriComponent,
     ListaCommesseComponent,
@@ -114,71 +124,72 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
   ],
 })
 export class Tab3Page implements OnInit {
-  vistaCorrente:
-    | 'clienti'
-    | 'cantieri'
-    | 'commesse'
-    | 'appuntamenti'
-    | 'documenti' = 'clienti';
-  ricerca: string = '';
-  isLoading = true;
+  vistaCorrente = signal<VistaType>('clienti');
+  ricerca = signal<string>('');
+  isLoading = signal<boolean>(true);
 
   @ViewChild('listaDoc') listaDocComponent!: ListaDocumentiComponent;
 
-  tuttiClienti: Cliente[] = [];
-  // tuttiCantieri rimossa
-
-  get clientiVisualizzati() {
-    return this.ordinaLista(
-      [...this.clienteService.clientiState()],
-      this.settingsClienti.orderBy,
-      this.settingsClienti.orderDirection,
-    );
-  }
-
-  get cantieriLista() {
-    return this.ordinaLista(
-      [...this.indirizzoService.cantieriState()],
-      this.settingsCantieri.orderBy,
-      this.settingsCantieri.orderDirection,
-    );
-  }
-  commesseLista: Commessa[] = [];
-  appuntamentiLista: Appuntamento[] = [];
-
-  clientiPage = 1;
-  clientiLimit = 15;
-  clientiTotalPages = 1;
-  clientiSearchSubject = new Subject<string>();
-
-  cantieriPage = 1;
-  cantieriLimit = 15;
-  cantieriTotalPages = 1;
-  cantieriSearchSubject = new Subject<string>();
-
-  commessePage = 1;
-  commesseLimit = 15;
-  commesseTotalPages = 1;
-  commesseSearchSubject = new Subject<string>();
-
-  appuntamentiPage = 1;
-  appuntamentiLimit = 15;
-  appuntamentiTotalPages = 1;
-  appuntamentiSearchSubject = new Subject<string>();
-
-  settingsClienti: ViewSettings = { orderBy: 'nome', orderDirection: 'asc' };
-  settingsCantieri: ViewSettings = {
+  // View Settings
+  settingsClienti = signal<ViewSettings>({
+    orderBy: 'nome',
+    orderDirection: 'asc',
+  });
+  settingsCantieri = signal<ViewSettings>({
     orderBy: 'citta',
     orderDirection: 'asc',
-  };
-  settingsCommesse: ViewSettings = {
+  });
+  settingsCommesse = signal<ViewSettings>({
     orderBy: 'seriale',
     orderDirection: 'asc',
-  };
-  settingsAppuntamenti: ViewSettings = {
+  });
+  settingsAppuntamenti = signal<ViewSettings>({
     orderBy: 'data_ora',
     orderDirection: 'desc',
-  };
+  });
+
+  // Paginators
+  clientiPage = signal(1);
+  clientiTotalPages = signal(1);
+  cantieriPage = signal(1);
+  cantieriTotalPages = signal(1);
+  commessePage = signal(1);
+  commesseTotalPages = signal(1);
+  appuntamentiPage = signal(1);
+  appuntamentiTotalPages = signal(1);
+  limit = 15;
+
+  private searchSubject$ = new Subject<string>();
+
+  // Dati derivati
+  clientiVisualizzati = computed(() =>
+    this.ordinaLista(
+      [...this.clienteService.clientiState()],
+      this.settingsClienti().orderBy,
+      this.settingsClienti().orderDirection,
+    ),
+  );
+  cantieriLista = computed(() =>
+    this.ordinaLista(
+      [...this.indirizzoService.cantieriState()],
+      this.settingsCantieri().orderBy,
+      this.settingsCantieri().orderDirection,
+    ),
+  );
+  commesseLista = computed(() =>
+    this.ordinaLista(
+      [...this.commessaService.commesseState()],
+      this.settingsCommesse().orderBy,
+      this.settingsCommesse().orderDirection,
+    ),
+  );
+  appuntamentiLista = computed(() =>
+    this.ordinaLista(
+      [...this.appService.appuntamentiState()],
+      this.settingsAppuntamenti().orderBy,
+      this.settingsAppuntamenti().orderDirection,
+    ),
+  );
 
   constructor(
     private clienteService: ClienteService,
@@ -188,7 +199,6 @@ export class Tab3Page implements OnInit {
     private appService: AppuntamentoService,
     private modalCtrl: ModalController,
     private popoverCtrl: PopoverController,
-    private toastCtrl: ToastController,
     private router: Router,
   ) {
     addIcons({
@@ -215,93 +225,198 @@ export class Tab3Page implements OnInit {
   }
 
   ngOnInit() {
-    this.settingsClienti = this.preferencesService.getSettings(
-      'settings_clienti',
-      this.settingsClienti,
+    this.settingsClienti.set(
+      this.preferencesService.getSettings(
+        'settings_clienti',
+        this.settingsClienti(),
+      ),
     );
-    this.settingsCantieri = this.preferencesService.getSettings(
-      'settings_cantieri',
-      this.settingsCantieri,
+    this.settingsCantieri.set(
+      this.preferencesService.getSettings(
+        'settings_cantieri',
+        this.settingsCantieri(),
+      ),
     );
-    this.settingsCommesse = this.preferencesService.getSettings(
-      'settings_commesse',
-      this.settingsCommesse,
+    this.settingsCommesse.set(
+      this.preferencesService.getSettings(
+        'settings_commesse',
+        this.settingsCommesse(),
+      ),
     );
-    this.settingsAppuntamenti = this.preferencesService.getSettings(
-      'settings_appuntamenti',
-      this.settingsAppuntamenti,
+    this.settingsAppuntamenti.set(
+      this.preferencesService.getSettings(
+        'settings_appuntamenti',
+        this.settingsAppuntamenti(),
+      ),
     );
 
-    this.clientiSearchSubject
-      .pipe(
-        debounceTime(500), // Aspetta 500ms dopo l'ultimo tasto premuto
-        distinctUntilChanged(), // Ignora se la parola è identica a prima
-      )
-      .subscribe((searchTerm) => {
-        this.ricerca = searchTerm;
-        this.clientiPage = 1; // Se fa una nuova ricerca, ripartiamo da pagina 1
-        this.caricaClientiPaginati(null, true);
-      });
-
-    this.cantieriSearchSubject
+    this.searchSubject$
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((searchTerm) => {
-        this.ricerca = searchTerm;
-        this.cantieriPage = 1;
-        this.caricaCantieriPaginati(null, true);
+        this.ricerca.set(searchTerm);
+        if (this.vistaCorrente() === 'documenti') {
+          if (this.listaDocComponent)
+            this.listaDocComponent.caricaDocumenti(true, searchTerm);
+        } else {
+          // Reset pages back to 1
+          if (this.vistaCorrente() === 'clienti') this.clientiPage.set(1);
+          if (this.vistaCorrente() === 'cantieri') this.cantieriPage.set(1);
+          if (this.vistaCorrente() === 'commesse') this.commessePage.set(1);
+          if (this.vistaCorrente() === 'appuntamenti')
+            this.appuntamentiPage.set(1);
+          this.caricaDatiGlobale(null, true);
+        }
       });
 
-    this.commesseSearchSubject
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe((searchTerm) => {
-        this.ricerca = searchTerm;
-        this.commessePage = 1;
-        this.caricaCommessePaginati(null, true);
-      });
-
-    this.appuntamentiSearchSubject
-      .pipe(debounceTime(500), distinctUntilChanged())
-      .subscribe((searchTerm) => {
-        this.ricerca = searchTerm;
-        this.appuntamentiPage = 1;
-        this.caricaAppuntamentiPaginati(null, true);
-      });
-
-    this.caricaDatiGlobale();
+    this.caricaDatiGlobale(null, true);
   }
 
   ionViewWillEnter() {
-    this.caricaDatiGlobale();
+    this.caricaDatiGlobale(null, true);
   }
 
-  caricaDatiGlobale(event?: any) {
-    if (this.vistaCorrente === 'clienti') {
-      this.clientiPage = 1;
-      this.caricaClientiPaginati(event, true);
-    } else if (this.vistaCorrente === 'cantieri') {
-      this.cantieriPage = 1;
-      this.caricaCantieriPaginati(event, true);
-    } else if (this.vistaCorrente === 'commesse') {
-      this.commessePage = 1;
-      this.caricaCommessePaginati(event, true);
-    } else if (this.vistaCorrente === 'appuntamenti') {
-      this.appuntamentiPage = 1;
-      this.caricaAppuntamentiPaginati(event, true);
-    } else {
-      // Documenti gestisce il proprio loader interno
-      if (this.listaDocComponent) {
-        this.listaDocComponent.caricaDocumenti(true, this.ricerca);
-      }
-      if (event) event.target.complete();
-      this.isLoading = false;
+  cambiaVista(ev: any) {
+    const nuovaVista = ev.detail.value as VistaType;
+    this.vistaCorrente.set(nuovaVista);
+    this.ricerca.set('');
+    this.caricaDatiGlobale(null, true);
+  }
+
+  gestisciRicerca(testo: string) {
+    this.searchSubject$.next(testo);
+  }
+
+  caricaDatiGlobale(event?: any, forcePrimaPagina = false) {
+    if (forcePrimaPagina) {
+      this.isLoading.set(true);
+    }
+    const searchVal = this.ricerca();
+
+    switch (this.vistaCorrente()) {
+      case 'clienti':
+        this.clienteService
+          .getPaginated(this.clientiPage(), this.limit, searchVal)
+          .subscribe({
+            next: (res) => {
+              this.clientiTotalPages.set(res.totalPages);
+              this.isLoading.set(false);
+              if (event) {
+                event.target.complete();
+                if (this.clientiPage() >= this.clientiTotalPages())
+                  event.target.disabled = true;
+              }
+            },
+            error: () => {
+              this.isLoading.set(false);
+              if (event) event.target.complete();
+            },
+          });
+        break;
+      case 'cantieri':
+        this.indirizzoService
+          .getPaginated(this.cantieriPage(), this.limit, searchVal)
+          .subscribe({
+            next: (res) => {
+              this.cantieriTotalPages.set(res.totalPages);
+              this.isLoading.set(false);
+              if (event) {
+                event.target.complete();
+                if (this.cantieriPage() >= this.cantieriTotalPages())
+                  event.target.disabled = true;
+              }
+            },
+            error: () => {
+              this.isLoading.set(false);
+              if (event) event.target.complete();
+            },
+          });
+        break;
+      case 'commesse':
+        this.commessaService
+          .getPaginated(this.commessePage(), this.limit, searchVal)
+          .subscribe({
+            next: (res) => {
+              this.commesseTotalPages.set(res.totalPages);
+              this.isLoading.set(false);
+              if (event) {
+                event.target.complete();
+                if (this.commessePage() >= this.commesseTotalPages())
+                  event.target.disabled = true;
+              }
+            },
+            error: () => {
+              this.isLoading.set(false);
+              if (event) event.target.complete();
+            },
+          });
+        break;
+      case 'appuntamenti':
+        this.appService
+          .getPaginated(this.appuntamentiPage(), this.limit, searchVal)
+          .subscribe({
+            next: (res) => {
+              this.appuntamentiTotalPages.set(res.totalPages);
+              this.isLoading.set(false);
+              if (event) {
+                event.target.complete();
+                if (this.appuntamentiPage() >= this.appuntamentiTotalPages())
+                  event.target.disabled = true;
+              }
+            },
+            error: () => {
+              this.isLoading.set(false);
+              if (event) event.target.complete();
+            },
+          });
+        break;
+      case 'documenti':
+        if (this.listaDocComponent)
+          this.listaDocComponent.caricaDocumenti(true, searchVal);
+        this.isLoading.set(false);
+        if (event) event.target.complete();
+        break;
     }
   }
 
-  elaboraDati() {
-    if (this.vistaCorrente === 'clienti') this.caricaClientiPaginati();
-    else if (this.vistaCorrente === 'cantieri') this.caricaCantieriPaginati();
-    else if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
-    else if (this.vistaCorrente === 'appuntamenti') this.elaboraAppuntamenti();
+  // Paginators Handlers
+  caricaAltraPaginaClienti(event: any) {
+    if (this.clientiPage() < this.clientiTotalPages()) {
+      this.clientiPage.update((p) => p + 1);
+      this.caricaDatiGlobale(event);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
+  caricaAltraPaginaCantieri(event: any) {
+    if (this.cantieriPage() < this.cantieriTotalPages()) {
+      this.cantieriPage.update((p) => p + 1);
+      this.caricaDatiGlobale(event);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
+  caricaAltraPaginaCommesse(event: any) {
+    if (this.commessePage() < this.commesseTotalPages()) {
+      this.commessePage.update((p) => p + 1);
+      this.caricaDatiGlobale(event);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
+  caricaAltraPaginaAppuntamenti(event: any) {
+    if (this.appuntamentiPage() < this.appuntamentiTotalPages()) {
+      this.appuntamentiPage.update((p) => p + 1);
+      this.caricaDatiGlobale(event);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
   }
 
   private ordinaLista(lista: any[], campo: string, direzione: 'asc' | 'desc') {
@@ -321,276 +436,8 @@ export class Tab3Page implements OnInit {
     });
   }
 
-  caricaClientiPaginati(event?: any, isFirstLoad: boolean = false) {
-    if (isFirstLoad) this.isLoading = true;
-
-    this.clienteService
-      .getPaginated(this.clientiPage, this.clientiLimit, this.ricerca)
-      .subscribe({
-        next: (res) => {
-          this.clientiTotalPages = res.totalPages;
-          this.isLoading = false;
-
-          // Ferma la rotellina dell'infinite scroll
-          if (event) {
-            event.target.complete();
-            // Se siamo all'ultima pagina, disabilita lo spinner per non cercare a vuoto
-            if (this.clientiPage >= this.clientiTotalPages) {
-              event.target.disabled = true;
-            }
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          if (event) event.target.complete();
-        },
-      });
-  }
-
-  caricaAltraPaginaClienti(event: any) {
-    if (this.clientiPage < this.clientiTotalPages) {
-      this.clientiPage++;
-      this.caricaClientiPaginati(event, false);
-    } else {
-      event.target.complete();
-      event.target.disabled = true;
-    }
-  }
-
-  caricaCantieriPaginati(event?: any, isFirstLoad: boolean = false) {
-    if (isFirstLoad) this.isLoading = true;
-
-    this.indirizzoService
-      .getPaginated(this.cantieriPage, this.cantieriLimit, this.ricerca)
-      .subscribe({
-        next: (res) => {
-          this.cantieriTotalPages = res.totalPages;
-          this.isLoading = false;
-
-          if (event) {
-            event.target.complete();
-            if (this.cantieriPage >= this.cantieriTotalPages)
-              event.target.disabled = true;
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          if (event) event.target.complete();
-        },
-      });
-  }
-
-  caricaAltraPaginaCantieri(event: any) {
-    if (this.cantieriPage < this.cantieriTotalPages) {
-      this.cantieriPage++;
-      this.caricaCantieriPaginati(event, false);
-    } else {
-      event.target.complete();
-      event.target.disabled = true;
-    }
-  }
-
-  caricaCommessePaginati(event?: any, isFirstLoad: boolean = false) {
-    if (isFirstLoad) this.isLoading = true;
-
-    this.commessaService
-      .getPaginated(this.commessePage, this.commesseLimit, this.ricerca)
-      .subscribe({
-        next: (res) => {
-          this.commesseTotalPages = res.totalPages;
-          this.elaboraCommesse(); // Ricalcola i gruppi dopo il set del signal
-          this.isLoading = false;
-
-          if (event) {
-            event.target.complete();
-            if (this.commessePage >= this.commesseTotalPages) {
-              event.target.disabled = true;
-            }
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          if (event) event.target.complete();
-        },
-      });
-  }
-
-  caricaAltraPaginaCommesse(event: any) {
-    if (this.commessePage < this.commesseTotalPages) {
-      this.commessePage++;
-      this.caricaCommessePaginati(event, false);
-    } else {
-      event.target.complete();
-      event.target.disabled = true;
-    }
-  }
-
-  caricaAppuntamentiPaginati(event?: any, isFirstLoad: boolean = false) {
-    if (isFirstLoad) this.isLoading = true;
-
-    this.appService
-      .getPaginated(this.appuntamentiPage, this.appuntamentiLimit, this.ricerca)
-      .subscribe({
-        next: (res) => {
-          this.appuntamentiTotalPages = res.totalPages;
-          this.elaboraAppuntamenti();
-          this.isLoading = false;
-
-          if (event) {
-            event.target.complete();
-            if (this.appuntamentiPage >= this.appuntamentiTotalPages)
-              event.target.disabled = true;
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          if (event) event.target.complete();
-        },
-      });
-  }
-
-  caricaAltraPaginaAppuntamenti(event: any) {
-    if (this.appuntamentiPage < this.appuntamentiTotalPages) {
-      this.appuntamentiPage++;
-      this.caricaAppuntamentiPaginati(event, false);
-    } else {
-      event.target.complete();
-      event.target.disabled = true;
-    }
-  }
-
-  gestisciRicerca(testo: string) {
-    if (this.vistaCorrente === 'clienti') {
-      this.clientiSearchSubject.next(testo);
-    } else if (this.vistaCorrente === 'cantieri') {
-      this.cantieriSearchSubject.next(testo);
-    } else if (this.vistaCorrente === 'commesse') {
-      this.commesseSearchSubject.next(testo);
-    } else if (this.vistaCorrente === 'appuntamenti') {
-      this.appuntamentiSearchSubject.next(testo);
-    } else if (this.vistaCorrente === 'documenti') {
-      this.ricerca = testo; // salviamo lo stato
-      if (this.listaDocComponent) {
-        this.listaDocComponent.caricaDocumenti(true, testo);
-      }
-    }
-  }
-
-  cambiaVista(nuovaVista: any) {
-    this.vistaCorrente = nuovaVista;
-    this.ricerca = ''; // Azzera la ricerca cambiando tab
-    this.caricaDatiGlobale(); // Ricarica/Ri-elabora
-  }
-
-  elaboraCommesse() {
-    let dati = [...this.commessaService.commesseState()];
-
-    this.commesseLista = this.ordinaLista(
-      dati,
-      this.settingsCommesse.orderBy,
-      this.settingsCommesse.orderDirection,
-    );
-  }
-
-  elaboraAppuntamenti() {
-    let dati = [...this.appService.appuntamentiState()];
-
-    this.appuntamentiLista = this.ordinaLista(
-      dati,
-      this.settingsAppuntamenti.orderBy,
-      this.settingsAppuntamenti.orderDirection,
-    );
-  }
-
-  async apriImpostazioni(ev: any) {
-    let currentSettings;
-    if (this.vistaCorrente === 'clienti')
-      currentSettings = this.settingsClienti;
-    else if (this.vistaCorrente === 'cantieri')
-      currentSettings = this.settingsCantieri;
-    else if (this.vistaCorrente === 'commesse')
-      currentSettings = this.settingsCommesse;
-    else if (this.vistaCorrente === 'appuntamenti')
-      currentSettings = this.settingsAppuntamenti;
-    else return; // I documenti non hanno impostazioni di ordinamento locale
-
-    const popover = await this.popoverCtrl.create({
-      component: ListSettingsPopoverComponent,
-      event: ev,
-      componentProps: {
-        type: this.vistaCorrente,
-        settings: { ...currentSettings },
-      },
-    });
-    await popover.present();
-    const { data } = await popover.onWillDismiss();
-
-    if (data) {
-      if (this.vistaCorrente === 'clienti') {
-        this.settingsClienti = data;
-        this.preferencesService.saveSettings('settings_clienti', data);
-      } else if (this.vistaCorrente === 'cantieri') {
-        this.settingsCantieri = data;
-        this.preferencesService.saveSettings('settings_cantieri', data);
-      } else if (this.vistaCorrente === 'commesse') {
-        this.settingsCommesse = data;
-        this.preferencesService.saveSettings('settings_commesse', data);
-      } else {
-        this.settingsAppuntamenti = data;
-        this.preferencesService.saveSettings('settings_appuntamenti', data);
-      }
-      this.elaboraDati();
-    }
-  }
-
-  async apriNuovoCliente() {
-    const m = await this.modalCtrl.create({
-      component: NuovoClienteModalComponent,
-    });
-    await m.present();
-    const { data } = await m.onWillDismiss();
-    if (data && data.creato) this.caricaDatiGlobale();
-  }
-  async apriNuovoCantiere() {
-    const m = await this.modalCtrl.create({
-      component: NuovoCantiereGlobaleModalComponent,
-    });
-    await m.present();
-    const { data } = await m.onWillDismiss();
-    if (data && data.creato) this.caricaDatiGlobale();
-  }
-  async apriNuovaCommessa() {
-    const m = await this.modalCtrl.create({
-      component: NuovaCommessaGlobaleModalComponent,
-    });
-    await m.present();
-    const { data } = await m.onWillDismiss();
-    if (data && data.creato) this.caricaDatiGlobale();
-  }
-  async apriNuovoAppuntamento() {
-    const m = await this.modalCtrl.create({
-      component: NuovoAppuntamentoGlobaleModalComponent,
-    });
-    await m.present();
-    const { data } = await m.onWillDismiss();
-    if (data && data.creato) this.caricaDatiGlobale();
-  }
-
-  getColoreStato(stato: string): string {
-    switch (stato) {
-      case 'APERTA':
-        return 'success';
-      case 'IN_CORSO':
-        return 'warning';
-      case 'CHIUSA':
-        return 'medium';
-      default:
-        return 'primary';
-    }
-  }
-
   getPlaceholder(): string {
-    switch (this.vistaCorrente) {
+    switch (this.vistaCorrente()) {
       case 'clienti':
         return 'Cerca cliente...';
       case 'cantieri':
@@ -606,7 +453,63 @@ export class Tab3Page implements OnInit {
     }
   }
 
-  // --- LOGICA DI NAVIGAZIONE POTENZIATA PER IL GRAFO FLESSIBILE ---
+  async apriImpostazioni(ev: any) {
+    let currentSettings: ViewSettings;
+    const view = this.vistaCorrente();
+    if (view === 'clienti') currentSettings = this.settingsClienti();
+    else if (view === 'cantieri') currentSettings = this.settingsCantieri();
+    else if (view === 'commesse') currentSettings = this.settingsCommesse();
+    else if (view === 'appuntamenti')
+      currentSettings = this.settingsAppuntamenti();
+    else return;
+
+    const popover = await this.popoverCtrl.create({
+      component: ListSettingsPopoverComponent,
+      event: ev,
+      componentProps: { type: view, settings: { ...currentSettings } },
+    });
+
+    await popover.present();
+    const { data } = await popover.onWillDismiss();
+
+    if (data) {
+      if (view === 'clienti') {
+        this.settingsClienti.set(data);
+        this.preferencesService.saveSettings('settings_clienti', data);
+      } else if (view === 'cantieri') {
+        this.settingsCantieri.set(data);
+        this.preferencesService.saveSettings('settings_cantieri', data);
+      } else if (view === 'commesse') {
+        this.settingsCommesse.set(data);
+        this.preferencesService.saveSettings('settings_commesse', data);
+      } else if (view === 'appuntamenti') {
+        this.settingsAppuntamenti.set(data);
+        this.preferencesService.saveSettings('settings_appuntamenti', data);
+      }
+    }
+  }
+
+  // Navigation and Modals
+  async apriNuovoCliente() {
+    this.apriModaleGlobale(NuovoClienteModalComponent);
+  }
+  async apriNuovoCantiere() {
+    this.apriModaleGlobale(NuovoCantiereGlobaleModalComponent);
+  }
+  async apriNuovaCommessa() {
+    this.apriModaleGlobale(NuovaCommessaGlobaleModalComponent);
+  }
+  async apriNuovoAppuntamento() {
+    this.apriModaleGlobale(NuovoAppuntamentoGlobaleModalComponent);
+  }
+
+  private async apriModaleGlobale(component: any) {
+    const m = await this.modalCtrl.create({ component });
+    await m.present();
+    const { data } = await m.onWillDismiss();
+    if (data && data.creato) this.caricaDatiGlobale(null, true);
+  }
+
   async goToDettaglioElemento(
     item: any,
     tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento',
@@ -614,9 +517,8 @@ export class Tab3Page implements OnInit {
     let targetClienteId = null;
     const queryParams: any = {};
 
-    if (tipo === 'cliente') {
-      targetClienteId = item.id;
-    } else if (tipo === 'cantiere') {
+    if (tipo === 'cliente') targetClienteId = item.id;
+    else if (tipo === 'cantiere') {
       targetClienteId = item.cliente?.id;
       queryParams.cantiereId = item.id;
     } else if (tipo === 'commessa') {
@@ -637,15 +539,12 @@ export class Tab3Page implements OnInit {
     }
 
     if (targetClienteId) {
-      // Trovato il proprietario! Naviga al dettaglio cliente.
       this.router.navigate(['/cliente-dettaglio', targetClienteId], {
         queryParams,
       });
     } else {
-      // Elemento totalmente slegato (orfano) -> Apri modale di modifica
       let componentToOpen: any;
       let propsToPass: any = {};
-
       if (tipo === 'appuntamento') {
         componentToOpen = NuovoAppuntamentoGlobaleModalComponent;
         propsToPass = { appuntamento: item };
@@ -653,7 +552,6 @@ export class Tab3Page implements OnInit {
         this.router.navigate(['/commessa-dettaglio', item.id]);
         return;
       } else if (tipo === 'cantiere') {
-        // ROTTA AL NUOVO DETTAGLIO CANTIERE ORFANO!
         this.router.navigate(['/cantiere-dettaglio', item.id]);
         return;
       }
@@ -666,7 +564,7 @@ export class Tab3Page implements OnInit {
         await modal.present();
         const { data } = await modal.onWillDismiss();
         if (data && (data.creato || data.aggiornato || data.eliminato))
-          this.caricaDatiGlobale();
+          this.caricaDatiGlobale(null, true);
       }
     }
   }

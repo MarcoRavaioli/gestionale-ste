@@ -8,6 +8,7 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonSkeletonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -31,7 +32,7 @@ import { Commessa } from '../../interfaces/models';
     IonLabel,
     IonBadge,
     IonIcon,
-
+    IonSkeletonText,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
   ],

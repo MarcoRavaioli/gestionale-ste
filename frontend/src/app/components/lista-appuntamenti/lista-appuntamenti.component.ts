@@ -8,6 +8,7 @@ import {
   IonIcon,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonSkeletonText,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -32,7 +33,7 @@ import { Appuntamento } from '../../interfaces/models';
     IonLabel,
     IonNote,
     IonIcon,
-
+    IonSkeletonText,
     IonInfiniteScroll,
     IonInfiniteScrollContent,
   ],

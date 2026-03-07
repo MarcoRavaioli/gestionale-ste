@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http'; // <--- IMPORT HTTP
-import { environment } from 'src/environments/environment'; // <--- IMPORT ENV
+import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environments/environment';
 import {
   IonHeader,
   IonToolbar,
@@ -13,6 +13,7 @@ import {
   IonButton,
   IonIcon,
   IonRippleEffect,
+  IonButtons,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -30,6 +31,7 @@ import { NuovaCommessaModalComponent } from '../components/nuova-commessa-modal/
 import { NuovoIndirizzoModalComponent } from '../components/nuovo-indirizzo-modal/nuovo-indirizzo-modal.component';
 import { FatturaDettaglioModalComponent } from '../components/fattura-dettaglio-modal/fattura-dettaglio-modal.component';
 import { NuovoCollaboratoreModalComponent } from '../components/nuovo-collaboratore-modal/nuovo-collaboratore-modal.component';
+import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal.component';
 
 import { addIcons } from 'ionicons';
 import {
@@ -50,14 +52,14 @@ import {
   arrowDownCircle,
   logOutOutline,
   personAdd,
-  peopleOutline, // <--- NUOVA
-  walletOutline, // <--- NUOVA
+  peopleOutline,
+  walletOutline,
   personCircleOutline,
   time,
   briefcaseOutline,
   location,
+  helpCircleOutline,
 } from 'ionicons/icons';
-import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal.component';
 
 @Component({
   selector: 'app-tab1',
@@ -74,26 +76,27 @@ import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal
     IonButton,
     IonIcon,
     IonRippleEffect,
+    IonButtons,
     CommonModule,
   ],
 })
 export class Tab1Page implements OnInit {
-  userNome = 'Utente';
-  isAdmin = false;
-  isManager = false;
+  userNome = signal<string>('Utente');
+  isAdmin = signal<boolean>(false);
+  isManager = signal<boolean>(false);
 
-  appuntamentiOggi: Appuntamento[] = [];
-  appuntamentiSettimana: Appuntamento[] = [];
+  appuntamentiOggi = signal<Appuntamento[]>([]);
+  appuntamentiSettimana = signal<Appuntamento[]>([]);
 
-  // FATTURE
-  fattureInScadenza: Fattura[] = [];
-  fattureScadute: Fattura[] = [];
-  mostraFatture = false;
+  // Fatture Signals
+  fattureInScadenza = signal<Fattura[]>([]);
+  fattureScadute = signal<Fattura[]>([]);
+  mostraFatture = signal<boolean>(false);
 
-  // TEAM (Nuovo)
-  mostraTeam = false;
-  teamStats: any[] = [];
-  totaleCostoTeam = 0;
+  // Team Signals
+  mostraTeam = signal<boolean>(false);
+  teamStats = signal<any[]>([]);
+  totaleCostoTeam = signal<number>(0);
 
   constructor(
     private appuntamentoService: AppuntamentoService,
@@ -102,7 +105,7 @@ export class Tab1Page implements OnInit {
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private router: Router,
-    private http: HttpClient, // <--- INIEZIONE HTTP
+    private http: HttpClient,
   ) {
     addIcons({
       calendar,
@@ -128,19 +131,20 @@ export class Tab1Page implements OnInit {
       time,
       briefcaseOutline,
       location,
+      helpCircleOutline,
     });
   }
 
   ngOnInit() {
     this.authService.currentUser$.subscribe((user) => {
       if (user) {
-        this.userNome = user.nome || user.nickname;
-        this.isAdmin = this.authService.isAdmin();
-        this.isManager = this.authService.hasManagerAccess();
+        this.userNome.set(user.nome || user.nickname || 'Utente');
+        this.isAdmin.set(this.authService.isAdmin());
+        this.isManager.set(this.authService.hasManagerAccess());
       } else {
-        this.userNome = 'Utente';
-        this.isAdmin = false;
-        this.isManager = false;
+        this.userNome.set('Utente');
+        this.isAdmin.set(false);
+        this.isManager.set(false);
       }
       this.caricaDati();
     });
@@ -156,16 +160,15 @@ export class Tab1Page implements OnInit {
 
   caricaDati(event?: any) {
     this.caricaAppuntamenti();
-    if (this.isManager) {
+    if (this.isManager()) {
       this.caricaFatture();
-      this.caricaTeamData(); // <--- CARICA DATI TEAM
+      this.caricaTeamData();
     }
     if (event) setTimeout(() => event.target.complete(), 800);
   }
 
-  // --- LOGICA TEAM ---
   toggleTeamPrivacy() {
-    this.mostraTeam = !this.mostraTeam;
+    this.mostraTeam.update((m) => !m);
   }
 
   caricaTeamData() {
@@ -173,7 +176,6 @@ export class Tab1Page implements OnInit {
     const anno = now.getFullYear();
     const mese = now.getMonth() + 1;
 
-    // Recupera le impostazioni salvate nella Tab 5 (localStorage)
     const savedPasto = parseFloat(localStorage.getItem('costoPasto') || '5.29');
     const savedRates = JSON.parse(
       localStorage.getItem('tariffeCollaboratori') || '{}',
@@ -184,27 +186,22 @@ export class Tab1Page implements OnInit {
         any[]
       >(`${environment.apiUrl}/tracciamento/report?anno=${anno}&mese=${mese}`)
       .subscribe((data) => {
-        this.teamStats = data.map((col) => {
-          const tariffa = savedRates[col.id] || 10; // Default 10€
+        const stats = data.map((col) => {
+          const tariffa = savedRates[col.id] || 10;
           const costo = col.totaleOre * tariffa + col.totaleBuoni * savedPasto;
-          return {
-            ...col,
-            costoTotale: costo,
-          };
+          return { ...col, costoTotale: costo };
         });
 
-        // Ordina dal più costoso
-        this.teamStats.sort((a, b) => b.costoTotale - a.costoTotale);
-        this.totaleCostoTeam = this.teamStats.reduce(
-          (acc, curr) => acc + curr.costoTotale,
-          0,
+        stats.sort((a, b) => b.costoTotale - a.costoTotale);
+        this.teamStats.set(stats);
+        this.totaleCostoTeam.set(
+          stats.reduce((acc, curr) => acc + curr.costoTotale, 0),
         );
       });
   }
 
-  // --- LOGICA FATTURE ---
   togglePrivacy() {
-    this.mostraFatture = !this.mostraFatture;
+    this.mostraFatture.update((m) => !m);
   }
 
   caricaFatture() {
@@ -214,31 +211,34 @@ export class Tab1Page implements OnInit {
       const traUnMese = new Date(oggi);
       traUnMese.setDate(oggi.getDate() + 30);
 
-      this.fattureInScadenza = data.filter((f) => {
-        if (!f.data_scadenza || f.incassata) return false;
-        const scadenza = new Date(f.data_scadenza);
-        return scadenza >= oggi && scadenza <= traUnMese;
-      });
+      this.fattureInScadenza.set(
+        data.filter((f) => {
+          if (!f.data_scadenza || f.incassata) return false;
+          const scadenza = new Date(f.data_scadenza);
+          return scadenza >= oggi && scadenza <= traUnMese;
+        }),
+      );
 
-      this.fattureScadute = data.filter((f) => {
-        if (!f.data_scadenza || f.incassata) return false;
-        const scadenza = new Date(f.data_scadenza);
-        return scadenza < oggi;
-      });
+      this.fattureScadute.set(
+        data.filter((f) => {
+          if (!f.data_scadenza || f.incassata) return false;
+          const scadenza = new Date(f.data_scadenza);
+          return scadenza < oggi;
+        }),
+      );
     });
   }
 
   async apriDettaglioFattura(fattura: Fattura) {
     const modal = await this.modalCtrl.create({
       component: FatturaDettaglioModalComponent,
-      componentProps: { fattura: fattura },
+      componentProps: { fattura },
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data?.eliminato || data?.aggiornato) this.caricaDati();
   }
 
-  // --- LOGICA APPUNTAMENTI ---
   caricaAppuntamenti() {
     this.appuntamentoService.getAll().subscribe((data) => {
       const oggi = new Date();
@@ -246,35 +246,38 @@ export class Tab1Page implements OnInit {
       const traSetteGiorni = new Date(oggi);
       traSetteGiorni.setDate(oggi.getDate() + 7);
 
-      this.appuntamentiOggi = data
-        .filter((app) => {
-          const dataApp = new Date(app.data_ora);
-          return (
-            dataApp.getDate() === oggi.getDate() &&
-            dataApp.getMonth() === oggi.getMonth() &&
-            dataApp.getFullYear() === oggi.getFullYear()
-          );
-        })
-        .sort(
-          (a, b) =>
-            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
-        );
+      this.appuntamentiOggi.set(
+        data
+          .filter((app) => {
+            const dataApp = new Date(app.data_ora);
+            return (
+              dataApp.getDate() === oggi.getDate() &&
+              dataApp.getMonth() === oggi.getMonth() &&
+              dataApp.getFullYear() === oggi.getFullYear()
+            );
+          })
+          .sort(
+            (a, b) =>
+              new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
+          ),
+      );
 
-      this.appuntamentiSettimana = data
-        .filter((app) => {
-          const dataApp = new Date(app.data_ora);
-          dataApp.setHours(0, 0, 0, 0);
-          return dataApp > oggi && dataApp <= traSetteGiorni;
-        })
-        .sort(
-          (a, b) =>
-            new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
-        );
+      this.appuntamentiSettimana.set(
+        data
+          .filter((app) => {
+            const dataApp = new Date(app.data_ora);
+            dataApp.setHours(0, 0, 0, 0);
+            return dataApp > oggi && dataApp <= traSetteGiorni;
+          })
+          .sort(
+            (a, b) =>
+              new Date(a.data_ora).getTime() - new Date(b.data_ora).getTime(),
+          ),
+      );
     });
   }
 
   async goToAppuntamento(app: Appuntamento) {
-    // È generico: Apriamo il modale in modifica invece di bloccarlo!
     const modal = await this.modalCtrl.create({
       component: NuovoAppuntamentoGlobaleModalComponent,
       componentProps: { appuntamento: app },
@@ -282,7 +285,6 @@ export class Tab1Page implements OnInit {
     await modal.present();
 
     const { data } = await modal.onWillDismiss();
-    // Se l'abbiamo modificato o salvato, ricarichiamo la Dashboard
     if (data && (data.creato || data.aggiornato)) {
       this.caricaDati();
     }

@@ -1,37 +1,116 @@
-.section-box {
-  background: var(--ion-card-background);
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid var(--ion-color-step-150);
+.modal-toolbar {
+  --background: var(--ion-color-light);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 
-  h3 {
-    margin-top: 0;
-    font-size: 1rem;
-    color: var(--ion-color-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  @media (prefers-color-scheme: dark) {
+    --background: #121212;
+  }
+
+  ion-title {
+    font-weight: 700;
   }
 }
 
-.nested-box {
-  background: var(--ion-color-step-50); 
-  padding: 10px;
+.modal-content {
+  --background: #f4f5f8;
+
+  @media (prefers-color-scheme: dark) {
+    --background: #000000;
+  }
+}
+
+.modern-form {
+  padding: 16px;
+}
+
+.form-section {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+
+  @media (prefers-color-scheme: dark) {
+    background: #1c1c1e;
+  }
+
+  .section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+}
+
+.modern-input {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+  margin-bottom: 8px;
+
+  &:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  ion-select, ion-input, ion-textarea {
+    --padding-start: 8px;
+  }
+  
+  ion-icon {
+    margin-right: 12px;
+    font-size: 1.3rem;
+  }
+}
+
+.readonly-item {
+  --background: rgba(128, 128, 128, 0.05);
   border-radius: 8px;
-  border: 1px dashed var(--ion-color-medium);
+  padding: 4px;
+
+  h2 {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  p {
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+  }
 }
 
-.header-toggle {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+.helper-text {
+  font-size: 0.8rem;
+  color: var(--ion-color-medium);
+  margin-top: 8px;
+  
+  &.text-center {
+    text-align: center;
+  }
 }
 
-.form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+.allegati-section {
+  padding-bottom: 8px;
+}
+
+.modal-footer {
+  --background: var(--card-bg, #ffffff);
+  padding: 16px;
+
+  @media (prefers-color-scheme: dark) {
+    --background: #1c1c1e;
+  }
+
+  .submit-btn {
+    margin: 0;
+    height: 48px;
+    font-weight: 700;
+    --border-radius: 12px;
+    --box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  }
 }
 
 .fade-in {
@@ -41,56 +120,4 @@
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* --- NUOVI STILI UPLOAD --- */
-.file-upload-section {
-  margin-top: 5px;
-
-  .section-subtitle {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ion-color-medium);
-    margin-bottom: 8px;
-    margin-top: 0;
-  }
-
-  .file-box {
-    border: 2px dashed var(--ion-color-step-300);
-    background: var(--ion-background-color); /* Sfondo che si adatta */
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:active {
-      background: var(--ion-color-step-100);
-      border-color: var(--ion-color-primary);
-    }
-
-    ion-icon {
-      font-size: 1.6rem;
-      color: var(--ion-color-medium);
-    }
-
-    .file-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      
-      .filename {
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: var(--ion-text-color);
-        word-break: break-all;
-      }
-      .filesize {
-        font-size: 0.7rem;
-        color: var(--ion-color-medium);
-      }
-    }
-  }
 }

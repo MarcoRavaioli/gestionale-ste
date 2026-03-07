@@ -1,41 +1,46 @@
-<ion-list lines="none" class="custom-list" *ngIf="isLoading">
-  <ion-item *ngFor="let i of [1, 2, 3, 4, 5]" class="list-item">
-    <div slot="start" class="list-icon-box box-secondary"></div>
-    <ion-label>
-      <h2>
-        <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
-      </h2>
-      <p><ion-skeleton-text animated style="width: 40%"></ion-skeleton-text></p>
-    </ion-label>
-  </ion-item>
-</ion-list>
-
-<div *ngIf="!isLoading">
+@if (isLoading) {
   <ion-list lines="none" class="custom-list">
-    <ion-item
-      *ngFor="let cantiere of cantieri"
-      button
-      detail="false"
-      (click)="itemClick.emit(cantiere)"
-      class="list-item animate-enter"
-    >
-      <div slot="start" class="list-icon-box box-secondary">
-        <ion-icon name="location"></ion-icon>
-      </div>
-      <ion-label>
-        <ion-note class="mini-tag">{{ cantiere.citta | uppercase }}</ion-note>
-        <h2 class="item-title">{{ cantiere.via }} {{ cantiere.civico }}</h2>
-        <p class="item-subtitle highlight-text">
-          {{ cantiere.cliente?.nome || "Cantiere Interno" }}
-        </p>
-      </ion-label>
-      <ion-icon
-        name="chevron-forward"
-        slot="end"
-        color="medium"
-        class="arrow-icon"
-      ></ion-icon>
-    </ion-item>
+    @for (i of [1, 2, 3, 4, 5]; track $index) {
+      <ion-item class="list-item">
+        <div slot="start" class="list-icon-box box-secondary"></div>
+        <ion-label>
+          <h2>
+            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+          </h2>
+          <p>
+            <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+          </p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+} @else {
+  <ion-list lines="none" class="custom-list">
+    @for (cantiere of cantieri; track cantiere.id) {
+      <ion-item
+        button
+        detail="false"
+        (click)="itemClick.emit(cantiere)"
+        class="list-item animate-enter"
+      >
+        <div slot="start" class="list-icon-box box-secondary">
+          <ion-icon name="location"></ion-icon>
+        </div>
+        <ion-label>
+          <ion-note class="mini-tag">{{ cantiere.citta | uppercase }}</ion-note>
+          <h2 class="item-title">{{ cantiere.via }} {{ cantiere.civico }}</h2>
+          <p class="item-subtitle highlight-text">
+            {{ cantiere.cliente?.nome || "Cantiere Interno" }}
+          </p>
+        </ion-label>
+        <ion-icon
+          name="chevron-forward"
+          slot="end"
+          color="medium"
+          class="arrow-icon"
+        ></ion-icon>
+      </ion-item>
+    }
   </ion-list>
 
   <ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
@@ -45,20 +50,22 @@
     ></ion-infinite-scroll-content>
   </ion-infinite-scroll>
 
-  <div *ngIf="cantieri.length === 0" class="empty-state">
-    <ion-icon
-      name="business-outline"
-      style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
-    ></ion-icon>
-    <h3 style="color: var(--ion-color-dark)">Nessun cantiere</h3>
-    <p style="color: var(--ion-color-medium)">Nessun indirizzo trovato.</p>
-    <ion-button
-      fill="outline"
-      shape="round"
-      class="ion-margin-top"
-      (click)="addClick.emit()"
-    >
-      <ion-icon slot="start" name="add"></ion-icon> Nuovo Cantiere
-    </ion-button>
-  </div>
-</div>
+  @if (cantieri.length === 0) {
+    <div class="empty-state">
+      <ion-icon
+        name="business-outline"
+        style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
+      ></ion-icon>
+      <h3 style="color: var(--ion-color-dark)">Nessun cantiere</h3>
+      <p style="color: var(--ion-color-medium)">Nessun indirizzo trovato.</p>
+      <ion-button
+        fill="outline"
+        shape="round"
+        class="ion-margin-top"
+        (click)="addClick.emit()"
+      >
+        <ion-icon slot="start" name="add"></ion-icon> Nuovo Cantiere
+      </ion-button>
+    </div>
+  }
+}

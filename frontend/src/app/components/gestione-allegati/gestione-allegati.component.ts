@@ -1,14 +1,19 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  signal,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   IonList,
-  IonListHeader,
   IonItem,
   IonLabel,
   IonIcon,
   IonButton,
-  IonBadge,
   ToastController,
   AlertController,
   IonSpinner,
@@ -18,7 +23,6 @@ import {
   documentOutline,
   cloudUploadOutline,
   trashOutline,
-  addCircleOutline,
   documentTextOutline,
 } from 'ionicons/icons';
 import { AllegatoService } from '../../services/allegato.service';
@@ -33,25 +37,21 @@ import { Allegato } from '../../interfaces/models';
     CommonModule,
     FormsModule,
     IonList,
-    IonListHeader,
     IonItem,
     IonLabel,
     IonIcon,
     IonButton,
-    IonBadge,
     IonSpinner,
   ],
 })
-export class GestioneAllegatiComponent implements OnInit {
+export class GestioneAllegatiComponent implements OnInit, OnChanges {
   @Input() entityType!: 'commessa' | 'cliente' | 'indirizzo' | 'appuntamento';
-  // L'ID è opzionale: se mancante siamo in CREATE, se presente siamo in EDIT
   @Input() entityId?: number | null;
   @Input() allegatiEsistenti: Allegato[] = [];
 
-  // File selezionati dall'utente che non sono stati ancora caricati (per la fase di CREATE o EDIT asincrono)
-  pendingFiles: File[] = [];
-
-  isUploading = false;
+  pendingFiles = signal<File[]>([]);
+  isUploading = signal<boolean>(false);
+  allegati = signal<Allegato[]>([]);
 
   constructor(
     private allegatoService: AllegatoService,
@@ -62,15 +62,24 @@ export class GestioneAllegatiComponent implements OnInit {
       documentOutline,
       cloudUploadOutline,
       trashOutline,
-      addCircleOutline,
       documentTextOutline,
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.allegati.set([...this.allegatiEsistenti]);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (
+      changes['allegatiEsistenti'] &&
+      !changes['allegatiEsistenti'].firstChange
+    ) {
+      this.allegati.set([...this.allegatiEsistenti]);
+    }
+  }
 
   triggerFileInput() {
-    // Usiamo un ID dinamico nel caso ci siano più istanze (non dovrebbe)
     const fileInput = document.getElementById(
       `fileInput-${this.entityType}`,
     ) as HTMLInputElement;
@@ -83,43 +92,37 @@ export class GestioneAllegatiComponent implements OnInit {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-
       if (this.entityId) {
-        // Siamo in EDIT mode, carica immediatamente il file tramite il service!
         await this.eseguiUploadImmediato(file);
       } else {
-        // Siamo in CREATE mode, lo parcheggi a lato e il parent lo caricherà dopo
-        this.pendingFiles.push(file);
+        this.pendingFiles.update((pf) => [...pf, file]);
       }
     }
-
-    // reset dell'input
     event.target.value = '';
   }
 
   async eseguiUploadImmediato(file: File) {
     if (!this.entityId) return;
-    this.isUploading = true;
+    this.isUploading.set(true);
     try {
       const nuovoAllegato = await this.allegatoService
         .upload(this.entityType, this.entityId, file)
         .toPromise();
       if (nuovoAllegato) {
-        // Usa un nuovo array per innescare ChangeDetection
-        this.allegatiEsistenti = [nuovoAllegato, ...this.allegatiEsistenti];
+        this.allegati.update((a) => [nuovoAllegato, ...a]);
         this.mostraToast('File caricato con successo!', 'success');
       }
     } catch (err) {
       console.error(err);
       this.mostraToast('Errore durante il caricamento', 'danger');
     } finally {
-      this.isUploading = false;
+      this.isUploading.set(false);
     }
   }
 
   rimuoviPendingFile(index: number, event: Event) {
     event.stopPropagation();
-    this.pendingFiles.splice(index, 1);
+    this.pendingFiles.update((pf) => pf.filter((_, i) => i !== index));
   }
 
   async eliminaAllegatoEsistente(allegatoId: number, event: Event) {
@@ -136,8 +139,8 @@ export class GestioneAllegatiComponent implements OnInit {
           handler: () => {
             this.allegatoService.delete(allegatoId).subscribe({
               next: () => {
-                this.allegatiEsistenti = this.allegatiEsistenti.filter(
-                  (a) => a.id !== allegatoId,
+                this.allegati.update((a) =>
+                  a.filter((al) => al.id !== allegatoId),
                 );
                 this.mostraToast('Allegato eliminato!', 'success');
               },
@@ -155,11 +158,8 @@ export class GestioneAllegatiComponent implements OnInit {
     this.allegatoService.apriFileSicuro(id);
   }
 
-  // --- PUBBLICHE PER IL PARENT ---
-
-  // Il componente padre la chiama subito dopo aver salvato un nuovo record
   async uploadAllPendingFiles(newEntityId: number): Promise<void> {
-    for (const file of this.pendingFiles) {
+    for (const file of this.pendingFiles()) {
       try {
         await this.allegatoService
           .upload(this.entityType, newEntityId, file)
@@ -172,7 +172,7 @@ export class GestioneAllegatiComponent implements OnInit {
         );
       }
     }
-    this.pendingFiles = [];
+    this.pendingFiles.set([]);
   }
 
   async mostraToast(msg: string, color: string) {

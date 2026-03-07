@@ -1,76 +1,97 @@
-<ion-list lines="none" class="custom-list">
-  <ion-item
-    *ngFor="let app of appuntamentiLista"
-    button
-    detail="false"
-    (click)="itemClick.emit(app)"
-    class="list-item animate-enter"
-  >
-    <div slot="start" class="list-icon-box box-warning">
-      <ion-icon name="calendar"></ion-icon>
+@if (isLoading) {
+  <ion-list lines="none" class="custom-list">
+    @for (i of [1, 2, 3, 4, 5]; track $index) {
+      <ion-item class="list-item">
+        <div slot="start" class="list-icon-box box-warning"></div>
+        <ion-label>
+          <h2>
+            <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
+          </h2>
+          <p>
+            <ion-skeleton-text animated style="width: 40%"></ion-skeleton-text>
+          </p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+} @else {
+  <ion-list lines="none" class="custom-list">
+    @for (app of appuntamentiLista; track app.id) {
+      <ion-item
+        button
+        detail="false"
+        (click)="itemClick.emit(app)"
+        class="list-item animate-enter"
+      >
+        <div slot="start" class="list-icon-box box-warning">
+          <ion-icon name="calendar"></ion-icon>
+        </div>
+        <ion-label>
+          <ion-note class="date-note">{{
+            app.data_ora | date: "dd/MM/yyyy HH:mm"
+          }}</ion-note>
+          <h2 class="item-title ion-text-wrap">
+            {{ app.descrizione || app.nome }}
+          </h2>
+          <div class="details-block">
+            <div class="detail-row">
+              <ion-icon name="location-outline"></ion-icon>
+              <span>{{
+                app.indirizzo?.via || app.commessa?.indirizzo?.via || "Via N.D."
+              }}</span>
+            </div>
+            <div class="detail-row">
+              <ion-icon name="person-outline"></ion-icon>
+              <span class="truncate-text">
+                {{
+                  app.cliente?.nome ||
+                    app.indirizzo?.cliente?.nome ||
+                    app.commessa?.cliente?.nome ||
+                    app.commessa?.indirizzo?.cliente?.nome ||
+                    "Intervento Libero"
+                }}
+              </span>
+            </div>
+          </div>
+        </ion-label>
+        <ion-icon
+          [name]="
+            app.cliente?.id ||
+            app.indirizzo?.cliente?.id ||
+            app.commessa?.cliente?.id ||
+            app.commessa?.indirizzo?.cliente?.id
+              ? 'chevron-forward'
+              : 'create-outline'
+          "
+          slot="end"
+          [color]="
+            app.cliente?.id ||
+            app.indirizzo?.cliente?.id ||
+            app.commessa?.cliente?.id ||
+            app.commessa?.indirizzo?.cliente?.id
+              ? 'medium'
+              : 'primary'
+          "
+          class="arrow-icon"
+        ></ion-icon>
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (appuntamentiLista.length === 0) {
+    <div class="empty-state">
+      <ion-icon
+        name="calendar-number-outline"
+        style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
+      ></ion-icon>
+      <p>Nessun appuntamento trovato.</p>
     </div>
-    <ion-label>
-      <ion-note class="date-note">{{
-        app.data_ora | date: "dd/MM/yyyy HH:mm"
-      }}</ion-note>
-      <h2 class="item-title ion-text-wrap">
-        {{ app.descrizione || app.nome }}
-      </h2>
-      <div class="details-block">
-        <div class="detail-row">
-          <ion-icon name="location-outline"></ion-icon>
-          <span>{{
-            app.indirizzo?.via || app.commessa?.indirizzo?.via || "Via N.D."
-          }}</span>
-        </div>
-        <div class="detail-row">
-          <ion-icon name="person-outline"></ion-icon>
-          <span class="truncate-text">
-            {{
-              app.cliente?.nome ||
-                app.indirizzo?.cliente?.nome ||
-                app.commessa?.cliente?.nome ||
-                app.commessa?.indirizzo?.cliente?.nome ||
-                "Intervento Libero"
-            }}
-          </span>
-        </div>
-      </div>
-    </ion-label>
-    <ion-icon
-      [name]="
-        app.cliente?.id ||
-        app.indirizzo?.cliente?.id ||
-        app.commessa?.cliente?.id ||
-        app.commessa?.indirizzo?.cliente?.id
-          ? 'chevron-forward'
-          : 'create-outline'
-      "
-      slot="end"
-      [color]="
-        app.cliente?.id ||
-        app.indirizzo?.cliente?.id ||
-        app.commessa?.cliente?.id ||
-        app.commessa?.indirizzo?.cliente?.id
-          ? 'medium'
-          : 'primary'
-      "
-      class="arrow-icon"
-    ></ion-icon>
-  </ion-item>
-</ion-list>
+  }
 
-<div *ngIf="appuntamentiLista.length === 0" class="empty-state">
-  <ion-icon
-    name="calendar-number-outline"
-    style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"
-  ></ion-icon>
-  <p>Nessun appuntamento trovato.</p>
-</div>
-
-<ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
-  <ion-infinite-scroll-content
-    loadingSpinner="bubbles"
-    loadingText="Caricamento appuntamenti..."
-  ></ion-infinite-scroll-content>
-</ion-infinite-scroll>
+  <ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
+    <ion-infinite-scroll-content
+      loadingSpinner="bubbles"
+      loadingText="Caricamento appuntamenti..."
+    ></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+}

@@ -1,6 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -17,15 +23,17 @@ import {
   ToastController,
   IonSegment,
   IonSegmentButton,
-  IonLabel, // <--- AGGIUNTO IonLabel
+  IonLabel,
+  IonSpinner,
+  IonFooter,
+  IonItem,
 } from '@ionic/angular/standalone';
 import { CommessaService } from '../../services/commessa.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { ClienteService } from '../../services/cliente.service';
-import { AllegatoService } from '../../services/allegato.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
 import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
-import { Indirizzo, Cliente } from '../../interfaces/models';
+import { Indirizzo, Cliente, Commessa } from '../../interfaces/models';
 
 import { addIcons } from 'ionicons';
 import {
@@ -39,6 +47,9 @@ import {
   add,
   personOutline,
   linkOutline,
+  saveOutline,
+  folderOutline,
+  pricetagOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -47,6 +58,9 @@ import {
   styleUrls: ['./nuova-commessa-globale-modal.component.scss'],
   standalone: true,
   imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -58,30 +72,31 @@ import {
     IonTextarea,
     IonSelect,
     IonSelectOption,
-    CommonModule,
-    FormsModule,
-    GenericSelectorComponent,
     IonSegment,
     IonSegmentButton,
     IonLabel,
-    GestioneAllegatiComponent, // <--- AGGIUNTO IonLabel E GestioneAllegatiComponent
+    IonSpinner,
+    IonFooter,
+    IonItem,
+    GenericSelectorComponent,
+    GestioneAllegatiComponent,
   ],
 })
 export class NuovaCommessaGlobaleModalComponent implements OnInit {
-  tipoCollegamento: 'cantiere' | 'cliente' | 'nessuno' = 'cantiere';
+  @Input() commessa?: Commessa;
+  @Input() cantiereIdPreselezionato?: number;
+  @Input() clienteIdPreselezionato?: number;
 
+  form!: FormGroup;
+  isSubmitting = false;
+
+  tipoCollegamento: 'cantiere' | 'cliente' | 'nessuno' = 'cantiere';
   listaCantieri: Indirizzo[] = [];
   selectedCantiereId: number | null = null;
-
   listaClienti: Cliente[] = [];
   selectedClienteId: number | null = null;
 
-  commessa = {
-    seriale: '',
-    descrizione: '',
-    valore_totale: null as number | null,
-    stato: 'APERTA',
-  };
+  isCollegamentoVincolato = false;
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -92,7 +107,7 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
     private indService: IndirizzoService,
     private clienteService: ClienteService,
     private commessaService: CommessaService,
-    private allegatoService: AllegatoService,
+    private fb: FormBuilder,
   ) {
     addIcons({
       locationOutline,
@@ -105,16 +120,42 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
       add,
       personOutline,
       linkOutline,
+      saveOutline,
+      folderOutline,
+      pricetagOutline,
     });
   }
 
   ngOnInit() {
-    this.caricaDati();
-  }
-
-  caricaDati() {
     this.indService.getAll().subscribe((res) => (this.listaCantieri = res));
     this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+
+    if (this.commessa) {
+      if (this.commessa.indirizzo?.id) {
+        this.tipoCollegamento = 'cantiere';
+        this.selectedCantiereId = this.commessa.indirizzo.id;
+      } else if (this.commessa.cliente?.id) {
+        this.tipoCollegamento = 'cliente';
+        this.selectedClienteId = this.commessa.cliente.id;
+      } else {
+        this.tipoCollegamento = 'nessuno';
+      }
+    } else if (this.cantiereIdPreselezionato) {
+      this.tipoCollegamento = 'cantiere';
+      this.selectedCantiereId = this.cantiereIdPreselezionato;
+      this.isCollegamentoVincolato = true;
+    } else if (this.clienteIdPreselezionato) {
+      this.tipoCollegamento = 'cliente';
+      this.selectedClienteId = this.clienteIdPreselezionato;
+      this.isCollegamentoVincolato = true;
+    }
+
+    this.form = this.fb.group({
+      seriale: [this.commessa?.seriale || '', [Validators.required]],
+      descrizione: [this.commessa?.descrizione || ''],
+      valore_totale: [this.commessa?.valore_totale || null],
+      stato: [this.commessa?.stato || 'APERTA', [Validators.required]],
+    });
   }
 
   chiudi() {
@@ -122,12 +163,7 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
   }
 
   isValid(): boolean {
-    if (
-      !this.commessa.seriale ||
-      this.commessa.seriale.trim() === '' ||
-      !this.commessa.stato
-    )
-      return false;
+    if (this.form.invalid) return false;
     if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId)
       return false;
     if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId)
@@ -136,9 +172,22 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
   }
 
   salva() {
-    const payload: any = { ...this.commessa };
-    payload.indirizzo = null;
-    payload.cliente = null;
+    if (!this.isValid()) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.isSubmitting = true;
+    const values = this.form.value;
+
+    const payload: any = {
+      seriale: values.seriale,
+      descrizione: values.descrizione,
+      valore_totale: values.valore_totale,
+      stato: values.stato,
+      indirizzo: null,
+      cliente: null,
+    };
 
     if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
       payload.indirizzo = { id: this.selectedCantiereId };
@@ -146,23 +195,42 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
       payload.cliente = { id: this.selectedClienteId };
     }
 
-    this.commessaService.create(payload).subscribe({
+    const req$ = this.commessa
+      ? this.commessaService.update(this.commessa.id, payload)
+      : this.commessaService.create(payload);
+
+    req$.subscribe({
       next: async (res) => {
         if (this.gestioneAllegati) {
           await this.gestioneAllegati.uploadAllPendingFiles(res.id);
         }
-        this.modalCtrl.dismiss({ creato: true, data: res });
+        this.isSubmitting = false;
+        this.modalCtrl.dismiss({
+          [this.commessa ? 'aggiornato' : 'creato']: true,
+          data: res,
+        });
       },
-      error: (err) => this.showToast('Errore creazione commessa.', 'danger'),
+      error: async (err) => {
+        this.isSubmitting = false;
+        const msg = err.error?.message || 'Errore salvataggio commessa.';
+        const toast = await this.toastCtrl.create({
+          message: Array.isArray(msg) ? msg[0] : msg,
+          color: 'danger',
+          duration: 3000,
+        });
+        toast.present();
+      },
     });
   }
 
-  async showToast(msg: string, color: string) {
-    const toast = await this.toastCtrl.create({
-      message: msg,
-      color,
-      duration: 3000,
-    });
-    toast.present();
+  getPreselectedName(): string {
+    if (this.tipoCollegamento === 'cantiere') {
+      const cant = this.listaCantieri.find(
+        (c) => c.id === this.selectedCantiereId,
+      );
+      return cant ? `${cant.via} ${cant.civico}` : 'Cantiere Preselezionato';
+    }
+    const cli = this.listaClienti.find((c) => c.id === this.selectedClienteId);
+    return cli ? cli.nome : 'Cliente Preselezionato';
   }
 }

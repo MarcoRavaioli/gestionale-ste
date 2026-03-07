@@ -1,48 +1,29 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar color="primary">
-    <ion-title>
-      <div class="header-content">
-        <span>Dashboard</span>
-        <div style="display: flex; align-items: center">
-          <ion-button *ngIf="isManager" fill="clear" (click)="goToCharts()">
-            <ion-icon
-              name="stats-chart"
-              slot="icon-only"
-              color="light"
-            ></ion-icon>
-          </ion-button>
-
-          <ion-button fill="clear" (click)="openProfilo()">
-            <ion-icon
-              name="person-circle-outline"
-              slot="icon-only"
-              color="light"
-              style="font-size: 1.6rem"
-            ></ion-icon>
-          </ion-button>
-
-          <ion-button fill="clear" (click)="logout()">
-            <ion-icon
-              name="log-out-outline"
-              slot="icon-only"
-              color="light"
-            ></ion-icon>
-          </ion-button>
-        </div>
-      </div>
-    </ion-title>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      @if (isManager()) {
+      <ion-button fill="clear" (click)="goToCharts()">
+        <ion-icon name="stats-chart" slot="icon-only" color="light"></ion-icon>
+      </ion-button>
+      }
+      <ion-button fill="clear" (click)="openProfilo()">
+        <ion-icon
+          name="person-circle-outline"
+          slot="icon-only"
+          color="light"
+          style="font-size: 1.6rem"
+        ></ion-icon>
+      </ion-button>
+      <ion-button fill="clear" (click)="logout()">
+        <ion-icon
+          name="log-out-outline"
+          slot="icon-only"
+          color="light"
+        ></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
-
-  <div
-    class="welcome-header ion-padding-horizontal ion-padding-bottom"
-    style="white-space: normal; overflow: visible"
-  >
-    <h1 class="welcome-text">
-      Bentornato,<br />
-      {{ userNome }}
-    </h1>
-    <p class="subtitle-text">Panoramica operativa</p>
-  </div>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="light-bg">
@@ -50,17 +31,20 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <div class="section-header ion-padding-horizontal">
-    <h3>Oggi</h3>
-    <span class="badge-count">{{ appuntamentiOggi.length }}</span>
+  <div class="welcome-card">
+    <h1>Bentornato, <br />{{ userNome() }}</h1>
+    <p>Panoramica operativa di oggi</p>
   </div>
 
-  <div
-    class="horizontal-scroll-container"
-    *ngIf="appuntamentiOggi.length > 0; else noToday"
-  >
+  <div class="section-header ion-padding-horizontal">
+    <h3>Oggi</h3>
+    <span class="badge-count">{{ appuntamentiOggi().length }}</span>
+  </div>
+
+  @if (appuntamentiOggi().length > 0) {
+  <div class="horizontal-scroll-container">
+    @for (app of appuntamentiOggi(); track app.id) {
     <div
-      *ngFor="let app of appuntamentiOggi"
       class="today-square-card ion-activatable ripple-parent"
       (click)="goToAppuntamento(app)"
     >
@@ -79,38 +63,39 @@
           >{{ app.commessa?.indirizzo?.via }}, {{ app.commessa?.indirizzo?.citta
           }}</span
         >
-        <p class="desc" *ngIf="app.descrizione">"{{ app.descrizione }}"</p>
-        <div class="info-row" *ngIf="app.commessa?.indirizzo?.cliente">
+        @if (app.descrizione) {
+        <p class="desc">"{{ app.descrizione }}"</p>
+        } @if (app.commessa?.indirizzo?.cliente) {
+        <div class="info-row">
           <ion-icon name="person-outline"></ion-icon>
           <span class="truncate"
             >{{ app.commessa?.indirizzo?.cliente?.nome }}</span
           >
         </div>
-        <div class="info-row" *ngIf="app.commessa">
+        } @if (app.commessa) {
+        <div class="info-row">
           <ion-icon name="briefcase-outline"></ion-icon>
           <span class="truncate">Comm. {{ app.commessa.seriale }}</span>
         </div>
-        <div class="info-row location" *ngIf="app.commessa?.indirizzo"></div>
+        }
       </div>
     </div>
+    }
     <div style="min-width: 10px"></div>
   </div>
-
-  <ng-template #noToday>
-    <div class="empty-state-mini"><p>Nessun impegno oggi.</p></div>
-  </ng-template>
+  } @else {
+  <div class="empty-state-mini"><p>Nessun impegno oggi.</p></div>
+  }
 
   <div class="section-header ion-padding-horizontal">
     <h3>Prossimi 7 Giorni</h3>
   </div>
 
-  <div
-    class="horizontal-scroll-container"
-    *ngIf="appuntamentiSettimana.length > 0; else noWeek"
-  >
+  @if (appuntamentiSettimana().length > 0) {
+  <div class="horizontal-scroll-container">
+    @for (app of appuntamentiSettimana(); track app.id) {
     <div
       class="week-square-card ion-activatable ripple-parent"
-      *ngFor="let app of appuntamentiSettimana"
       (click)="goToAppuntamento(app)"
     >
       <ion-ripple-effect></ion-ripple-effect>
@@ -121,228 +106,215 @@
       <div class="week-info">
         <span class="time">{{ app.data_ora | date:'HH:mm' }}</span>
         <h4>{{ app.commessa?.descrizione }}</h4>
-        <div class="week-location" *ngIf="app.commessa?.indirizzo">
+        @if (app.commessa?.indirizzo) {
+        <div class="week-location">
           <ion-icon name="location-outline"></ion-icon>
           <span>{{ app.commessa?.indirizzo?.citta }}</span>
         </div>
-        <div class="week-location" *ngIf="!app.commessa?.indirizzo">
+        } @else {
+        <div class="week-location">
           <ion-icon name="help-circle-outline"></ion-icon>
           <span>No ind.</span>
         </div>
+        }
       </div>
     </div>
+    }
     <div style="min-width: 10px"></div>
   </div>
-
-  <ng-template #noWeek>
-    <div class="empty-state-mini"><p>Agenda libera per la settimana.</p></div>
-  </ng-template>
-
-  <div *ngIf="isManager">
-    <div class="section-header ion-padding-horizontal">
-      <h3>Accesso Rapido</h3>
+  } @else {
+  <div class="empty-state-mini"><p>Agenda libera per la settimana.</p></div>
+  } @if (isManager()) {
+  <div class="section-header ion-padding-horizontal">
+    <h3>Accesso Rapido</h3>
+  </div>
+  <div class="quick-actions-grid ion-padding-horizontal">
+    <div class="action-card blue" (click)="openModal('appuntamento')">
+      <div class="icon-box"><ion-icon name="calendar"></ion-icon></div>
+      <div class="label"><span>Nuovo</span><strong>Appuntamento</strong></div>
     </div>
-    <div class="quick-actions-grid ion-padding-horizontal">
-      <div class="action-card blue" (click)="openModal('appuntamento')">
-        <div class="icon-box"><ion-icon name="calendar"></ion-icon></div>
-        <div class="label"><span>Nuovo</span><strong>Appuntamento</strong></div>
+    <div class="action-card orange" (click)="openModal('commessa')">
+      <div class="icon-box"><ion-icon name="briefcase"></ion-icon></div>
+      <div class="label"><span>Nuova</span><strong>Commessa</strong></div>
+    </div>
+    <div class="action-card purple" (click)="openModal('cantiere')">
+      <div class="icon-box"><ion-icon name="construct"></ion-icon></div>
+      <div class="label"><span>Nuovo</span><strong>Cantiere</strong></div>
+    </div>
+    <div class="action-card green" (click)="openModal('fattura')">
+      <div class="icon-box"><ion-icon name="receipt"></ion-icon></div>
+      <div class="label"><span>Nuova</span><strong>Fattura</strong></div>
+    </div>
+    @if (isAdmin()) {
+    <div class="action-card dark" (click)="openNuovoCollaboratore()">
+      <div class="icon-box" style="background: var(--ion-color-dark)">
+        <ion-icon name="person-add"></ion-icon>
       </div>
-      <div class="action-card orange" (click)="openModal('commessa')">
-        <div class="icon-box"><ion-icon name="briefcase"></ion-icon></div>
-        <div class="label"><span>Nuova</span><strong>Commessa</strong></div>
-      </div>
-      <div class="action-card purple" (click)="openModal('cantiere')">
-        <div class="icon-box"><ion-icon name="construct"></ion-icon></div>
-        <div class="label"><span>Nuovo</span><strong>Cantiere</strong></div>
-      </div>
-      <div class="action-card green" (click)="openModal('fattura')">
-        <div class="icon-box"><ion-icon name="receipt"></ion-icon></div>
-        <div class="label"><span>Nuova</span><strong>Fattura</strong></div>
-      </div>
-      <div
-        class="action-card dark"
-        *ngIf="isAdmin"
-        (click)="openNuovoCollaboratore()"
-      >
-        <div class="icon-box" style="background: var(--ion-color-dark)">
-          <ion-icon name="person-add"></ion-icon>
-        </div>
-        <div class="label">
-          <span>Gestione</span><strong>Nuovo Utente</strong>
-        </div>
+      <div class="label">
+        <span>Gestione</span><strong>Nuovo Utente</strong>
       </div>
     </div>
+    }
   </div>
 
-  <div *ngIf="isManager">
-    <div class="section-header ion-padding-horizontal">
-      <h3>Resoconto Team (Mese)</h3>
-      <ion-button
-        fill="clear"
-        size="small"
-        (click)="toggleTeamPrivacy()"
-        color="medium"
-      >
-        <ion-icon
-          [name]="mostraTeam ? 'eye-off-outline' : 'eye-outline'"
-          slot="icon-only"
-        ></ion-icon>
-      </ion-button>
-    </div>
-
-    <div
-      class="team-status-container ion-padding-horizontal"
-      *ngIf="mostraTeam"
-    >
-      <div class="team-summary-card">
-        <div class="summary-left">
-          <ion-icon name="wallet-outline"></ion-icon>
-          <div class="sum-text">
-            <span>Stima Costi Mese</span>
-            <strong>€ {{ totaleCostoTeam | number:'1.0-0' }}</strong>
-          </div>
-        </div>
-        <div class="summary-right">
-          <span class="count">{{ teamStats.length }}</span>
-          <small>Attivi</small>
-        </div>
-      </div>
-
-      <div class="mini-team-list" *ngIf="teamStats.length > 0">
-        <div class="mini-collab-row" *ngFor="let col of teamStats">
-          <div class="avatar-mini">{{ col.nome.charAt(0) }}</div>
-          <div class="col-info">
-            <span class="name">{{ col.nome }}</span>
-            <span class="hours">{{ col.totaleOre }} ore</span>
-          </div>
-          <div class="col-cost">€ {{ col.costoTotale | number:'1.0-0' }}</div>
-        </div>
-      </div>
-
-      <div class="mini-empty" *ngIf="teamStats.length === 0">
-        Nessun dato per questo mese.
-      </div>
-    </div>
-
-    <div
-      class="privacy-placeholder ion-padding-horizontal"
-      *ngIf="!mostraTeam"
+  <div class="section-header ion-padding-horizontal">
+    <h3>Resoconto Team (Mese)</h3>
+    <ion-button
+      fill="clear"
+      size="small"
       (click)="toggleTeamPrivacy()"
+      color="medium"
     >
-      <div class="privacy-box">
-        <ion-icon name="people-outline"></ion-icon>
-        <p>Dati Team nascosti</p>
-        <span>Tocca per mostrare</span>
-      </div>
-    </div>
+      <ion-icon
+        [name]="mostraTeam() ? 'eye-off-outline' : 'eye-outline'"
+        slot="icon-only"
+      ></ion-icon>
+    </ion-button>
   </div>
 
-  <div *ngIf="isManager">
-    <div class="section-header ion-padding-horizontal">
-      <h3>Stato Fatture</h3>
-      <ion-button
-        fill="clear"
-        size="small"
-        (click)="togglePrivacy()"
-        color="medium"
-      >
-        <ion-icon
-          [name]="mostraFatture ? 'eye-off-outline' : 'eye-outline'"
-          slot="icon-only"
-        ></ion-icon>
-      </ion-button>
-    </div>
-
-    <div
-      class="invoices-status-container ion-padding-horizontal"
-      *ngIf="mostraFatture"
-    >
-      <div class="status-card warning">
-        <div class="card-top">
-          <div class="title-grp">
-            <ion-icon name="hourglass-outline"></ion-icon>
-            <span>In Scadenza (30gg)</span>
-          </div>
-        </div>
-        <div class="invoice-list-mini">
-          <div *ngIf="fattureInScadenza.length === 0" class="mini-empty">
-            Nessuna scadenza imminente.
-          </div>
-          <div
-            class="invoice-row"
-            *ngFor="let f of fattureInScadenza | slice:0:3"
-            (click)="apriDettaglioFattura(f)"
-          >
-            <ion-icon
-              [name]="f.tipo === 'entrata' ? 'arrow-up-circle' : 'arrow-down-circle'"
-              [color]="f.tipo === 'entrata' ? 'success' : 'danger'"
-              class="direction-icon"
-            ></ion-icon>
-            <div class="row-left">
-              <span class="name">{{ f.cliente?.nome || 'N.D.' }}</span>
-              <span class="date-info warning"
-                >Scade il {{ f.data_scadenza | date:'dd/MM' }}</span
-              >
-            </div>
-            <div class="row-right">
-              <span class="amount" [class.negative]="f.tipo === 'uscita'"
-                >€ {{ f.totale | number:'1.0-0' }}</span
-              >
-            </div>
-          </div>
+  @if (mostraTeam()) {
+  <div class="team-status-container ion-padding-horizontal">
+    <div class="team-summary-card">
+      <div class="summary-left">
+        <ion-icon name="wallet-outline"></ion-icon>
+        <div class="sum-text">
+          <span>Stima Costi Mese</span>
+          <strong>€ {{ totaleCostoTeam() | number:'1.0-0' }}</strong>
         </div>
       </div>
-
-      <div class="status-card danger">
-        <div class="card-top">
-          <div class="title-grp">
-            <ion-icon name="alert-circle"></ion-icon>
-            <span>SCADUTE (Da Incassare)</span>
-          </div>
-        </div>
-        <div class="invoice-list-mini">
-          <div *ngIf="fattureScadute.length === 0" class="mini-empty">
-            Ottimo! Nessun insoluto.
-          </div>
-          <div
-            class="invoice-row"
-            *ngFor="let f of fattureScadute | slice:0:3"
-            (click)="apriDettaglioFattura(f)"
-          >
-            <ion-icon
-              [name]="f.tipo === 'entrata' ? 'arrow-up-circle' : 'arrow-down-circle'"
-              [color]="f.tipo === 'entrata' ? 'success' : 'danger'"
-              class="direction-icon"
-            ></ion-icon>
-            <div class="row-left">
-              <span class="name">{{ f.cliente?.nome || 'N.D.' }}</span>
-              <span class="date-info danger"
-                >Scaduta il {{ f.data_scadenza | date:'dd/MM' }}</span
-              >
-            </div>
-            <div class="row-right">
-              <span class="amount" [class.negative]="f.tipo === 'uscita'"
-                >€ {{ f.totale | number:'1.0-0' }}</span
-              >
-            </div>
-          </div>
-          <div class="see-more" *ngIf="fattureScadute.length > 3">
-            + altre {{ fattureScadute.length - 3 }}
-          </div>
-        </div>
+      <div class="summary-right">
+        <span class="count">{{ teamStats().length }}</span>
+        <small>Attivi</small>
       </div>
     </div>
 
-    <div
-      class="privacy-placeholder ion-padding-horizontal"
-      *ngIf="!mostraFatture"
+    @if (teamStats().length > 0) {
+    <div class="mini-team-list">
+      @for (col of teamStats(); track col.id) {
+      <div class="mini-collab-row">
+        <div class="avatar-mini">{{ col.nome?.charAt(0) || '?' }}</div>
+        <div class="col-info">
+          <span class="name">{{ col.nome }}</span>
+          <span class="hours">{{ col.totaleOre }} ore</span>
+        </div>
+        <div class="col-cost">€ {{ col.costoTotale | number:'1.0-0' }}</div>
+      </div>
+      }
+    </div>
+    } @else {
+    <div class="mini-empty">Nessun dato per questo mese.</div>
+    }
+  </div>
+  } @else {
+  <div
+    class="privacy-placeholder ion-padding-horizontal"
+    (click)="toggleTeamPrivacy()"
+  >
+    <div class="privacy-box">
+      <ion-icon name="people-outline"></ion-icon>
+      <p>Dati Team nascosti</p>
+      <span>Tocca per mostrare</span>
+    </div>
+  </div>
+  }
+
+  <div class="section-header ion-padding-horizontal">
+    <h3>Stato Fatture</h3>
+    <ion-button
+      fill="clear"
+      size="small"
       (click)="togglePrivacy()"
+      color="medium"
     >
-      <div class="privacy-box">
-        <ion-icon name="lock-closed-outline"></ion-icon>
-        <p>Dati sensibili nascosti</p>
-        <span>Tocca per mostrare</span>
+      <ion-icon
+        [name]="mostraFatture() ? 'eye-off-outline' : 'eye-outline'"
+        slot="icon-only"
+      ></ion-icon>
+    </ion-button>
+  </div>
+
+  @if (mostraFatture()) {
+  <div class="invoices-status-container ion-padding-horizontal">
+    <div class="status-card warning">
+      <div class="card-top">
+        <div class="title-grp">
+          <ion-icon name="hourglass-outline"></ion-icon>
+          <span>In Scadenza (30gg)</span>
+        </div>
+      </div>
+      <div class="invoice-list-mini">
+        @if (fattureInScadenza().length === 0) {
+        <div class="mini-empty">Nessuna scadenza imminente.</div>
+        } @for (f of fattureInScadenza() | slice:0:3; track f.id) {
+        <div class="invoice-row" (click)="apriDettaglioFattura(f)">
+          <ion-icon
+            [name]="f.tipo === 'entrata' ? 'arrow-up-circle' : 'arrow-down-circle'"
+            [color]="f.tipo === 'entrata' ? 'success' : 'danger'"
+            class="direction-icon"
+          ></ion-icon>
+          <div class="row-left">
+            <span class="name">{{ f.cliente?.nome || 'N.D.' }}</span>
+            <span class="date-info warning"
+              >Scade il {{ f.data_scadenza | date:'dd/MM' }}</span
+            >
+          </div>
+          <div class="row-right">
+            <span class="amount" [class.negative]="f.tipo === 'uscita'"
+              >€ {{ f.totale | number:'1.0-0' }}</span
+            >
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <div class="status-card danger">
+      <div class="card-top">
+        <div class="title-grp">
+          <ion-icon name="alert-circle"></ion-icon>
+          <span>SCADUTE (Da Incassare)</span>
+        </div>
+      </div>
+      <div class="invoice-list-mini">
+        @if (fattureScadute().length === 0) {
+        <div class="mini-empty">Ottimo! Nessun insoluto.</div>
+        } @for (f of fattureScadute() | slice:0:3; track f.id) {
+        <div class="invoice-row" (click)="apriDettaglioFattura(f)">
+          <ion-icon
+            [name]="f.tipo === 'entrata' ? 'arrow-up-circle' : 'arrow-down-circle'"
+            [color]="f.tipo === 'entrata' ? 'success' : 'danger'"
+            class="direction-icon"
+          ></ion-icon>
+          <div class="row-left">
+            <span class="name">{{ f.cliente?.nome || 'N.D.' }}</span>
+            <span class="date-info danger"
+              >Scaduta il {{ f.data_scadenza | date:'dd/MM' }}</span
+            >
+          </div>
+          <div class="row-right">
+            <span class="amount" [class.negative]="f.tipo === 'uscita'"
+              >€ {{ f.totale | number:'1.0-0' }}</span
+            >
+          </div>
+        </div>
+        } @if (fattureScadute().length > 3) {
+        <div class="see-more">+ altre {{ fattureScadute().length - 3 }}</div>
+        }
       </div>
     </div>
   </div>
+  } @else {
+  <div
+    class="privacy-placeholder ion-padding-horizontal"
+    (click)="togglePrivacy()"
+  >
+    <div class="privacy-box">
+      <ion-icon name="lock-closed-outline"></ion-icon>
+      <p>Dati sensibili nascosti</p>
+      <span>Tocca per mostrare</span>
+    </div>
+  </div>
+  } }
+
+  <div style="height: 40px"></div>
 </ion-content>

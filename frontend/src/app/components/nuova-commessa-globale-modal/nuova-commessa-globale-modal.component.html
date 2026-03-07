@@ -1,129 +1,159 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Nuova Commessa</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar class="modal-toolbar">
+    <ion-title>{{
+      commessa ? "Modifica Commessa" : "Nuova Commessa"
+    }}</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="chiudi()">Annulla</ion-button>
+      <ion-button (click)="chiudi()" color="medium">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="section-box">
-    <div class="header-toggle">
-      <h3><ion-icon name="link-outline"></ion-icon> Collegamento</h3>
+<ion-content class="modal-content">
+  <form [formGroup]="form" (ngSubmit)="salva()" class="modern-form">
+    <div class="form-section">
+      <div class="section-title">Collegamento</div>
+
+      @if (isCollegamentoVincolato) {
+        <ion-item lines="none" class="readonly-item">
+          <ion-icon name="link-outline" slot="start" color="primary"></ion-icon>
+          <ion-label>
+            <p>Contesto Vincolato ({{ tipoCollegamento | titlecase }})</p>
+            <h2>{{ getPreselectedName() }}</h2>
+          </ion-label>
+        </ion-item>
+      } @else {
+        <ion-segment
+          [(ngModel)]="tipoCollegamento"
+          [ngModelOptions]="{ standalone: true }"
+          mode="ios"
+          class="ion-margin-bottom"
+        >
+          <ion-segment-button value="cantiere">
+            <ion-label>Cantiere</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="cliente">
+            <ion-label>Cliente</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="nessuno">
+            <ion-label>Interna</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+
+        @if (tipoCollegamento === "cantiere") {
+          <div class="fade-in">
+            <app-generic-selector
+              label="Cerca e seleziona Indirizzo Cantiere..."
+              type="cantiere"
+              [items]="listaCantieri"
+              [(selectedId)]="selectedCantiereId"
+            ></app-generic-selector>
+          </div>
+        }
+        @if (tipoCollegamento === "cliente") {
+          <div class="fade-in">
+            <app-generic-selector
+              label="Cerca e seleziona Cliente..."
+              type="cliente"
+              [items]="listaClienti"
+              [(selectedId)]="selectedClienteId"
+            ></app-generic-selector>
+            <p class="helper-text">
+              Usa questa opzione se la commessa non ha un cantiere fisico ma è
+              intestata a un cliente.
+            </p>
+          </div>
+        }
+        @if (tipoCollegamento === "nessuno") {
+          <div class="fade-in">
+            <p class="helper-text text-center">
+              Commessa di gestione interna. Nessun collegamento.
+            </p>
+          </div>
+        }
+      }
     </div>
 
-    <ion-segment [(ngModel)]="tipoCollegamento" class="ion-margin-bottom">
-      <ion-segment-button value="cantiere">
-        <ion-label>Cantiere</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="cliente">
-        <ion-label>Solo Cliente</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="nessuno">
-        <ion-label>Interna</ion-label>
-      </ion-segment-button>
-    </ion-segment>
+    <div class="form-section">
+      <div class="section-title">Dettagli Commessa</div>
 
-    <div *ngIf="tipoCollegamento === 'cantiere'" class="fade-in">
-      <app-generic-selector
-        label="Cerca e seleziona Indirizzo Cantiere..."
-        type="cantiere"
-        [items]="listaCantieri"
-        [(selectedId)]="selectedCantiereId"
-      >
-      </app-generic-selector>
-    </div>
-
-    <div *ngIf="tipoCollegamento === 'cliente'" class="fade-in">
-      <app-generic-selector
-        label="Cerca e seleziona Cliente..."
-        type="cliente"
-        [items]="listaClienti"
-        [(selectedId)]="selectedClienteId"
-      >
-      </app-generic-selector>
-      <p
-        style="
-          font-size: 0.8rem;
-          color: var(--ion-color-medium);
-          margin-top: 8px;
-        "
-      >
-        Usa questa opzione se la commessa non ha un cantiere fisico ma è
-        intestata a un cliente.
-      </p>
-    </div>
-
-    <div *ngIf="tipoCollegamento === 'nessuno'" class="fade-in">
-      <p
-        style="
-          font-size: 0.8rem;
-          color: var(--ion-color-medium);
-          margin-top: 8px;
-          text-align: center;
-        "
-      >
-        Commessa di gestione interna. Nessun collegamento.
-      </p>
-    </div>
-  </div>
-
-  <div class="section-box ion-margin-top">
-    <h3><ion-icon name="documents-outline"></ion-icon> Dettagli Commessa</h3>
-
-    <div class="form-grid">
-      <ion-input
-        label="Seriale (es. A123456) *"
-        label-placement="floating"
-        fill="outline"
-        [(ngModel)]="commessa.seriale"
-      ></ion-input>
-      <ion-textarea
-        label="Descrizione Lavoro"
-        label-placement="floating"
-        fill="outline"
-        rows="2"
-        [(ngModel)]="commessa.descrizione"
-      ></ion-textarea>
-
-      <div style="display: flex; gap: 10px">
+      <ion-item class="modern-input" lines="none">
+        <ion-icon
+          name="folder-outline"
+          slot="start"
+          color="tertiary"
+        ></ion-icon>
         <ion-input
+          formControlName="seriale"
+          label="Seriale (es. A123456) *"
+          label-placement="floating"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item class="modern-input" lines="none">
+        <ion-icon
+          name="pricetag-outline"
+          slot="start"
+          color="medium"
+        ></ion-icon>
+        <ion-input
+          formControlName="valore_totale"
           label="Valore Tot. (€)"
           type="number"
           inputmode="decimal"
           label-placement="floating"
-          fill="outline"
-          [(ngModel)]="commessa.valore_totale"
         ></ion-input>
+      </ion-item>
+
+      <ion-item class="modern-input" lines="none">
         <ion-select
+          formControlName="stato"
           label="Stato *"
           label-placement="floating"
-          fill="outline"
-          [(ngModel)]="commessa.stato"
         >
           <ion-select-option value="APERTA">APERTA</ion-select-option>
           <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
           <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
         </ion-select>
-      </div>
+      </ion-item>
 
-      <app-gestione-allegati
-        [entityType]="'commessa'"
-        [entityId]="null"
-        [allegatiEsistenti]="[]"
-      >
-      </app-gestione-allegati>
+      <ion-item class="modern-input" lines="none">
+        <ion-textarea
+          formControlName="descrizione"
+          label="Descrizione Lavoro"
+          label-placement="floating"
+          rows="2"
+        ></ion-textarea>
+      </ion-item>
     </div>
-  </div>
 
-  <ion-button
-    expand="block"
-    class="ion-margin-top"
-    size="large"
-    (click)="salva()"
-    [disabled]="!isValid()"
-  >
-    CREA COMMESSA
-  </ion-button>
+    <div class="form-section allegati-section">
+      <div class="section-title">Documenti e Allegati</div>
+      <app-gestione-allegati
+        entityType="commessa"
+        [entityId]="commessa?.id"
+        [allegatiEsistenti]="commessa?.allegati || []"
+      ></app-gestione-allegati>
+    </div>
+  </form>
 </ion-content>
+
+<ion-footer class="ion-no-border modal-footer">
+  <ion-toolbar>
+    <ion-button
+      expand="block"
+      class="submit-btn"
+      (click)="salva()"
+      [disabled]="!isValid() || isSubmitting"
+    >
+      @if (isSubmitting) {
+        <ion-spinner name="crescent"></ion-spinner>
+      } @else {
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        {{ commessa ? "AGGIORNA COMMESSA" : "CREA COMMESSA" }}
+      }
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

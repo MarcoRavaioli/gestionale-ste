@@ -1,49 +1,47 @@
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar color="primary">
-    <ion-title>Archivio</ion-title>
+    <ion-title>Archivio Globale</ion-title>
   </ion-toolbar>
 
-  <div class="categories-header">
-    <ion-chip
-      [class.chip-active]="vistaCorrente === 'clienti'"
-      (click)="cambiaVista('clienti')"
-      ><ion-label>Committenti</ion-label></ion-chip
+  <ion-toolbar color="primary">
+    <ion-segment
+      [value]="vistaCorrente()"
+      (ionChange)="cambiaVista($event)"
+      scrollable="true"
+      mode="ios"
+      class="archive-segment"
     >
-    <ion-chip
-      [class.chip-active]="vistaCorrente === 'cantieri'"
-      (click)="cambiaVista('cantieri')"
-      ><ion-label>Indiriz. Cant.</ion-label></ion-chip
-    >
-    <ion-chip
-      [class.chip-active]="vistaCorrente === 'commesse'"
-      (click)="cambiaVista('commesse')"
-      ><ion-label>Commesse</ion-label></ion-chip
-    >
-    <ion-chip
-      [class.chip-active]="vistaCorrente === 'appuntamenti'"
-      (click)="cambiaVista('appuntamenti')"
-      ><ion-label>Appuntamenti</ion-label></ion-chip
-    >
-    <ion-chip
-      [class.chip-active]="vistaCorrente === 'documenti'"
-      (click)="cambiaVista('documenti')"
-      ><ion-label>Documenti</ion-label></ion-chip
-    >
-  </div>
+      <ion-segment-button value="clienti">
+        <ion-label>Clienti</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="cantieri">
+        <ion-label>Cantieri</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="commesse">
+        <ion-label>Commesse</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="appuntamenti">
+        <ion-label>Appuntamenti</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="documenti">
+        <ion-label>Documenti</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
 
   <ion-toolbar color="primary">
     <div class="search-container">
       <ion-searchbar
         [placeholder]="getPlaceholder()"
-        [ngModel]="ricerca"
+        [ngModel]="ricerca()"
         (ionInput)="gestisciRicerca($any($event).detail.value)"
         animated="true"
         class="custom-searchbar"
       >
       </ion-searchbar>
-      <ion-button fill="clear" color="light" (click)="apriImpostazioni($event)"
-        ><ion-icon slot="icon-only" name="filter-outline"></ion-icon
-      ></ion-button>
+      <ion-button fill="clear" color="light" (click)="apriImpostazioni($event)">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      </ion-button>
     </div>
   </ion-toolbar>
 </ion-header>
@@ -53,11 +51,13 @@
     <ion-refresher-content></ion-refresher-content>
   </ion-refresher>
 
-  <ion-list lines="none" class="custom-list" *ngIf="isLoading">
-    <ion-item *ngFor="let i of [1,2,3,4,5]" class="list-item">
-      <ion-avatar slot="start"
-        ><ion-skeleton-text animated></ion-skeleton-text
-      ></ion-avatar>
+  @if (isLoading()) {
+  <ion-list lines="none" class="custom-list">
+    @for (i of [1,2,3,4,5]; track $index) {
+    <ion-item class="list-item">
+      <ion-avatar slot="start">
+        <ion-skeleton-text animated></ion-skeleton-text>
+      </ion-avatar>
       <ion-label>
         <h2>
           <ion-skeleton-text animated style="width: 60%"></ion-skeleton-text>
@@ -67,82 +67,63 @@
         </p>
       </ion-label>
     </ion-item>
+    }
   </ion-list>
+  } @else { @switch (vistaCorrente()) { @case ('clienti') {
+  <app-lista-clienti
+    [clienti]="clientiVisualizzati()"
+    [isLoading]="isLoading()"
+    [isAllLoaded]="clientiPage() >= clientiTotalPages()"
+    (loadMore)="caricaAltraPaginaClienti($event)"
+    (itemClick)="goToDettaglioElemento($event, 'cliente')"
+    (addClick)="apriNuovoCliente()"
+  ></app-lista-clienti>
+  } @case ('cantieri') {
+  <app-lista-cantieri
+    [cantieri]="cantieriLista()"
+    [isLoading]="isLoading()"
+    [isAllLoaded]="cantieriPage() >= cantieriTotalPages()"
+    (loadMore)="caricaAltraPaginaCantieri($event)"
+    (itemClick)="goToDettaglioElemento($event, 'cantiere')"
+    (addClick)="apriNuovoCantiere()"
+  ></app-lista-cantieri>
+  } @case ('commesse') {
+  <app-lista-commesse
+    [commesseLista]="commesseLista()"
+    [isLoading]="isLoading()"
+    [isAllLoaded]="commessePage() >= commesseTotalPages()"
+    (loadMore)="caricaAltraPaginaCommesse($event)"
+    (itemClick)="goToDettaglioElemento($event, 'commessa')"
+  ></app-lista-commesse>
+  } @case ('appuntamenti') {
+  <app-lista-appuntamenti
+    [appuntamentiLista]="appuntamentiLista()"
+    [isLoading]="isLoading()"
+    [isAllLoaded]="appuntamentiPage() >= appuntamentiTotalPages()"
+    (loadMore)="caricaAltraPaginaAppuntamenti($event)"
+    (itemClick)="goToDettaglioElemento($event, 'appuntamento')"
+  ></app-lista-appuntamenti>
+  } @case ('documenti') {
+  <app-lista-documenti #listaDoc></app-lista-documenti>
+  } } }
 
-  <div *ngIf="!isLoading">
-    <div *ngIf="vistaCorrente === 'clienti'">
-      <app-lista-clienti
-        [clienti]="clientiVisualizzati"
-        [isLoading]="isLoading"
-        [isAllLoaded]="clientiPage >= clientiTotalPages"
-        (loadMore)="caricaAltraPaginaClienti($event)"
-        (itemClick)="goToDettaglioElemento($event, 'cliente')"
-        (addClick)="apriNuovoCliente()"
-      >
-      </app-lista-clienti>
-    </div>
-
-    <div *ngIf="vistaCorrente === 'cantieri'">
-      <app-lista-cantieri
-        [cantieri]="cantieriLista"
-        [isLoading]="isLoading"
-        [isAllLoaded]="cantieriPage >= cantieriTotalPages"
-        (loadMore)="caricaAltraPaginaCantieri($event)"
-        (itemClick)="goToDettaglioElemento($event, 'cantiere')"
-        (addClick)="apriNuovoCantiere()"
-      >
-      </app-lista-cantieri>
-    </div>
-
-    <div *ngIf="vistaCorrente === 'commesse'">
-      <app-lista-commesse
-        [commesseLista]="commesseLista"
-        [isLoading]="isLoading"
-        [isAllLoaded]="commessePage >= commesseTotalPages"
-        (loadMore)="caricaAltraPaginaCommesse($event)"
-        (itemClick)="goToDettaglioElemento($event, 'commessa')"
-      >
-      </app-lista-commesse>
-    </div>
-
-    <div *ngIf="vistaCorrente === 'appuntamenti'">
-      <app-lista-appuntamenti
-        [appuntamentiLista]="appuntamentiLista"
-        [isLoading]="isLoading"
-        [isAllLoaded]="appuntamentiPage >= appuntamentiTotalPages"
-        (loadMore)="caricaAltraPaginaAppuntamenti($event)"
-        (itemClick)="goToDettaglioElemento($event, 'appuntamento')"
-      >
-      </app-lista-appuntamenti>
-    </div>
-
-    <div *ngIf="vistaCorrente === 'documenti'">
-      <app-lista-documenti #listaDoc> </app-lista-documenti>
-    </div>
-  </div>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'clienti'"
-      (click)="apriNuovoCliente()"
-      ><ion-icon name="person-add-outline"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'cantieri'"
-      (click)="apriNuovoCantiere()"
-      color="secondary"
-      ><ion-icon name="add"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'commesse'"
-      (click)="apriNuovaCommessa()"
-      color="tertiary"
-      ><ion-icon name="documents-outline"></ion-icon
-    ></ion-fab-button>
-    <ion-fab-button
-      *ngIf="vistaCorrente === 'appuntamenti'"
-      (click)="apriNuovoAppuntamento()"
-      color="warning"
-      ><ion-icon name="calendar-outline"></ion-icon
-    ></ion-fab-button>
+    @switch (vistaCorrente()) { @case ('clienti') {
+    <ion-fab-button (click)="apriNuovoCliente()">
+      <ion-icon name="person-add-outline"></ion-icon>
+    </ion-fab-button>
+    } @case ('cantieri') {
+    <ion-fab-button color="secondary" (click)="apriNuovoCantiere()">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    } @case ('commesse') {
+    <ion-fab-button color="tertiary" (click)="apriNuovaCommessa()">
+      <ion-icon name="documents-outline"></ion-icon>
+    </ion-fab-button>
+    } @case ('appuntamenti') {
+    <ion-fab-button color="warning" (click)="apriNuovoAppuntamento()">
+      <ion-icon name="calendar-outline"></ion-icon>
+    </ion-fab-button>
+    } }
   </ion-fab>
 </ion-content>
