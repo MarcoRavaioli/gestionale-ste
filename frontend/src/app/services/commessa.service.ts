@@ -46,9 +46,9 @@ export class CommessaService {
       );
   }
 
-  delete(id: number): Observable<any> {
+  delete(id: number, cascade: boolean = false): Observable<any> {
     return this.http
-      .delete(`${this.apiUrl}/${id}`)
+      .delete(`${this.apiUrl}/${id}?cascade=${cascade}`)
       .pipe(
         tap(() =>
           this.commesseState.update((state) =>

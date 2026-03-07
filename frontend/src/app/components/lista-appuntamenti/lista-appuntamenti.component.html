@@ -133,3 +133,10 @@
   ></ion-icon>
   <p>Nessun appuntamento trovato.</p>
 </div>
+
+<ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
+  <ion-infinite-scroll-content
+    loadingSpinner="bubbles"
+    loadingText="Caricamento appuntamenti..."
+  ></ion-infinite-scroll-content>
+</ion-infinite-scroll>

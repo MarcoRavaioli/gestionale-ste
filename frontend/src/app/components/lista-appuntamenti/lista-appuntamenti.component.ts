@@ -8,6 +8,8 @@ import {
   IonIcon,
   IonItemGroup,
   IonItemDivider,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -34,6 +36,8 @@ import { Appuntamento } from '../../interfaces/models';
     IonIcon,
     IonItemGroup,
     IonItemDivider,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
   ],
 })
 export class ListaAppuntamentiComponent {
@@ -42,8 +46,11 @@ export class ListaAppuntamentiComponent {
   @Input() isGrouped: boolean = false;
   // pass the string 'giorno', 'settimana', etc. to format the date correctly inside grouped views
   @Input() groupBySetting: string | undefined = undefined;
+  @Input() isLoading: boolean = false;
+  @Input() isAllLoaded: boolean = false;
 
   @Output() itemClick = new EventEmitter<Appuntamento>();
+  @Output() loadMore = new EventEmitter<any>();
 
   constructor() {
     addIcons({
@@ -54,5 +61,14 @@ export class ListaAppuntamentiComponent {
       personOutline,
       calendarNumberOutline,
     });
+  }
+
+  onLoadMore(event: any) {
+    if (this.isAllLoaded) {
+      event.target.complete();
+      event.target.disabled = true;
+    } else {
+      this.loadMore.emit(event);
+    }
   }
 }

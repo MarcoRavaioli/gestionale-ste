@@ -8,6 +8,8 @@ import {
   IonIcon,
   IonItemGroup,
   IonItemDivider,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -33,14 +35,19 @@ import { Commessa } from '../../interfaces/models';
     IonIcon,
     IonItemGroup,
     IonItemDivider,
+    IonInfiniteScroll,
+    IonInfiniteScrollContent,
   ],
 })
 export class ListaCommesseComponent {
   @Input() commesseLista: Commessa[] = [];
   @Input() commesseGruppi: { nome: string; items: Commessa[] }[] = [];
   @Input() isGrouped: boolean = false;
+  @Input() isLoading: boolean = false;
+  @Input() isAllLoaded: boolean = false;
 
   @Output() itemClick = new EventEmitter<Commessa>();
+  @Output() loadMore = new EventEmitter<any>();
 
   constructor() {
     addIcons({
@@ -62,6 +69,15 @@ export class ListaCommesseComponent {
         return 'medium';
       default:
         return 'primary';
+    }
+  }
+
+  onLoadMore(event: any) {
+    if (this.isAllLoaded) {
+      event.target.complete();
+      event.target.disabled = true;
+    } else {
+      this.loadMore.emit(event);
     }
   }
 }

@@ -135,8 +135,6 @@ export class Tab3Page implements OnInit {
 
   tuttiClienti: Cliente[] = [];
   // tuttiCantieri rimossa
-  tutteCommesse: Commessa[] = [];
-  tuttiAppuntamenti: Appuntamento[] = [];
 
   get clientiVisualizzati() {
     return this.clienteService.clientiState();
@@ -164,6 +162,16 @@ export class Tab3Page implements OnInit {
   cantieriLimit = 15;
   cantieriTotalPages = 1;
   cantieriSearchSubject = new Subject<string>();
+
+  commessePage = 1;
+  commesseLimit = 15;
+  commesseTotalPages = 1;
+  commesseSearchSubject = new Subject<string>();
+
+  appuntamentiPage = 1;
+  appuntamentiLimit = 15;
+  appuntamentiTotalPages = 1;
+  appuntamentiSearchSubject = new Subject<string>();
 
   settingsClienti: ViewSettings = { orderBy: 'nome', orderDirection: 'asc' };
   settingsCantieri: ViewSettings = {
@@ -253,6 +261,23 @@ export class Tab3Page implements OnInit {
         this.caricaCantieriPaginati(null, true);
       });
 
+
+    this.commesseSearchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchTerm) => {
+        this.ricerca = searchTerm;
+        this.commessePage = 1;
+        this.caricaCommessePaginati(null, true);
+      });
+
+    this.appuntamentiSearchSubject
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .subscribe((searchTerm) => {
+        this.ricerca = searchTerm;
+        this.appuntamentiPage = 1;
+        this.caricaAppuntamentiPaginati(null, true);
+      });
+
     this.caricaDatiGlobale();
   }
 
@@ -267,18 +292,12 @@ export class Tab3Page implements OnInit {
     } else if (this.vistaCorrente === 'cantieri') {
       this.cantieriPage = 1;
       this.caricaCantieriPaginati(event, true);
+    } else if (this.vistaCorrente === 'commesse') {
+      this.commessePage = 1;
+      this.caricaCommessePaginati(event, true);
     } else {
-      this.isLoading = true;
-      this.commessaService.getAll().subscribe((res) => {
-        this.tutteCommesse = res;
-        this.elaboraCommesse();
-      });
-      this.appService.getAll().subscribe((res) => {
-        this.tuttiAppuntamenti = res;
-        this.elaboraAppuntamenti();
-        this.isLoading = false;
-      });
-      if (event) event.target.complete();
+      this.appuntamentiPage = 1;
+      this.caricaAppuntamentiPaginati(event, true);
     }
   }
 
@@ -375,15 +394,85 @@ export class Tab3Page implements OnInit {
     }
   }
 
+
+  caricaCommessePaginati(event?: any, isFirstLoad: boolean = false) {
+    if (isFirstLoad) this.isLoading = true;
+
+    this.commessaService
+      .getPaginated(this.commessePage, this.commesseLimit, this.ricerca)
+      .subscribe({
+        next: (res) => {
+          this.commesseTotalPages = res.totalPages;
+          this.elaboraCommesse(); // Ricalcola i gruppi dopo il set del signal
+          this.isLoading = false;
+
+          if (event) {
+            event.target.complete();
+            if (this.commessePage >= this.commesseTotalPages) {
+              event.target.disabled = true;
+            }
+          }
+        },
+        error: () => {
+          this.isLoading = false;
+          if (event) event.target.complete();
+        },
+      });
+  }
+
+  caricaAltraPaginaCommesse(event: any) {
+    if (this.commessePage < this.commesseTotalPages) {
+      this.commessePage++;
+      this.caricaCommessePaginati(event, false);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
+  caricaAppuntamentiPaginati(event?: any, isFirstLoad: boolean = false) {
+    if (isFirstLoad) this.isLoading = true;
+
+    this.appService
+      .getPaginated(this.appuntamentiPage, this.appuntamentiLimit, this.ricerca)
+      .subscribe({
+        next: (res) => {
+          this.appuntamentiTotalPages = res.totalPages;
+          this.elaboraAppuntamenti();
+          this.isLoading = false;
+
+          if (event) {
+            event.target.complete();
+            if (this.appuntamentiPage >= this.appuntamentiTotalPages)
+              event.target.disabled = true;
+          }
+        },
+        error: () => {
+          this.isLoading = false;
+          if (event) event.target.complete();
+        },
+      });
+  }
+
+  caricaAltraPaginaAppuntamenti(event: any) {
+    if (this.appuntamentiPage < this.appuntamentiTotalPages) {
+      this.appuntamentiPage++;
+      this.caricaAppuntamentiPaginati(event, false);
+    } else {
+      event.target.complete();
+      event.target.disabled = true;
+    }
+  }
+
   gestisciRicerca(testo: string) {
     if (this.vistaCorrente === 'clienti') {
       this.clientiSearchSubject.next(testo);
     } else if (this.vistaCorrente === 'cantieri') {
-      this.cantieriSearchSubject.next(testo); // <--- DEBOUNCE CANTIERI
+      this.cantieriSearchSubject.next(testo);
+    } else if (this.vistaCorrente === 'commesse') {
+      this.commesseSearchSubject.next(testo);
     } else {
-      this.ricerca = testo;
-      if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
-      else this.elaboraAppuntamenti();
+      this.appuntamentiSearchSubject.next(testo);
     }
   }
 
@@ -394,19 +483,7 @@ export class Tab3Page implements OnInit {
   }
 
   elaboraCommesse() {
-    let dati = [...this.tutteCommesse];
-    const term = this.ricerca.toLowerCase();
-
-    if (term) {
-      // Ricerca Flessibile
-      dati = dati.filter(
-        (c) =>
-          c.seriale.toLowerCase().includes(term) ||
-          c.descrizione?.toLowerCase().includes(term) ||
-          c.indirizzo?.cliente?.nome.toLowerCase().includes(term) ||
-          c.cliente?.nome.toLowerCase().includes(term),
-      );
-    }
+    let dati = [...this.commessaService.commesseState()];
 
     dati = this.ordinaLista(
       dati,
@@ -456,20 +533,7 @@ export class Tab3Page implements OnInit {
   }
 
   elaboraAppuntamenti() {
-    let dati = [...this.tuttiAppuntamenti];
-    const term = this.ricerca.toLowerCase();
-
-    if (term) {
-      // Ricerca Flessibile Assoluta
-      dati = dati.filter(
-        (a) =>
-          a.nome.toLowerCase().includes(term) ||
-          a.cliente?.nome.toLowerCase().includes(term) ||
-          a.indirizzo?.cliente?.nome.toLowerCase().includes(term) ||
-          a.commessa?.cliente?.nome.toLowerCase().includes(term) ||
-          a.commessa?.indirizzo?.cliente?.nome.toLowerCase().includes(term),
-      );
-    }
+    let dati = [...this.appService.appuntamentiState()];
 
     dati = this.ordinaLista(
       dati,

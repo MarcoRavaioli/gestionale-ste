@@ -3,8 +3,18 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
-  IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton,
-  IonIcon, ToastController, ModalController, AlertController, NavController, IonButton // <--- AGGIUNTO IonButton
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
+  IonBackButton,
+  IonIcon,
+  ToastController,
+  ModalController,
+  AlertController,
+  NavController,
+  IonButton, // <--- AGGIUNTO IonButton
 } from '@ionic/angular/standalone';
 
 import { IndirizzoService } from 'src/app/services/indirizzo.service';
@@ -17,7 +27,12 @@ import { NuovaCommessaModalComponent } from '../../components/nuova-commessa-mod
 import { NuovoIndirizzoModalComponent } from '../../components/nuovo-indirizzo-modal/nuovo-indirizzo-modal.component';
 
 import { addIcons } from 'ionicons';
-import { businessOutline, location, pencilOutline, trashOutline } from 'ionicons/icons';
+import {
+  businessOutline,
+  location,
+  pencilOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { IonicSafeString } from '@ionic/angular';
 
 @Component({
@@ -26,9 +41,18 @@ import { IonicSafeString } from '@ionic/angular';
   styleUrls: ['./cantiere-dettaglio.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, FormsModule, IndirizzoAccordionComponent,
-    IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonBackButton, IonIcon, IonButton // <--- AGGIUNTO IonButton
-  ]
+    CommonModule,
+    FormsModule,
+    IndirizzoAccordionComponent,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButtons,
+    IonBackButton,
+    IonIcon,
+    IonButton, // <--- AGGIUNTO IonButton
+  ],
 })
 export class CantiereDettaglioPage implements OnInit {
   indirizzo: Indirizzo | null = null;
@@ -42,7 +66,7 @@ export class CantiereDettaglioPage implements OnInit {
     private authService: AuthService,
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
   ) {
     addIcons({ businessOutline, location, pencilOutline, trashOutline });
   }
@@ -68,19 +92,25 @@ export class CantiereDettaglioPage implements OnInit {
       error: (err) => {
         console.error('Errore caricamento cantiere', err);
         this.navCtrl.navigateRoot('/tabs/tab3');
-      }
+      },
     });
   }
 
   async apriModalIndirizzo() {
-    const m = await this.modalCtrl.create({ component: NuovoIndirizzoModalComponent, componentProps: { indirizzoEsistente: this.indirizzo } });
+    const m = await this.modalCtrl.create({
+      component: NuovoIndirizzoModalComponent,
+      componentProps: { indirizzoEsistente: this.indirizzo },
+    });
     await m.present();
     const { data } = await m.onWillDismiss();
     if (data?.aggiornato && this.indirizzo) this.caricaDati(this.indirizzo.id);
   }
 
   async apriModalCommessa(indirizzoId: number | null, esistente?: Commessa) {
-    const m = await this.modalCtrl.create({ component: NuovaCommessaModalComponent, componentProps: { indirizzoId, commessaEsistente: esistente } });
+    const m = await this.modalCtrl.create({
+      component: NuovaCommessaModalComponent,
+      componentProps: { indirizzoId, commessaEsistente: esistente },
+    });
     await m.present();
     const { data } = await m.onWillDismiss();
     if (data?.aggiornato || data?.creato) this.caricaDati(this.indirizzo!.id);
@@ -88,10 +118,29 @@ export class CantiereDettaglioPage implements OnInit {
 
   async eliminaCommessa(commessa: Commessa) {
     const alert = await this.alertCtrl.create({
-      header: 'Elimina Commessa', message: `Vuoi eliminare ${commessa.seriale}?`,
-      buttons: [{ text: 'Annulla', role: 'cancel' }, { text: 'Elimina', role: 'destructive', handler: () => {
-        this.commessaService.delete(commessa.id).subscribe(() => this.caricaDati(this.indirizzo!.id));
-      }}]
+      header: 'Elimina Commessa',
+      message: `Vuoi eliminare ${commessa.seriale}?`,
+      inputs: [
+        {
+          name: 'cascade',
+          type: 'checkbox',
+          label: 'Elimina anche tutte le entità figlie',
+          value: 'cascade',
+        },
+      ],
+      buttons: [
+        { text: 'Annulla', role: 'cancel' },
+        {
+          text: 'Elimina',
+          role: 'destructive',
+          handler: (data) => {
+            const cascade = data && data.includes('cascade');
+            this.commessaService
+              .delete(commessa.id, cascade)
+              .subscribe(() => this.caricaDati(this.indirizzo!.id));
+          },
+        },
+      ],
     });
     await alert.present();
   }

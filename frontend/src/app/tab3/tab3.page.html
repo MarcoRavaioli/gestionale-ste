@@ -72,10 +72,11 @@
         [isAllLoaded]="clientiPage >= clientiTotalPages"
         (loadMore)="caricaAltraPaginaClienti($event)"
         (itemClick)="goToDettaglioElemento($event, 'cliente')"
-        (addClick)="apriNuovoCliente()">
+        (addClick)="apriNuovoCliente()"
+      >
       </app-lista-clienti>
     </div>
-    
+
     <div *ngIf="vistaCorrente === 'cantieri'">
       <app-lista-cantieri
         [cantieri]="cantieriLista"
@@ -83,26 +84,32 @@
         [isAllLoaded]="cantieriPage >= cantieriTotalPages"
         (loadMore)="caricaAltraPaginaCantieri($event)"
         (itemClick)="goToDettaglioElemento($event, 'cantiere')"
-        (addClick)="apriNuovoCantiere()">
+        (addClick)="apriNuovoCantiere()"
+      >
       </app-lista-cantieri>
     </div>
-    
+
     <div *ngIf="vistaCorrente === 'commesse'">
       <app-lista-commesse
         [commesseLista]="commesseLista"
         [commesseGruppi]="commesseGruppi"
         [isGrouped]="isCommesseGrouped"
-        (itemClick)="goToDettaglioElemento($event, 'commessa')">
+        [isLoading]="isLoading"
+        [isAllLoaded]="commessePage >= commesseTotalPages"
+        (loadMore)="caricaAltraPaginaCommesse($event)"
+        (itemClick)="goToDettaglioElemento($event, 'commessa')"
+      >
       </app-lista-commesse>
     </div>
-    
+
     <div *ngIf="vistaCorrente === 'appuntamenti'">
       <app-lista-appuntamenti
         [appuntamentiLista]="appuntamentiLista"
         [appuntamentiGruppi]="appuntamentiGruppi"
         [isGrouped]="isAppuntamentiGrouped"
         [groupBySetting]="settingsAppuntamenti.groupBy"
-        (itemClick)="goToDettaglioElemento($event, 'appuntamento')">
+        (itemClick)="goToDettaglioElemento($event, 'appuntamento')"
+      >
       </app-lista-appuntamenti>
     </div>
   </div>

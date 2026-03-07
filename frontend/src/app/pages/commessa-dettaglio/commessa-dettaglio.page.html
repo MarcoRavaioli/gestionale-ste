@@ -78,6 +78,7 @@
           align-items: center;
           gap: 8px;
         "
+        *ngIf="hasManagerAccess"
       >
         <ion-icon name="barcode-outline"></ion-icon>
         <strong>ID Sistema:</strong> {{ commessa.id }}
@@ -89,6 +90,7 @@
           align-items: center;
           gap: 8px;
         "
+        *ngIf="hasManagerAccess"
       >
         <ion-icon name="person-outline"></ion-icon>
         <strong>Committente:</strong>

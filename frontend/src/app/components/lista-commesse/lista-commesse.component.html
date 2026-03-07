@@ -96,3 +96,10 @@
   ></ion-icon>
   <p>Nessuna commessa trovata.</p>
 </div>
+
+<ion-infinite-scroll (ionInfinite)="onLoadMore($event)">
+  <ion-infinite-scroll-content
+    loadingSpinner="bubbles"
+    loadingText="Caricamento commesse..."
+  ></ion-infinite-scroll-content>
+</ion-infinite-scroll>
