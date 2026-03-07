@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateAppuntamentoDto } from './dto/create-appuntamento.dto';
 import { Appuntamento } from '../entities/appuntamento.entity';
+import { Allegato } from '../entities/allegato.entity';
+import * as fs from 'fs';
 
 @Injectable()
 export class AppuntamentoService {
@@ -154,7 +156,32 @@ export class AppuntamentoService {
     };
   }
 
-  remove(id: number) {
-    return this.appuntamentoRepository.softDelete(id);
+  async remove(id: number) {
+    const appuntamento = await this.appuntamentoRepository.findOne({
+      where: { id },
+      relations: ['allegati'],
+    });
+
+    if (!appuntamento) {
+      throw new InternalServerErrorException('Appuntamento non trovato');
+    }
+
+    if (appuntamento.allegati?.length) {
+      for (const allegato of appuntamento.allegati) {
+        try {
+          if (allegato.percorso && fs.existsSync(allegato.percorso)) {
+            fs.unlinkSync(allegato.percorso);
+          }
+        } catch (err) {
+          console.error(`Errore eliminazione file ${allegato.percorso}:`, err);
+        }
+      }
+      await this.dataSource.manager.delete(
+        Allegato,
+        appuntamento.allegati.map((a) => a.id),
+      );
+    }
+
+    return this.appuntamentoRepository.softRemove(appuntamento);
   }
 }

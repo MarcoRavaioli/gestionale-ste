@@ -4,6 +4,8 @@ import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateCommessaDto } from './dto/create-commessa.dto';
 import { Commessa } from '../entities/commessa.entity';
 import { UpdateCommessaDto } from './dto/update-commessa.dto';
+import { Allegato } from '../entities/allegato.entity';
+import * as fs from 'fs';
 
 @Injectable()
 export class CommessaService {
@@ -154,8 +156,24 @@ export class CommessaService {
           await queryRunner.manager.softRemove(commessa.appuntamenti);
         if (commessa.fatture?.length)
           await queryRunner.manager.softRemove(commessa.fatture);
-        if (commessa.allegati?.length)
-          await queryRunner.manager.softRemove(commessa.allegati);
+        if (commessa.allegati?.length) {
+          for (const allegato of commessa.allegati) {
+            try {
+              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
+                fs.unlinkSync(allegato.percorso);
+              }
+            } catch (err) {
+              console.error(
+                `Errore eliminazione file ${allegato.percorso}:`,
+                err,
+              );
+            }
+          }
+          await queryRunner.manager.delete(
+            Allegato,
+            commessa.allegati.map((a) => a.id),
+          );
+        }
       } else {
         // Orphan
         if (commessa.appuntamenti?.length) {

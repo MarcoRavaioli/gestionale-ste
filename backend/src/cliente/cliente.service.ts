@@ -4,6 +4,8 @@ import { ILike, Repository, DataSource } from 'typeorm';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { Cliente } from '../entities/cliente.entity';
+import { Allegato } from '../entities/allegato.entity';
+import * as fs from 'fs';
 
 @Injectable()
 export class ClienteService {
@@ -121,8 +123,24 @@ export class ClienteService {
           await queryRunner.manager.softRemove(cliente.appuntamenti);
         if (cliente.fatture?.length)
           await queryRunner.manager.softRemove(cliente.fatture);
-        if (cliente.allegati?.length)
-          await queryRunner.manager.softRemove(cliente.allegati);
+        if (cliente.allegati?.length) {
+          for (const allegato of cliente.allegati) {
+            try {
+              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
+                fs.unlinkSync(allegato.percorso);
+              }
+            } catch (err) {
+              console.error(
+                `Errore eliminazione file ${allegato.percorso}:`,
+                err,
+              );
+            }
+          }
+          await queryRunner.manager.delete(
+            Allegato,
+            cliente.allegati.map((a) => a.id),
+          );
+        }
       } else {
         // Orphan
         if (cliente.indirizzi?.length) {

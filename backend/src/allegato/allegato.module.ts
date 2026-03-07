@@ -7,10 +7,19 @@ import { AllegatoService } from './allegato.service';
 import { AllegatoController } from './allegato.controller';
 import { Allegato } from '../entities/allegato.entity';
 import { Commessa } from '../entities/commessa.entity';
+import { Cliente } from '../entities/cliente.entity';
+import { Indirizzo } from '../entities/indirizzo.entity';
+import { Appuntamento } from '../entities/appuntamento.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Allegato, Commessa]),
+    TypeOrmModule.forFeature([
+      Allegato,
+      Commessa,
+      Cliente,
+      Indirizzo,
+      Appuntamento,
+    ]),
     // Configurazione Upload
     MulterModule.register({
       storage: diskStorage({

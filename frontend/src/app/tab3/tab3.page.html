@@ -24,6 +24,11 @@
       (click)="cambiaVista('appuntamenti')"
       ><ion-label>Appuntamenti</ion-label></ion-chip
     >
+    <ion-chip
+      [class.chip-active]="vistaCorrente === 'documenti'"
+      (click)="cambiaVista('documenti')"
+      ><ion-label>Documenti</ion-label></ion-chip
+    >
   </div>
 
   <ion-toolbar color="primary">
@@ -92,8 +97,6 @@
     <div *ngIf="vistaCorrente === 'commesse'">
       <app-lista-commesse
         [commesseLista]="commesseLista"
-        [commesseGruppi]="commesseGruppi"
-        [isGrouped]="isCommesseGrouped"
         [isLoading]="isLoading"
         [isAllLoaded]="commessePage >= commesseTotalPages"
         (loadMore)="caricaAltraPaginaCommesse($event)"
@@ -105,12 +108,13 @@
     <div *ngIf="vistaCorrente === 'appuntamenti'">
       <app-lista-appuntamenti
         [appuntamentiLista]="appuntamentiLista"
-        [appuntamentiGruppi]="appuntamentiGruppi"
-        [isGrouped]="isAppuntamentiGrouped"
-        [groupBySetting]="settingsAppuntamenti.groupBy"
         (itemClick)="goToDettaglioElemento($event, 'appuntamento')"
       >
       </app-lista-appuntamenti>
+    </div>
+
+    <div *ngIf="vistaCorrente === 'documenti'">
+      <app-lista-documenti #listaDoc> </app-lista-documenti>
     </div>
   </div>
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">

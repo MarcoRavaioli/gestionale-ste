@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -13,6 +13,7 @@ import {
   ModalController,
 } from '@ionic/angular/standalone';
 import { ClienteService } from '../../services/cliente.service';
+import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
 
 @Component({
   selector: 'app-nuovo-cliente-modal',
@@ -30,14 +31,18 @@ import { ClienteService } from '../../services/cliente.service';
     IonContent,
     IonInput,
     IonItem,
+    GestioneAllegatiComponent,
   ],
 })
 export class NuovoClienteModalComponent {
-  cliente = {
+  cliente: any = {
     nome: '',
     telefono: '',
     email: '',
   };
+
+  @ViewChild(GestioneAllegatiComponent)
+  gestioneAllegati!: GestioneAllegatiComponent;
 
   constructor(
     private modalCtrl: ModalController,
@@ -67,7 +72,10 @@ export class NuovoClienteModalComponent {
 
     // Ora inviamo 'payload' invece di 'this.cliente'
     this.clienteService.create(payload).subscribe({
-      next: (nuovoCliente) => {
+      next: async (nuovoCliente) => {
+        if (this.gestioneAllegati) {
+          await this.gestioneAllegati.uploadAllPendingFiles(nuovoCliente.id);
+        }
         this.modalCtrl.dismiss({ creato: true, data: nuovoCliente });
       },
       error: (err) => {

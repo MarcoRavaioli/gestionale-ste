@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import {
   IonHeader,
   IonToolbar,
@@ -17,7 +17,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CommessaService } from '../../services/commessa.service';
-import { AllegatoService } from '../../services/allegato.service'; // <--- NUOVO
+import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
 import { Commessa } from '../../interfaces/models';
 import { addIcons } from 'ionicons';
 import {
@@ -45,6 +45,7 @@ import {
     IonIcon,
     CommonModule,
     FormsModule,
+    GestioneAllegatiComponent,
   ],
 })
 export class NuovaCommessaModalComponent implements OnInit {
@@ -58,12 +59,12 @@ export class NuovaCommessaModalComponent implements OnInit {
     valore_totale: 0,
   };
 
-  selectedFile: File | null = null; // <--- File selezionato
+  @ViewChild(GestioneAllegatiComponent)
+  gestioneAllegati!: GestioneAllegatiComponent;
 
   constructor(
     private modalCtrl: ModalController,
     private commessaService: CommessaService,
-    private allegatoService: AllegatoService, // <--- Inject
     private toastCtrl: ToastController,
   ) {
     addIcons({ cloudUploadOutline, documentAttachOutline, closeCircle });
@@ -77,25 +78,6 @@ export class NuovaCommessaModalComponent implements OnInit {
 
   chiudi() {
     this.modalCtrl.dismiss();
-  }
-
-  // --- GESTIONE FILE ---
-  triggerFileInput() {
-    document.getElementById('fileInput')?.click();
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.selectedFile = file;
-    }
-  }
-
-  rimuoviFile(ev: Event) {
-    ev.stopPropagation();
-    this.selectedFile = null;
-    const input = document.getElementById('fileInput') as HTMLInputElement;
-    if (input) input.value = '';
   }
 
   // --- SALVATAGGIO ---
@@ -118,39 +100,18 @@ export class NuovaCommessaModalComponent implements OnInit {
 
     obs$.subscribe({
       next: async (res) => {
-        // 2. Se c'è un file, caricalo ora usando l'ID della commessa (res.id)
-        if (this.selectedFile) {
-          try {
-            // Se stiamo modificando, usa l'ID esistente, altrimenti quello nuovo
-            const idCommessa = this.commessaEsistente
-              ? this.commessaEsistente.id
-              : res.id;
-            await this.uploadFilePromise(idCommessa, this.selectedFile);
-          } catch (err) {
-            console.error('Errore upload', err);
-            this.showToast(
-              'Commessa salvata, ma errore nel caricamento allegato.',
-              'warning',
-            );
-          }
+        const idCommessa = this.commessaEsistente
+          ? this.commessaEsistente.id
+          : res.id;
+        if (this.gestioneAllegati) {
+          await this.gestioneAllegati.uploadAllPendingFiles(idCommessa);
         }
-
         this.modalCtrl.dismiss({ aggiornato: true, data: res });
       },
       error: (err) => {
         console.error(err);
         this.showToast('Errore nel salvataggio commessa.', 'danger');
       },
-    });
-  }
-
-  // Helper per trasformare l'observable upload in promise
-  uploadFilePromise(commessaId: number, file: File): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.allegatoService.upload(commessaId, file).subscribe({
-        next: (res) => resolve(res),
-        error: (err) => reject(err),
-      });
     });
   }
 

@@ -6,8 +6,6 @@ import {
   IonLabel,
   IonNote,
   IonIcon,
-  IonItemGroup,
-  IonItemDivider,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
 } from '@ionic/angular/standalone';
@@ -34,18 +32,14 @@ import { Appuntamento } from '../../interfaces/models';
     IonLabel,
     IonNote,
     IonIcon,
-    IonItemGroup,
-    IonItemDivider,
+
     IonInfiniteScroll,
     IonInfiniteScrollContent,
   ],
 })
 export class ListaAppuntamentiComponent {
   @Input() appuntamentiLista: Appuntamento[] = [];
-  @Input() appuntamentiGruppi: { nome: string; items: Appuntamento[] }[] = [];
-  @Input() isGrouped: boolean = false;
-  // pass the string 'giorno', 'settimana', etc. to format the date correctly inside grouped views
-  @Input() groupBySetting: string | undefined = undefined;
+
   @Input() isLoading: boolean = false;
   @Input() isAllLoaded: boolean = false;
 

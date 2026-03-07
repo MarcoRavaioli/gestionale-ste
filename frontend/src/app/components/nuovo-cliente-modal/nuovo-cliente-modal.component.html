@@ -8,23 +8,42 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  
   <ion-item>
-    <ion-input label="Nome *" label-placement="floating" [(ngModel)]="cliente.nome"></ion-input>
+    <ion-input
+      label="Nome *"
+      label-placement="floating"
+      [(ngModel)]="cliente.nome"
+    ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-input label="Telefono" type="tel" label-placement="floating" [(ngModel)]="cliente.telefono"></ion-input>
+    <ion-input
+      label="Telefono"
+      type="tel"
+      label-placement="floating"
+      [(ngModel)]="cliente.telefono"
+    ></ion-input>
   </ion-item>
 
   <ion-item>
-    <ion-input label="Email" type="email" label-placement="floating" [(ngModel)]="cliente.email"></ion-input>
+    <ion-input
+      label="Email"
+      type="email"
+      label-placement="floating"
+      [(ngModel)]="cliente.email"
+    ></ion-input>
   </ion-item>
+
+  <app-gestione-allegati
+    [entityType]="'cliente'"
+    [entityId]="cliente['id']"
+    [allegatiEsistenti]="cliente['allegati'] || []"
+  >
+  </app-gestione-allegati>
 
   <div class="ion-margin-top">
     <ion-button expand="block" (click)="salva()" [disabled]="!cliente.nome">
       SALVA COMMITTENTE
     </ion-button>
   </div>
-
 </ion-content>

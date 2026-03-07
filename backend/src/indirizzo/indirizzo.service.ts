@@ -1,9 +1,11 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateIndirizzoDto } from './dto/create-indirizzo.dto';
 import { UpdateIndirizzoDto } from './dto/update-indirizzo.dto';
 import { Indirizzo } from '../entities/indirizzo.entity';
+import { Allegato } from '../entities/allegato.entity';
+import * as fs from 'fs';
 
 @Injectable()
 export class IndirizzoService {
@@ -92,8 +94,24 @@ export class IndirizzoService {
           await queryRunner.manager.softRemove(indirizzo.commesse);
         if (indirizzo.appuntamenti?.length)
           await queryRunner.manager.softRemove(indirizzo.appuntamenti);
-        if (indirizzo.allegati?.length)
-          await queryRunner.manager.softRemove(indirizzo.allegati);
+        if (indirizzo.allegati?.length) {
+          for (const allegato of indirizzo.allegati) {
+            try {
+              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
+                fs.unlinkSync(allegato.percorso);
+              }
+            } catch (err) {
+              console.error(
+                `Errore eliminazione file ${allegato.percorso}:`,
+                err,
+              );
+            }
+          }
+          await queryRunner.manager.delete(
+            Allegato,
+            indirizzo.allegati.map((a) => a.id),
+          );
+        }
       } else {
         // Orphan
         if (indirizzo.commesse?.length) {
@@ -133,9 +151,12 @@ export class IndirizzoService {
 
     // Ricerca flessibile: cerca nella via, nella città, o nel nome del cliente
     if (search) {
-      query.where(
-        'indirizzo.via ILIKE :search OR indirizzo.citta ILIKE :search OR cliente.nome ILIKE :search',
-        { search: `%${search}%` },
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('indirizzo.via ILIKE :search', { search: `%${search}%` })
+            .orWhere('indirizzo.citta ILIKE :search', { search: `%${search}%` })
+            .orWhere('cliente.nome ILIKE :search', { search: `%${search}%` });
+        }),
       );
     }
 

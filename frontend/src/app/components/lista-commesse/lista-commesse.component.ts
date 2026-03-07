@@ -6,8 +6,6 @@ import {
   IonLabel,
   IonBadge,
   IonIcon,
-  IonItemGroup,
-  IonItemDivider,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
 } from '@ionic/angular/standalone';
@@ -33,16 +31,14 @@ import { Commessa } from '../../interfaces/models';
     IonLabel,
     IonBadge,
     IonIcon,
-    IonItemGroup,
-    IonItemDivider,
+
     IonInfiniteScroll,
     IonInfiniteScrollContent,
   ],
 })
 export class ListaCommesseComponent {
   @Input() commesseLista: Commessa[] = [];
-  @Input() commesseGruppi: { nome: string; items: Commessa[] }[] = [];
-  @Input() isGrouped: boolean = false;
+
   @Input() isLoading: boolean = false;
   @Input() isAllLoaded: boolean = false;
 

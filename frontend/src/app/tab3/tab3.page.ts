@@ -1,8 +1,16 @@
-import { Component, OnInit, signal, effect, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  signal,
+  effect,
+  computed,
+  ViewChild,
+} from '@angular/core';
 import { ListaClientiComponent } from '../components/lista-clienti/lista-clienti.component';
 import { ListaCantieriComponent } from '../components/lista-cantieri/lista-cantieri.component';
 import { ListaCommesseComponent } from '../components/lista-commesse/lista-commesse.component';
 import { ListaAppuntamentiComponent } from '../components/lista-appuntamenti/lista-appuntamenti.component';
+import { ListaDocumentiComponent } from '../components/lista-documenti/lista-documenti.component';
 
 import {
   ModalController,
@@ -21,15 +29,11 @@ import {
   IonList,
   IonItem,
   IonAvatar,
-  IonNote,
   IonItemGroup,
   IonItemDivider,
   IonFab,
   IonFabButton,
-  IonBadge,
   IonSkeletonText,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -76,19 +80,6 @@ import { ToastController } from '@ionic/angular';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
-interface GruppoCantieri {
-  nome: string;
-  items: Indirizzo[];
-}
-interface GruppoCommesse {
-  nome: string;
-  items: Commessa[];
-}
-interface GruppoAppuntamenti {
-  nome: string;
-  items: Appuntamento[];
-}
-
 @Component({
   selector: 'app-tab3',
   templateUrl: 'tab3.page.html',
@@ -112,26 +103,27 @@ interface GruppoAppuntamenti {
     IonList,
     IonItem,
     IonAvatar,
-    IonNote,
-    IonItemGroup,
-    IonItemDivider,
     IonFab,
     IonFabButton,
-    IonBadge,
     IonSkeletonText,
-    IonInfiniteScroll,
-    IonInfiniteScrollContent,
     ListaClientiComponent,
     ListaCantieriComponent,
     ListaCommesseComponent,
     ListaAppuntamentiComponent,
+    ListaDocumentiComponent,
   ],
 })
 export class Tab3Page implements OnInit {
-  vistaCorrente: 'clienti' | 'cantieri' | 'commesse' | 'appuntamenti' =
-    'clienti';
+  vistaCorrente:
+    | 'clienti'
+    | 'cantieri'
+    | 'commesse'
+    | 'appuntamenti'
+    | 'documenti' = 'clienti';
   ricerca: string = '';
   isLoading = true;
+
+  @ViewChild('listaDoc') listaDocComponent!: ListaDocumentiComponent;
 
   tuttiClienti: Cliente[] = [];
   // tuttiCantieri rimossa
@@ -143,15 +135,8 @@ export class Tab3Page implements OnInit {
   get cantieriLista() {
     return this.indirizzoService.cantieriState();
   }
-  cantieriGruppi: GruppoCantieri[] = [];
   commesseLista: Commessa[] = [];
-  commesseGruppi: GruppoCommesse[] = [];
-  appuntamentiGruppi: GruppoAppuntamenti[] = [];
   appuntamentiLista: Appuntamento[] = [];
-
-  isCantieriGrouped: boolean = false;
-  isCommesseGrouped: boolean = false;
-  isAppuntamentiGrouped: boolean = false;
 
   clientiPage = 1;
   clientiLimit = 15;
@@ -177,17 +162,14 @@ export class Tab3Page implements OnInit {
   settingsCantieri: ViewSettings = {
     orderBy: 'citta',
     orderDirection: 'asc',
-    groupBy: undefined,
   };
   settingsCommesse: ViewSettings = {
     orderBy: 'seriale',
     orderDirection: 'asc',
-    groupBy: undefined,
   };
   settingsAppuntamenti: ViewSettings = {
     orderBy: 'data_ora',
     orderDirection: 'desc',
-    groupBy: undefined,
   };
 
   constructor(
@@ -261,7 +243,6 @@ export class Tab3Page implements OnInit {
         this.caricaCantieriPaginati(null, true);
       });
 
-
     this.commesseSearchSubject
       .pipe(debounceTime(500), distinctUntilChanged())
       .subscribe((searchTerm) => {
@@ -295,9 +276,16 @@ export class Tab3Page implements OnInit {
     } else if (this.vistaCorrente === 'commesse') {
       this.commessePage = 1;
       this.caricaCommessePaginati(event, true);
-    } else {
+    } else if (this.vistaCorrente === 'appuntamenti') {
       this.appuntamentiPage = 1;
       this.caricaAppuntamentiPaginati(event, true);
+    } else {
+      // Documenti gestisce il proprio loader interno
+      if (this.listaDocComponent) {
+        this.listaDocComponent.caricaDocumenti(true, this.ricerca);
+      }
+      if (event) event.target.complete();
+      this.isLoading = false;
     }
   }
 
@@ -305,7 +293,7 @@ export class Tab3Page implements OnInit {
     if (this.vistaCorrente === 'clienti') this.caricaClientiPaginati();
     else if (this.vistaCorrente === 'cantieri') this.caricaCantieriPaginati();
     else if (this.vistaCorrente === 'commesse') this.elaboraCommesse();
-    else this.elaboraAppuntamenti();
+    else if (this.vistaCorrente === 'appuntamenti') this.elaboraAppuntamenti();
   }
 
   private ordinaLista(lista: any[], campo: string, direzione: 'asc' | 'desc') {
@@ -394,7 +382,6 @@ export class Tab3Page implements OnInit {
     }
   }
 
-
   caricaCommessePaginati(event?: any, isFirstLoad: boolean = false) {
     if (isFirstLoad) this.isLoading = true;
 
@@ -471,8 +458,13 @@ export class Tab3Page implements OnInit {
       this.cantieriSearchSubject.next(testo);
     } else if (this.vistaCorrente === 'commesse') {
       this.commesseSearchSubject.next(testo);
-    } else {
+    } else if (this.vistaCorrente === 'appuntamenti') {
       this.appuntamentiSearchSubject.next(testo);
+    } else if (this.vistaCorrente === 'documenti') {
+      this.ricerca = testo; // salviamo lo stato
+      if (this.listaDocComponent) {
+        this.listaDocComponent.caricaDocumenti(true, testo);
+      }
     }
   }
 
@@ -485,135 +477,21 @@ export class Tab3Page implements OnInit {
   elaboraCommesse() {
     let dati = [...this.commessaService.commesseState()];
 
-    dati = this.ordinaLista(
+    this.commesseLista = this.ordinaLista(
       dati,
       this.settingsCommesse.orderBy,
       this.settingsCommesse.orderDirection,
     );
-
-    if (this.settingsCommesse.groupBy) {
-      this.isCommesseGrouped = true;
-      const field = this.settingsCommesse.groupBy;
-      const gruppi: { [key: string]: Commessa[] } = {};
-
-      dati.forEach((item) => {
-        let key = 'Altro';
-        switch (field) {
-          case 'stato':
-            key = item.stato;
-            break;
-          case 'cantiere':
-            key = item.indirizzo
-              ? `${item.indirizzo.citta}, ${item.indirizzo.via}`
-              : 'Nessun Cantiere';
-            break;
-          case 'cliente':
-            key =
-              item.cliente?.nome ||
-              item.indirizzo?.cliente?.nome ||
-              'Nessun Cliente';
-            break;
-          default:
-            key = (item as any)[field] || 'Altro';
-        }
-
-        if (!gruppi[key]) gruppi[key] = [];
-        gruppi[key].push(item);
-      });
-
-      this.commesseGruppi = Object.keys(gruppi)
-        .sort()
-        .map((key) => ({ nome: key, items: gruppi[key] }));
-      this.commesseLista = [];
-    } else {
-      this.isCommesseGrouped = false;
-      this.commesseLista = dati;
-      this.commesseGruppi = [];
-    }
   }
 
   elaboraAppuntamenti() {
     let dati = [...this.appService.appuntamentiState()];
 
-    dati = this.ordinaLista(
+    this.appuntamentiLista = this.ordinaLista(
       dati,
       this.settingsAppuntamenti.orderBy,
       this.settingsAppuntamenti.orderDirection,
     );
-
-    if (this.settingsAppuntamenti.groupBy) {
-      this.isAppuntamentiGrouped = true;
-      const field = this.settingsAppuntamenti.groupBy;
-      const gruppiMap = new Map<string, Appuntamento[]>();
-
-      dati.forEach((app) => {
-        let key = 'Altro';
-        const dataObj = new Date(app.data_ora);
-
-        switch (field) {
-          case 'giorno':
-            key = dataObj.toLocaleDateString('it-IT', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-            });
-            break;
-          case 'settimana':
-            const onejan = new Date(dataObj.getFullYear(), 0, 1);
-            const week = Math.ceil(
-              ((dataObj.getTime() - onejan.getTime()) / 86400000 +
-                onejan.getDay() +
-                1) /
-                7,
-            );
-            key = `Settimana ${week} - ${dataObj.getFullYear()}`;
-            break;
-          case 'mese':
-            key = dataObj.toLocaleDateString('it-IT', {
-              month: 'long',
-              year: 'numeric',
-            });
-            break;
-          case 'anno':
-            key = dataObj.getFullYear().toString();
-            break;
-          case 'commessa':
-            key = app.commessa
-              ? `${app.commessa.seriale} ${app.commessa.descrizione || ''}`
-              : 'Nessuna Commessa';
-            break;
-          case 'cantiere':
-            key = app.indirizzo
-              ? `${app.indirizzo.citta}`
-              : app.commessa?.indirizzo
-                ? `${app.commessa.indirizzo.citta}`
-                : 'Nessun Cantiere';
-            break;
-          case 'cliente':
-            key =
-              app.cliente?.nome ||
-              app.indirizzo?.cliente?.nome ||
-              app.commessa?.cliente?.nome ||
-              app.commessa?.indirizzo?.cliente?.nome ||
-              'Nessun Cliente';
-            break;
-        }
-
-        key = key.charAt(0).toUpperCase() + key.slice(1);
-        if (!gruppiMap.has(key)) gruppiMap.set(key, []);
-        gruppiMap.get(key)!.push(app);
-      });
-
-      this.appuntamentiGruppi = Array.from(gruppiMap.keys()).map((k) => ({
-        nome: k,
-        items: gruppiMap.get(k)!,
-      }));
-      this.appuntamentiLista = [];
-    } else {
-      this.isAppuntamentiGrouped = false;
-      this.appuntamentiLista = dati;
-      this.appuntamentiGruppi = [];
-    }
   }
 
   async apriImpostazioni(ev: any) {
@@ -624,7 +502,9 @@ export class Tab3Page implements OnInit {
       currentSettings = this.settingsCantieri;
     else if (this.vistaCorrente === 'commesse')
       currentSettings = this.settingsCommesse;
-    else currentSettings = this.settingsAppuntamenti;
+    else if (this.vistaCorrente === 'appuntamenti')
+      currentSettings = this.settingsAppuntamenti;
+    else return; // I documenti non hanno impostazioni di ordinamento locale
 
     const popover = await this.popoverCtrl.create({
       component: ListSettingsPopoverComponent,
@@ -711,6 +591,8 @@ export class Tab3Page implements OnInit {
         return 'Cerca commessa...';
       case 'appuntamenti':
         return 'Cerca appuntamento...';
+      case 'documenti':
+        return 'Cerca documento...';
       default:
         return 'Cerca...';
     }

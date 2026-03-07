@@ -58,7 +58,6 @@ import {
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
-    IonCardSubtitle,
   ],
 })
 export class AppuntamentoDettaglioPage implements OnInit {

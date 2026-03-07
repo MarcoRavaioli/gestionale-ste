@@ -1,6 +1,8 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>{{ commessaEsistente ? 'Modifica Commessa' : 'Nuova Commessa' }}</ion-title>
+    <ion-title>{{
+      commessaEsistente ? "Modifica Commessa" : "Nuova Commessa"
+    }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">Annulla</ion-button>
     </ion-buttons>
@@ -9,70 +11,59 @@
 
 <ion-content class="ion-padding">
   <div class="form-grid">
-    
-    <ion-input 
-      label="Seriale (es. A123456) *" 
-      label-placement="floating" 
-      fill="outline" 
-      [(ngModel)]="commessa.seriale">
+    <ion-input
+      label="Seriale (es. A123456) *"
+      label-placement="floating"
+      fill="outline"
+      [(ngModel)]="commessa.seriale"
+    >
     </ion-input>
 
-    <ion-textarea 
-      label="Nome Azienda *" 
-      label-placement="floating" 
-      fill="outline" 
-      rows="4" 
-      [(ngModel)]="commessa.descrizione">
+    <ion-textarea
+      label="Nome Azienda *"
+      label-placement="floating"
+      fill="outline"
+      rows="4"
+      [(ngModel)]="commessa.descrizione"
+    >
     </ion-textarea>
-    
-    <div style="display: flex; gap: 10px;">
-      <ion-input 
-        label="Valore (€)" 
-        type="number" 
-        label-placement="floating" 
-        fill="outline" 
-        [(ngModel)]="commessa.valore_totale">
+
+    <div style="display: flex; gap: 10px">
+      <ion-input
+        label="Valore (€)"
+        type="number"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="commessa.valore_totale"
+      >
       </ion-input>
 
-      <ion-select 
-        label="Stato" 
-        label-placement="floating" 
-        fill="outline" 
-        [(ngModel)]="commessa.stato">
+      <ion-select
+        label="Stato"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="commessa.stato"
+      >
         <ion-select-option value="APERTA">APERTA</ion-select-option>
         <ion-select-option value="IN_CORSO">IN CORSO</ion-select-option>
         <ion-select-option value="CHIUSA">CHIUSA</ion-select-option>
       </ion-select>
     </div>
 
-    <div class="file-upload-section ion-margin-top">
-      <p class="section-title">Allegato (Opzionale)</p>
-      
-      <input 
-        type="file" 
-        id="fileInput" 
-        (change)="onFileSelected($event)" 
-        style="display: none;"
-      >
-
-      <div class="file-box" (click)="triggerFileInput()">
-        <ion-icon name="cloud-upload-outline" *ngIf="!selectedFile"></ion-icon>
-        <ion-icon name="document-attach-outline" *ngIf="selectedFile" color="primary"></ion-icon>
-        
-        <div class="file-info">
-          <span class="filename">{{ selectedFile ? selectedFile.name : 'Tocca per caricare un file' }}</span>
-          <span class="filesize" *ngIf="selectedFile">{{ (selectedFile.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
-        </div>
-
-        <ion-button *ngIf="selectedFile" fill="clear" color="danger" (click)="rimuoviFile($event)">
-          <ion-icon name="close-circle" slot="icon-only"></ion-icon>
-        </ion-button>
-      </div>
-    </div>
-
+    <app-gestione-allegati
+      [entityType]="'commessa'"
+      [entityId]="commessaEsistente?.id"
+      [allegatiEsistenti]="commessaEsistente?.allegati || []"
+    >
+    </app-gestione-allegati>
   </div>
 
-  <ion-button expand="block" class="ion-margin-top" (click)="salva()" [disabled]="!commessa.seriale">
-    {{ commessaEsistente ? 'AGGIORNA' : 'CREA COMMESSA' }}
+  <ion-button
+    expand="block"
+    class="ion-margin-top"
+    (click)="salva()"
+    [disabled]="!commessa.seriale"
+  >
+    {{ commessaEsistente ? "AGGIORNA" : "CREA COMMESSA" }}
   </ion-button>
 </ion-content>

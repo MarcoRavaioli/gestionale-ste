@@ -1,10 +1,24 @@
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsOptional, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateAllegatoDto {
-  // Il "file" viaggia come binario, qui validiamo solo il link alla commessa
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number) // Importante perché nei form-data i numeri arrivano come stringhe
   @IsNumber()
-  commessaId: number;
+  commessaId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  clienteId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  indirizzoId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  appuntamentoId?: number;
 }

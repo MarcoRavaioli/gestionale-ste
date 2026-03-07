@@ -1,4 +1,4 @@
-<ion-list lines="none" class="custom-list" *ngIf="!isGrouped">
+<ion-list lines="none" class="custom-list">
   <ion-item
     *ngFor="let item of commesseLista"
     button
@@ -46,50 +46,7 @@
   </ion-item>
 </ion-list>
 
-<ion-list lines="none" class="custom-list" *ngIf="isGrouped">
-  <ion-item-group *ngFor="let gruppo of commesseGruppi">
-    <ion-item-divider sticky="true" class="custom-divider">
-      <ion-label>{{ gruppo.nome }} ({{ gruppo.items.length }})</ion-label>
-    </ion-item-divider>
-    <ion-item
-      *ngFor="let item of gruppo.items"
-      button
-      detail="false"
-      (click)="itemClick.emit(item)"
-      class="list-item animate-enter"
-    >
-      <div slot="start" class="list-icon-box box-tertiary">
-        <ion-icon name="documents"></ion-icon>
-      </div>
-      <ion-label>
-        <h3 class="item-title" style="margin: 0">
-          {{ item.seriale }} -
-          {{ item.cliente?.nome || item.indirizzo?.cliente?.nome || "Interna" }}
-        </h3>
-        <p class="item-subtitle" style="margin-top: 4px">
-          {{ item.descrizione }}
-        </p>
-      </ion-label>
-      <ion-icon
-        [name]="
-          item.cliente?.id || item.indirizzo?.cliente?.id
-            ? 'chevron-forward'
-            : 'create-outline'
-        "
-        slot="end"
-        [color]="
-          item.cliente?.id || item.indirizzo?.cliente?.id ? 'medium' : 'primary'
-        "
-        class="arrow-icon"
-      ></ion-icon>
-    </ion-item>
-  </ion-item-group>
-</ion-list>
-
-<div
-  *ngIf="(isGrouped ? commesseGruppi.length : commesseLista.length) === 0"
-  class="empty-state"
->
+<div *ngIf="commesseLista.length === 0" class="empty-state">
   <ion-icon
     name="folder-open-outline"
     style="font-size: 64px; color: var(--ion-color-medium); opacity: 0.5"

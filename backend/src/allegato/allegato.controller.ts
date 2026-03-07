@@ -10,6 +10,7 @@ import {
   Delete,
   Res,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -31,23 +32,36 @@ export class AllegatoController {
 
   @Post('upload')
   @Roles('ADMIN', 'MANAGER', 'COLLABORATORE')
-  @UseInterceptors(FileInterceptor('file', {
-    // 1. LIMITIAMO LA DIMENSIONE DEL FILE A 5MB (5 * 1024 * 1024)
-    limits: { fileSize: 5 * 1024 * 1024 },
-    storage: diskStorage({
-      destination: './uploads',
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = extname(file.originalname);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-      },
+  @UseInterceptors(
+    FileInterceptor('file', {
+      // 1. LIMITIAMO LA DIMENSIONE DEL FILE A 5MB (5 * 1024 * 1024)
+      limits: { fileSize: 5 * 1024 * 1024 },
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+        },
+      }),
     }),
-  }))
+  )
   uploadFile(
     @Body() createAllegatoDto: CreateAllegatoDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.allegatoService.uploadFile(createAllegatoDto, file);
+  }
+
+  @Get('paginated')
+  @Roles('ADMIN', 'MANAGER')
+  findPaginated(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query('search') search: string = '',
+  ) {
+    return this.allegatoService.findPaginated(+page, +limit, search);
   }
 
   @Get()

@@ -58,7 +58,6 @@ import {
     IonCardContent,
     IonCardHeader,
     IonCardTitle,
-    IonCardSubtitle,
     IonBadge,
   ],
 })

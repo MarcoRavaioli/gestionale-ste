@@ -8,7 +8,6 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-
   <div class="section-box">
     <div class="header-toggle">
       <h3><ion-icon name="person-add-outline"></ion-icon> Committente</h3>
@@ -20,15 +19,28 @@
       </ion-toggle>
     </ion-item>
 
+    <app-gestione-allegati
+      [entityType]="'indirizzo'"
+      [entityId]="null"
+      [allegatiEsistenti]="[]"
+    >
+    </app-gestione-allegati>
+
     <div *ngIf="!usaClienteGenerico" class="fade-in">
-      <app-generic-selector 
+      <app-generic-selector
         label="Cerca e seleziona Cliente..."
         type="cliente"
         [items]="listaClienti"
-        [(selectedId)]="clienteSelezionatoId">
+        [(selectedId)]="clienteSelezionatoId"
+      >
       </app-generic-selector>
 
-      <ion-button expand="block" fill="outline" class="ion-margin-top" (click)="creaNuovoClienteAlVolo()">
+      <ion-button
+        expand="block"
+        fill="outline"
+        class="ion-margin-top"
+        (click)="creaNuovoClienteAlVolo()"
+      >
         <ion-icon name="add" slot="start"></ion-icon>
         Crea Nuovo Cliente
       </ion-button>
@@ -37,21 +49,55 @@
 
   <div class="section-box ion-margin-top">
     <h3><ion-icon name="location-outline"></ion-icon> Indirizzo Cantiere</h3>
-    
+
     <div class="form-grid">
-      <ion-input label="Via / Piazza *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.via"></ion-input>
-      
-      <div style="display: flex; gap: 10px;">
-        <ion-input label="Civico *" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="indirizzo.civico"></ion-input>
-        <ion-input label="CAP" type="number" label-placement="floating" fill="outline" style="flex: 1" [(ngModel)]="indirizzo.cap"></ion-input>
+      <ion-input
+        label="Via / Piazza *"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="indirizzo.via"
+      ></ion-input>
+
+      <div style="display: flex; gap: 10px">
+        <ion-input
+          label="Civico *"
+          label-placement="floating"
+          fill="outline"
+          style="flex: 1"
+          [(ngModel)]="indirizzo.civico"
+        ></ion-input>
+        <ion-input
+          label="CAP"
+          type="number"
+          label-placement="floating"
+          fill="outline"
+          style="flex: 1"
+          [(ngModel)]="indirizzo.cap"
+        ></ion-input>
       </div>
 
-      <ion-input label="Città *" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.citta"></ion-input>
-      <ion-input label="Provincia" label-placement="floating" fill="outline" [(ngModel)]="indirizzo.provincia"></ion-input>
+      <ion-input
+        label="Città *"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="indirizzo.citta"
+      ></ion-input>
+      <ion-input
+        label="Provincia"
+        label-placement="floating"
+        fill="outline"
+        [(ngModel)]="indirizzo.provincia"
+      ></ion-input>
     </div>
   </div>
 
-  <ion-button expand="block" class="ion-margin-top" size="large" (click)="salva()" [disabled]="!isValid()">
+  <ion-button
+    expand="block"
+    class="ion-margin-top"
+    size="large"
+    (click)="salva()"
+    [disabled]="!isValid()"
+  >
     CREA CANTIERE
   </ion-button>
 </ion-content>

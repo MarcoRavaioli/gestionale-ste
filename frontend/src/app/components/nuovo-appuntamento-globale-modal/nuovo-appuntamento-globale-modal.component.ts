@@ -1,22 +1,48 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-  IonContent, IonIcon, IonInput, IonTextarea,
-  ModalController, ToastController, AlertController, 
-  IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonButton,
+  IonContent,
+  IonIcon,
+  IonInput,
+  IonTextarea,
+  ModalController,
+  ToastController,
+  AlertController,
+  IonSegment,
+  IonSegmentButton,
+  IonLabel, // <--- AGGIUNTO IonLabel
 } from '@ionic/angular/standalone';
 import { AppuntamentoService } from '../../services/appuntamento.service';
 import { CommessaService } from '../../services/commessa.service';
 import { IndirizzoService } from '../../services/indirizzo.service';
 import { ClienteService } from '../../services/cliente.service';
 import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
-import { Appuntamento, Commessa, Indirizzo, Cliente } from '../../interfaces/models';
+import {
+  Appuntamento,
+  Commessa,
+  Indirizzo,
+  Cliente,
+} from '../../interfaces/models';
+import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 import { addIcons } from 'ionicons';
-import { calendarOutline, documentsOutline, closeOutline, add, trashOutline, locationOutline, personOutline, linkOutline } from 'ionicons/icons';
+import {
+  calendarOutline,
+  documentsOutline,
+  closeOutline,
+  add,
+  trashOutline,
+  locationOutline,
+  personOutline,
+  linkOutline,
+} from 'ionicons/icons';
 
 @Component({
   selector: 'app-nuovo-appuntamento-globale-modal',
@@ -24,21 +50,34 @@ import { calendarOutline, documentsOutline, closeOutline, add, trashOutline, loc
   styleUrls: ['./nuovo-appuntamento-globale-modal.component.scss'],
   standalone: true,
   imports: [
-    IonHeader, IonToolbar, IonTitle, IonButtons, IonButton,
-    IonContent, IonIcon, IonInput, IonTextarea,
-    CommonModule, FormsModule, GenericSelectorComponent,
-    IonSegment, IonSegmentButton, IonLabel // <--- AGGIUNTO IonLabel
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IonIcon,
+    IonInput,
+    IonTextarea,
+    CommonModule,
+    FormsModule,
+    GenericSelectorComponent,
+    IonSegment,
+    IonSegmentButton,
+    IonLabel,
+    GestioneAllegatiComponent, // <--- AGGIUNTO GestioneAllegatiComponent
   ],
 })
 export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
   @Input() appuntamento?: Appuntamento;
   isEditing = false;
 
-  tipoCollegamento: 'commessa' | 'cantiere' | 'cliente' | 'nessuno' = 'commessa';
+  tipoCollegamento: 'commessa' | 'cantiere' | 'cliente' | 'nessuno' =
+    'commessa';
 
   listaCommesse: Commessa[] = [];
   selectedCommessaId: number | null = null;
-  
+
   listaCantieri: Indirizzo[] = [];
   selectedCantiereId: number | null = null;
 
@@ -51,6 +90,9 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     descrizione: '',
   };
 
+  @ViewChild(GestioneAllegatiComponent)
+  gestioneAllegati!: GestioneAllegatiComponent;
+
   constructor(
     private modalCtrl: ModalController,
     private toastCtrl: ToastController,
@@ -58,9 +100,18 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     private appService: AppuntamentoService,
     private comService: CommessaService,
     private indService: IndirizzoService,
-    private clienteService: ClienteService
+    private clienteService: ClienteService,
   ) {
-    addIcons({ calendarOutline, documentsOutline, closeOutline, add, trashOutline, locationOutline, personOutline, linkOutline });
+    addIcons({
+      calendarOutline,
+      documentsOutline,
+      closeOutline,
+      add,
+      trashOutline,
+      locationOutline,
+      personOutline,
+      linkOutline,
+    });
   }
 
   ngOnInit() {
@@ -69,10 +120,12 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       this.isEditing = true;
       this.formDati = {
         nome: this.appuntamento.nome,
-        data_ora: this.appuntamento.data_ora ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16) : '',
+        data_ora: this.appuntamento.data_ora
+          ? new Date(this.appuntamento.data_ora).toISOString().slice(0, 16)
+          : '',
         descrizione: this.appuntamento.descrizione || '',
       };
-      
+
       if (this.appuntamento.commessa) {
         this.tipoCollegamento = 'commessa';
         this.selectedCommessaId = this.appuntamento.commessa.id;
@@ -94,19 +147,25 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
   }
 
-  chiudi() { this.modalCtrl.dismiss(); }
+  chiudi() {
+    this.modalCtrl.dismiss();
+  }
 
   isValid(): boolean {
     if (!this.formDati.data_ora) return false;
-    if (this.tipoCollegamento === 'commessa' && !this.selectedCommessaId) return false;
-    if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId) return false;
-    if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId) return false;
+    if (this.tipoCollegamento === 'commessa' && !this.selectedCommessaId)
+      return false;
+    if (this.tipoCollegamento === 'cantiere' && !this.selectedCantiereId)
+      return false;
+    if (this.tipoCollegamento === 'cliente' && !this.selectedClienteId)
+      return false;
     return true;
   }
 
   salva() {
     const payload: any = { ...this.formDati };
-    if (!payload.nome || payload.nome.trim() === '') payload.nome = 'Intervento';
+    if (!payload.nome || payload.nome.trim() === '')
+      payload.nome = 'Intervento';
 
     payload.commessa = null;
     payload.indirizzo = null;
@@ -114,7 +173,10 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
     if (this.tipoCollegamento === 'commessa' && this.selectedCommessaId) {
       payload.commessa = { id: this.selectedCommessaId };
-    } else if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
+    } else if (
+      this.tipoCollegamento === 'cantiere' &&
+      this.selectedCantiereId
+    ) {
       payload.indirizzo = { id: this.selectedCantiereId };
     } else if (this.tipoCollegamento === 'cliente' && this.selectedClienteId) {
       payload.cliente = { id: this.selectedClienteId };
@@ -124,13 +186,23 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
 
     if (this.isEditing && this.appuntamento) {
       this.appService.update(this.appuntamento.id, payload).subscribe({
-        next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
-        error: () => this.mostraToast('Errore aggiornamento', 'danger')
+        next: async (res) => {
+          if (this.gestioneAllegati) {
+            await this.gestioneAllegati.uploadAllPendingFiles(res.id);
+          }
+          this.modalCtrl.dismiss({ creato: true, data: res });
+        },
+        error: () => this.mostraToast('Errore aggiornamento', 'danger'),
       });
     } else {
       this.appService.create(payload).subscribe({
-        next: (res) => this.modalCtrl.dismiss({ creato: true, data: res }),
-        error: () => this.mostraToast('Errore creazione', 'danger')
+        next: async (res) => {
+          if (this.gestioneAllegati) {
+            await this.gestioneAllegati.uploadAllPendingFiles(res.id);
+          }
+          this.modalCtrl.dismiss({ creato: true, data: res });
+        },
+        error: () => this.mostraToast('Errore creazione', 'danger'),
       });
     }
   }
@@ -142,8 +214,12 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       message: 'Sei sicuro di voler eliminare questo appuntamento?',
       buttons: [
         { text: 'Annulla', role: 'cancel' },
-        { text: 'Elimina', role: 'destructive', handler: () => this.confermaEliminazione() }
-      ]
+        {
+          text: 'Elimina',
+          role: 'destructive',
+          handler: () => this.confermaEliminazione(),
+        },
+      ],
     });
     await alert.present();
   }
@@ -154,14 +230,18 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
       next: async () => {
         if (Haptics) await Haptics.notification({ type: 'SUCCESS' } as any);
         this.mostraToast('Appuntamento eliminato', 'success');
-        this.modalCtrl.dismiss({ eliminato: true }); 
+        this.modalCtrl.dismiss({ eliminato: true });
       },
-      error: async () => this.mostraToast('Errore', 'danger')
+      error: async () => this.mostraToast('Errore', 'danger'),
     });
   }
 
   async mostraToast(msg: string, color: string) {
-    const toast = await this.toastCtrl.create({ message: msg, color, duration: 2000 });
+    const toast = await this.toastCtrl.create({
+      message: msg,
+      color,
+      duration: 2000,
+    });
     toast.present();
   }
 }

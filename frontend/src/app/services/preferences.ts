@@ -1,16 +1,14 @@
 import { Injectable } from '@angular/core';
 
 export interface ViewSettings {
-  orderBy: string;       // es. 'nome', 'citta', 'via'
+  orderBy: string; // es. 'nome', 'citta', 'via'
   orderDirection: 'asc' | 'desc';
-  groupBy?: string;      // es. 'citta', 'provincia' (Opzionale, null = nessun gruppo)
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PreferencesService {
-
   constructor() {}
 
   // Salva le impostazioni
