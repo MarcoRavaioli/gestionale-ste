@@ -58,11 +58,14 @@ app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
 }
 
 .list-item {
-  --background: var(--ion-background-color);
+  --background: var(--ion-item-background, var(--ion-background-color));
   --padding-start: 16px;
   --padding-end: 16px;
   --inner-padding-end: 0;
   margin-bottom: 1px; /* Separatore sottile */
+
+  /* Animazione a cascata per gli elementi della lista */
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
 
   /* Icona freccia a destra */
   .arrow-icon {
@@ -70,6 +73,13 @@ app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
     opacity: 0.4;
   }
 }
+
+.list-item:nth-child(1) { animation-delay: 0.05s; }
+.list-item:nth-child(2) { animation-delay: 0.10s; }
+.list-item:nth-child(3) { animation-delay: 0.15s; }
+.list-item:nth-child(4) { animation-delay: 0.20s; }
+.list-item:nth-child(5) { animation-delay: 0.25s; }
+.list-item:nth-child(t+6) { animation-delay: 0.30s; }
 
 /* --- ICON BOX (Contenitori Icone Colorati) --- */
 .list-icon-box {
@@ -164,12 +174,15 @@ app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
 }
 
 .status-badge {
-  font-size: 0.65rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-weight: 700;
-  letter-spacing: 0.03em;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  color: var(--ion-color-dark-contrast, #fff); /* Testo scuro/chiaro in base al tema */
+  background: var(--ion-color-dark, #333); 
+  border: 1px solid rgba(128, 128, 128, 0.2);
 }
 
 /* --- DETTAGLI APPUNTAMENTO --- */
@@ -202,6 +215,7 @@ app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
 .truncate-text {
   display: -webkit-box;
   -webkit-line-clamp: 2; /* Max 2 righe */
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -256,4 +270,63 @@ app-tab1, app-tab2, app-tab3, app-tab4, app-tab5 {
     font-size: 1.1rem;
     font-weight: 500;
   }
+}
+
+/* OUTDOOR ACCESSIBILITY: HIGHER CONTRAST TYPOGRAPHY & TOUCH TARGETS */
+body {
+  --ion-font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Roboto", sans-serif;
+  --ion-item-min-height: 64px; /* Aumenta zona touch */
+}
+
+/* Assicura touch target minimo accessibile di 44px */
+ion-button {
+  --min-height: 44px; 
+}
+
+/* High contrast modifications for base items */
+ion-item h2, .item-title {
+  font-weight: 800 !important;
+  font-size: 1.2rem !important; /* Larger for readability */
+  color: var(--ion-text-color) !important;
+}
+
+ion-item p, .item-subtitle {
+  font-size: 1rem !important;
+  color: var(--ion-color-medium) !important;
+  font-weight: 600 !important;
+}
+
+/* MICRO ANIMATIONS */
+/* Staggered list element entry */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-enter {
+  animation: fadeInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Smooth active state on cards and items */
+ion-item, ion-card {
+  --transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+ion-item:active, ion-card:active {
+  transform: scale(0.98);
+}
+
+/* Accordion animation limit 200-300ms */
+ion-accordion {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+ion-accordion.accordion-expanding,
+ion-accordion.accordion-expanded {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
