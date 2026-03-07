@@ -19,11 +19,11 @@ import { Roles } from '../auth/roles.decorator';
 
 @Controller('indirizzo')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('ADMIN', 'MANAGER')
 export class IndirizzoController {
   constructor(private readonly indirizzoService: IndirizzoService) {}
 
   @Post()
+  @Roles('ADMIN', 'MANAGER')
   create(@Body() createIndirizzoDto: CreateIndirizzoDto) {
     return this.indirizzoService.create(createIndirizzoDto);
   }
@@ -37,7 +37,7 @@ export class IndirizzoController {
   findPaginated(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 15,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
     return this.indirizzoService.findPaginated(+page, +limit, search);
   }
@@ -48,6 +48,7 @@ export class IndirizzoController {
   }
 
   @Patch(':id')
+  @Roles('ADMIN', 'MANAGER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateIndirizzoDto: UpdateIndirizzoDto,
@@ -56,7 +57,12 @@ export class IndirizzoController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.indirizzoService.remove(id);
+  @Roles('ADMIN', 'MANAGER')
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('cascade') cascade?: string,
+  ) {
+    const isCascade = cascade === 'true';
+    return this.indirizzoService.remove(id, isCascade);
   }
 }

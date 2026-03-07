@@ -11,6 +11,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { FatturaService } from './fattura.service';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -24,17 +25,25 @@ import { Roles } from 'src/auth/roles.decorator';
 
 @Controller('fattura')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('MANAGER', 'ADMIN')
 export class FatturaController {
   constructor(private readonly fatturaService: FatturaService) {}
 
   @Get()
-  findAll() {
-    return this.fatturaService.findAll();
+  async findAll(@Req() req: any) {
+    const user = req.user;
+    const fatture = await this.fatturaService.findAll();
+    if (user?.ruolo === 'COLLABORATORE') {
+      return fatture.map((f) => {
+        const { totale, ...safeFattura } = f;
+        return safeFattura;
+      });
+    }
+    return fatture;
   }
 
   // CREAZIONE
   @Post()
+  @Roles('ADMIN', 'MANAGER')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -64,6 +73,7 @@ export class FatturaController {
 
   // MODIFICA (PATCH)
   @Patch(':id')
+  @Roles('ADMIN', 'MANAGER')
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -93,6 +103,7 @@ export class FatturaController {
   }
 
   @Delete(':id')
+  @Roles('ADMIN', 'MANAGER')
   remove(@Param('id') id: string) {
     return this.fatturaService.remove(+id);
   }

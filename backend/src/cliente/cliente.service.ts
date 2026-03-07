@@ -91,8 +91,74 @@ export class ClienteService {
     return this.findOne(id);
   }
 
-  remove(id: number) {
-    return this.clienteRepository.softDelete(id);
+  async remove(id: number, cascade: boolean = false) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const cliente = await queryRunner.manager.findOne(Cliente, {
+        where: { id },
+        relations: [
+          'indirizzi',
+          'commesse',
+          'appuntamenti',
+          'fatture',
+          'allegati',
+        ], // We'll adjust based on entity definition
+      });
+
+      if (!cliente) {
+        throw new InternalServerErrorException('Cliente non trovato');
+      }
+
+      if (cascade) {
+        if (cliente.indirizzi?.length)
+          await queryRunner.manager.softRemove(cliente.indirizzi);
+        if (cliente.commesse?.length)
+          await queryRunner.manager.softRemove(cliente.commesse);
+        if (cliente.appuntamenti?.length)
+          await queryRunner.manager.softRemove(cliente.appuntamenti);
+        if (cliente.fatture?.length)
+          await queryRunner.manager.softRemove(cliente.fatture);
+        if (cliente.allegati?.length)
+          await queryRunner.manager.softRemove(cliente.allegati);
+      } else {
+        // Orphan
+        if (cliente.indirizzi?.length) {
+          cliente.indirizzi.forEach((i) => (i.cliente = null as any));
+          await queryRunner.manager.save(cliente.indirizzi);
+        }
+        if (cliente.commesse?.length) {
+          cliente.commesse.forEach((c) => (c.cliente = null as any));
+          await queryRunner.manager.save(cliente.commesse);
+        }
+        if (cliente.appuntamenti?.length) {
+          cliente.appuntamenti.forEach((a) => (a.cliente = null as any));
+          await queryRunner.manager.save(cliente.appuntamenti);
+        }
+        if (cliente.fatture?.length) {
+          cliente.fatture.forEach((f) => (f.cliente = null as any));
+          await queryRunner.manager.save(cliente.fatture);
+        }
+        if (cliente.allegati?.length) {
+          cliente.allegati.forEach((al) => (al.cliente = null as any));
+          await queryRunner.manager.save(cliente.allegati);
+        }
+      }
+
+      await queryRunner.manager.softRemove(cliente);
+      await queryRunner.commitTransaction();
+      return { success: true, message: 'Cliente eliminato', cascade };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        "Errore durante l'eliminazione del cliente.",
+        err.message,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findPaginated(page: number, limit: number, search: string) {

@@ -72,8 +72,56 @@ export class IndirizzoService {
     return this.findOne(id);
   }
 
-  remove(id: number) {
-    return this.indirizzoRepository.softDelete(id);
+  async remove(id: number, cascade: boolean = false) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const indirizzo = await queryRunner.manager.findOne(Indirizzo, {
+        where: { id },
+        relations: ['commesse', 'appuntamenti', 'allegati'],
+      });
+
+      if (!indirizzo) {
+        throw new InternalServerErrorException('Indirizzo non trovato');
+      }
+
+      if (cascade) {
+        if (indirizzo.commesse?.length)
+          await queryRunner.manager.softRemove(indirizzo.commesse);
+        if (indirizzo.appuntamenti?.length)
+          await queryRunner.manager.softRemove(indirizzo.appuntamenti);
+        if (indirizzo.allegati?.length)
+          await queryRunner.manager.softRemove(indirizzo.allegati);
+      } else {
+        // Orphan
+        if (indirizzo.commesse?.length) {
+          indirizzo.commesse.forEach((c) => (c.indirizzo = null as any));
+          await queryRunner.manager.save(indirizzo.commesse);
+        }
+        if (indirizzo.appuntamenti?.length) {
+          indirizzo.appuntamenti.forEach((a) => (a.indirizzo = null as any));
+          await queryRunner.manager.save(indirizzo.appuntamenti);
+        }
+        if (indirizzo.allegati?.length) {
+          indirizzo.allegati.forEach((al) => (al.indirizzo = null as any));
+          await queryRunner.manager.save(indirizzo.allegati);
+        }
+      }
+
+      await queryRunner.manager.softRemove(indirizzo);
+      await queryRunner.commitTransaction();
+      return { success: true, message: 'Indirizzo eliminato', cascade };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        "Errore durante l'eliminazione dell'indirizzo.",
+        err.message,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   async findPaginated(page: number, limit: number, search: string) {

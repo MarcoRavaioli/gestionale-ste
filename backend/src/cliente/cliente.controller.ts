@@ -20,11 +20,11 @@ import { Roles } from '../auth/roles.decorator';
 
 @Controller('cliente')
 @UseGuards(JwtAuthGuard, RolesGuard) // 1. Protezione Login + Ruoli
-@Roles('ADMIN', 'MANAGER') // 2. Accesso ESCLUSIVO a Admin e Manager
 export class ClienteController {
   constructor(private readonly clienteService: ClienteService) {}
 
   @Post()
+  @Roles('ADMIN', 'MANAGER')
   create(@Body() createClienteDto: CreateClienteDto) {
     return this.clienteService.create(createClienteDto);
   }
@@ -33,7 +33,7 @@ export class ClienteController {
   findPaginated(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 15,
-    @Query('search') search: string = ''
+    @Query('search') search: string = '',
   ) {
     return this.clienteService.findPaginated(+page, +limit, search);
   }
@@ -49,6 +49,7 @@ export class ClienteController {
   }
 
   @Patch(':id')
+  @Roles('ADMIN', 'MANAGER')
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateClienteDto: UpdateClienteDto,
@@ -57,7 +58,12 @@ export class ClienteController {
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.clienteService.remove(id);
+  @Roles('ADMIN', 'MANAGER')
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('cascade') cascade?: string,
+  ) {
+    const isCascade = cascade === 'true';
+    return this.clienteService.remove(id, isCascade);
   }
 }

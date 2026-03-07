@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateAppuntamentoDto } from './dto/create-appuntamento.dto';
 import { Appuntamento } from '../entities/appuntamento.entity';
 
@@ -105,9 +105,39 @@ export class AppuntamentoService {
       );
 
     if (search) {
-      query.where(
-        'appuntamento.titolo ILIKE :search OR appuntamento.descrizione ILIKE :search OR cliente.nome ILIKE :search OR indirizzoCliente.nome ILIKE :search OR commessa.descrizione ILIKE :search OR commessaCliente.nome ILIKE :search OR commessaIndirizzoCliente.nome ILIKE :search',
-        { search: `%${search}%` },
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('appuntamento.titolo ILIKE :search', {
+            search: `%${search}%`,
+          })
+            .orWhere('appuntamento.descrizione ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('cliente.nome ILIKE :search', { search: `%${search}%` })
+            .orWhere('indirizzoCliente.nome ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('indirizzo.via ILIKE :search', { search: `%${search}%` })
+            .orWhere('indirizzo.citta ILIKE :search', { search: `%${search}%` })
+            .orWhere('commessa.descrizione ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('commessa.seriale ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('commessaCliente.nome ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('commessaIndirizzoCliente.nome ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('commessaIndirizzo.via ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('commessaIndirizzo.citta ILIKE :search', {
+              search: `%${search}%`,
+            });
+        }),
       );
     }
 

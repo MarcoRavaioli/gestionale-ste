@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateCommessaDto } from './dto/create-commessa.dto';
 import { Commessa } from '../entities/commessa.entity';
 import { UpdateCommessaDto } from './dto/update-commessa.dto';
@@ -103,9 +103,21 @@ export class CommessaService {
       .leftJoinAndSelect('indirizzo.cliente', 'indirizzoCliente');
 
     if (search) {
-      query.where(
-        'commessa.seriale ILIKE :search OR commessa.descrizione ILIKE :search OR cliente.nome ILIKE :search OR indirizzoCliente.nome ILIKE :search',
-        { search: `%${search}%` },
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('commessa.seriale ILIKE :search', { search: `%${search}%` })
+            .orWhere('commessa.descrizione ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('cliente.nome ILIKE :search', { search: `%${search}%` })
+            .orWhere('indirizzoCliente.nome ILIKE :search', {
+              search: `%${search}%`,
+            })
+            .orWhere('indirizzo.via ILIKE :search', { search: `%${search}%` })
+            .orWhere('indirizzo.citta ILIKE :search', {
+              search: `%${search}%`,
+            });
+        }),
       );
     }
 
@@ -122,8 +134,55 @@ export class CommessaService {
     };
   }
 
-  async remove(id: number) {
-    await this.commessaRepository.softDelete(id);
-    return { deleted: true };
+  async remove(id: number, cascade: boolean = false) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const commessa = await queryRunner.manager.findOne(Commessa, {
+        where: { id },
+        relations: ['appuntamenti', 'fatture', 'allegati'],
+      });
+
+      if (!commessa) {
+        throw new InternalServerErrorException('Commessa non trovata');
+      }
+
+      if (cascade) {
+        if (commessa.appuntamenti?.length)
+          await queryRunner.manager.softRemove(commessa.appuntamenti);
+        if (commessa.fatture?.length)
+          await queryRunner.manager.softRemove(commessa.fatture);
+        if (commessa.allegati?.length)
+          await queryRunner.manager.softRemove(commessa.allegati);
+      } else {
+        // Orphan
+        if (commessa.appuntamenti?.length) {
+          commessa.appuntamenti.forEach((a) => (a.commessa = null as any));
+          await queryRunner.manager.save(commessa.appuntamenti);
+        }
+        if (commessa.fatture?.length) {
+          commessa.fatture.forEach((f) => (f.commessa = null as any));
+          await queryRunner.manager.save(commessa.fatture);
+        }
+        if (commessa.allegati?.length) {
+          commessa.allegati.forEach((al) => (al.commessa = null as any));
+          await queryRunner.manager.save(commessa.allegati);
+        }
+      }
+
+      await queryRunner.manager.softRemove(commessa);
+      await queryRunner.commitTransaction();
+      return { success: true, message: 'Commessa eliminata', cascade };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw new InternalServerErrorException(
+        "Errore durante l'eliminazione della commessa.",
+        err.message,
+      );
+    } finally {
+      await queryRunner.release();
+    }
   }
 }
