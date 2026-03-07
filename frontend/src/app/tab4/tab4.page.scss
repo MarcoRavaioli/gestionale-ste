@@ -41,7 +41,9 @@ ion-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  flex-wrap: wrap; /* Fix overlaps on small screens */
+  gap: 8px;
 }
 
 .balance-label {

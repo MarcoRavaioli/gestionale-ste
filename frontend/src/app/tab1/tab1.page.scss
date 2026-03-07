@@ -41,11 +41,14 @@ ion-content {
 }
 
 .welcome-text {
-  font-size: 1.8rem; /* Leggermente più grande */
+  font-size: 1.5rem; /* Adaptable font */
   font-weight: 800;
   color: white; /* Testo Bianco su sfondo blu */
   margin: 0;
   letter-spacing: -0.5px;
+  line-height: 1.2;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .subtitle-text {

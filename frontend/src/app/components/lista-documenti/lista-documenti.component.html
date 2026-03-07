@@ -29,8 +29,22 @@
         <p class="item-badge-subtitle">{{ getSottotitolo(doc) }}</p>
       </ion-label>
 
-      <ion-button slot="end" fill="clear" color="primary">
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="primary"
+        (click)="apriDocumento(doc.id); $event.stopPropagation()"
+      >
         <ion-icon name="download-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+
+      <ion-button
+        slot="end"
+        fill="clear"
+        color="danger"
+        (click)="eliminaDocumento(doc.id, $event)"
+      >
+        <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
       </ion-button>
     </ion-item>
   </ion-list>

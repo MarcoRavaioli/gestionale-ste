@@ -108,6 +108,9 @@
     <div *ngIf="vistaCorrente === 'appuntamenti'">
       <app-lista-appuntamenti
         [appuntamentiLista]="appuntamentiLista"
+        [isLoading]="isLoading"
+        [isAllLoaded]="appuntamentiPage >= appuntamentiTotalPages"
+        (loadMore)="caricaAltraPaginaAppuntamenti($event)"
         (itemClick)="goToDettaglioElemento($event, 'appuntamento')"
       >
       </app-lista-appuntamenti>

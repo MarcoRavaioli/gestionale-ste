@@ -9,12 +9,15 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonSpinner,
+  AlertController,
+  ToastController,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
   documentOutline,
   downloadOutline,
   searchOutline,
+  trashOutline,
 } from 'ionicons/icons';
 import { AllegatoService } from '../../services/allegato.service';
 import { Allegato } from '../../interfaces/models';
@@ -44,8 +47,12 @@ export class ListaDocumentiComponent implements OnInit {
 
   @ViewChild(IonInfiniteScroll) infiniteScroll!: IonInfiniteScroll;
 
-  constructor(private allegatoService: AllegatoService) {
-    addIcons({ documentOutline, downloadOutline, searchOutline });
+  constructor(
+    private allegatoService: AllegatoService,
+    private alertCtrl: AlertController,
+    private toastCtrl: ToastController,
+  ) {
+    addIcons({ documentOutline, downloadOutline, searchOutline, trashOutline });
   }
 
   ngOnInit() {
@@ -113,5 +120,42 @@ export class ListaDocumentiComponent implements OnInit {
     if (doc.indirizzo)
       return `Cantiere: ${doc.indirizzo.via} ${doc.indirizzo.civico}`;
     return 'Documento Globale';
+  }
+
+  async eliminaDocumento(id: number, event: Event) {
+    event.stopPropagation();
+    const alert = await this.alertCtrl.create({
+      header: 'Conferma',
+      message: 'Vuoi davvero eliminare fisicamente questo file?',
+      buttons: [
+        { text: 'Annulla', role: 'cancel' },
+        {
+          text: 'Elimina',
+          role: 'destructive',
+          handler: () => {
+            this.allegatoService.delete(id).subscribe({
+              next: async () => {
+                this.documenti = this.documenti.filter((d) => d.id !== id);
+                const t = await this.toastCtrl.create({
+                  message: 'File eliminato',
+                  duration: 2000,
+                  color: 'success',
+                });
+                t.present();
+              },
+              error: async () => {
+                const t = await this.toastCtrl.create({
+                  message: 'Errore eliminazione',
+                  duration: 2000,
+                  color: 'danger',
+                });
+                t.present();
+              },
+            });
+          },
+        },
+      ],
+    });
+    await alert.present();
   }
 }

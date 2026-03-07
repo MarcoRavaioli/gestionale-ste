@@ -129,11 +129,19 @@ export class Tab3Page implements OnInit {
   // tuttiCantieri rimossa
 
   get clientiVisualizzati() {
-    return this.clienteService.clientiState();
+    return this.ordinaLista(
+      [...this.clienteService.clientiState()],
+      this.settingsClienti.orderBy,
+      this.settingsClienti.orderDirection,
+    );
   }
 
   get cantieriLista() {
-    return this.indirizzoService.cantieriState();
+    return this.ordinaLista(
+      [...this.indirizzoService.cantieriState()],
+      this.settingsCantieri.orderBy,
+      this.settingsCantieri.orderDirection,
+    );
   }
   commesseLista: Commessa[] = [];
   appuntamentiLista: Appuntamento[] = [];
@@ -642,13 +650,7 @@ export class Tab3Page implements OnInit {
         componentToOpen = NuovoAppuntamentoGlobaleModalComponent;
         propsToPass = { appuntamento: item };
       } else if (tipo === 'commessa') {
-        this.toastCtrl
-          .create({
-            message: 'Questa è una Commessa Interna',
-            duration: 2000,
-            color: 'primary',
-          })
-          .then((t) => t.present());
+        this.router.navigate(['/commessa-dettaglio', item.id]);
         return;
       } else if (tipo === 'cantiere') {
         // ROTTA AL NUOVO DETTAGLIO CANTIERE ORFANO!
