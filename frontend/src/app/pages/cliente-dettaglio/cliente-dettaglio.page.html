@@ -5,17 +5,43 @@
     </ion-buttons>
     <ion-title>{{ cliente?.nome }}</ion-title>
 
-
     <ion-buttons slot="end" *ngIf="hasManagerAccess">
-      <ion-button *ngIf="!isEditing" (click)="abilitaModifica()"><ion-icon slot="icon-only" name="pencil-outline"></ion-icon></ion-button>
-      <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light"><ion-icon slot="icon-only" name="close-outline"></ion-icon></ion-button>
-      <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning"><ion-icon slot="icon-only" name="save-outline"></ion-icon></ion-button>
-      <ion-button *ngIf="!isEditing" (click)="chiediConfermaCancellazione()" color="danger"><ion-icon slot="icon-only" name="trash-outline" style="color: #ffcccc"></ion-icon></ion-button>
+      <ion-button *ngIf="!isEditing" (click)="abilitaModifica()"
+        ><ion-icon slot="icon-only" name="pencil-outline"></ion-icon
+      ></ion-button>
+      <ion-button *ngIf="isEditing" (click)="annullaModifica()" color="light"
+        ><ion-icon slot="icon-only" name="close-outline"></ion-icon
+      ></ion-button>
+      <ion-button *ngIf="isEditing" (click)="salvaModifica()" color="warning"
+        ><ion-icon slot="icon-only" name="save-outline"></ion-icon
+      ></ion-button>
+      <ion-button
+        *ngIf="!isEditing"
+        (click)="chiediConfermaCancellazione()"
+        color="danger"
+        ><ion-icon
+          slot="icon-only"
+          name="trash-outline"
+          style="color: #ffcccc"
+        ></ion-icon
+      ></ion-button>
     </ion-buttons>
 
-    <div class="quick-contact ion-padding-horizontal ion-padding-top" style="display: flex; gap: 15px; color: var(--ion-color-medium); font-size: 0.9rem;">
-      <span *ngIf="cliente?.telefono"><ion-icon name="call-outline"></ion-icon> {{ cliente?.telefono }}</span>
-      <span *ngIf="cliente?.email"><ion-icon name="mail-outline"></ion-icon> {{ cliente?.email }}</span>
+    <div
+      class="quick-contact ion-padding-horizontal ion-padding-top"
+      style="
+        display: flex;
+        gap: 15px;
+        color: var(--ion-color-medium);
+        font-size: 0.9rem;
+      "
+    >
+      <span *ngIf="cliente?.telefono"
+        ><ion-icon name="call-outline"></ion-icon> {{ cliente?.telefono }}</span
+      >
+      <span *ngIf="cliente?.email"
+        ><ion-icon name="mail-outline"></ion-icon> {{ cliente?.email }}</span
+      >
     </div>
   </ion-toolbar>
 
@@ -35,36 +61,59 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" *ngIf="cliente" class="light-bg">
-
   <div class="contact-card ion-margin" *ngIf="isEditing">
     <div class="card-header"><h3>Modifica Contatto</h3></div>
     <div class="contact-grid">
       <div class="contact-item full-width">
-        <ion-input label="Nome Committente" label-placement="stacked" fill="outline" [(ngModel)]="cliente.nome"></ion-input>
+        <ion-input
+          label="Nome Committente"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.nome"
+        ></ion-input>
       </div>
       <div class="contact-item">
-        <ion-input label="Email" label-placement="stacked" fill="outline" [(ngModel)]="cliente.email"></ion-input>
+        <ion-input
+          label="Email"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.email"
+        ></ion-input>
       </div>
       <div class="contact-item">
-        <ion-input label="Telefono" label-placement="stacked" fill="outline" [(ngModel)]="cliente.telefono"></ion-input>
+        <ion-input
+          label="Telefono"
+          label-placement="stacked"
+          fill="outline"
+          [(ngModel)]="cliente.telefono"
+        ></ion-input>
       </div>
     </div>
   </div>
 
-
-  <div class="sites-section fade-in" *ngIf="currentTab === 'cantieri' && !isEditing">
-    
-    
-
+  <div
+    class="sites-section fade-in"
+    *ngIf="currentTab === 'cantieri' && !isEditing"
+  >
     <div class="section-header-row ion-padding-horizontal">
       <h3>Cantieri Operativi</h3>
-      <ion-button *ngIf="hasManagerAccess" size="small" fill="solid" (click)="apriModalIndirizzo()">
+      <ion-button
+        *ngIf="hasManagerAccess"
+        size="small"
+        fill="solid"
+        (click)="apriModalIndirizzo()"
+      >
         <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuovo
       </ion-button>
     </div>
 
     <div class="ion-padding-horizontal search-wrapper">
-      <ion-searchbar placeholder="Cerca indirizzo cantiere, commessa..." [(ngModel)]="searchTerm" (ionInput)="filtraCantieri()" animated="true"></ion-searchbar>
+      <ion-searchbar
+        placeholder="Cerca indirizzo cantiere, commessa..."
+        [(ngModel)]="searchTerm"
+        (ionInput)="filtraCantieri()"
+        animated="true"
+      ></ion-searchbar>
     </div>
 
     <div *ngIf="!indirizziVisualizzati?.length" class="empty-state">
@@ -72,15 +121,37 @@
       <p>Nessun cantiere trovato.</p>
     </div>
 
-    <ion-accordion-group expand="inset" class="custom-accordion" [multiple]="true" [value]="indirizziAperti" (ionChange)="accordionChange($event)">
-      <ion-accordion *ngFor="let indirizzo of indirizziVisualizzati" [value]="indirizzo.id.toString()">
-        <ion-item slot="header" [id]="'cantiere-header-' + indirizzo.id" lines="none" class="accordion-header-item">
+    <ion-accordion-group
+      expand="inset"
+      class="custom-accordion"
+      [multiple]="true"
+      [value]="indirizziAperti"
+      (ionChange)="accordionChange($event)"
+    >
+      <ion-accordion
+        *ngFor="let indirizzo of indirizziVisualizzati"
+        [value]="indirizzo.id.toString()"
+      >
+        <ion-item
+          slot="header"
+          [id]="'cantiere-header-' + indirizzo.id"
+          lines="none"
+          class="accordion-header-item"
+        >
           <div class="site-header-content">
-            <div class="site-icon"><ion-icon name="location" color="secondary"></ion-icon></div>
+            <div class="site-icon">
+              <ion-icon name="location" color="secondary"></ion-icon>
+            </div>
             <div class="site-info">
-              <h2 class="site-address">{{ indirizzo.via }} {{ indirizzo.civico }}</h2>
+              <h2 class="site-address">
+                {{ indirizzo.via }} {{ indirizzo.civico }}
+              </h2>
               <p class="site-city">{{ indirizzo.citta }}</p>
-              <div class="site-badges"><ion-badge color="light" class="small-badge">{{ indirizzo.commesse?.length || 0 }} Commesse</ion-badge></div>
+              <div class="site-badges">
+                <ion-badge color="light" class="small-badge"
+                  >{{ indirizzo.commesse?.length || 0 }} Commesse</ion-badge
+                >
+              </div>
             </div>
           </div>
         </ion-item>
@@ -88,8 +159,20 @@
           <div class="cantiere-actions-bar" *ngIf="hasManagerAccess">
             <span class="actions-label">Gestione Indirizzo</span>
             <div class="actions-buttons">
-              <ion-button fill="clear" size="small" color="medium" (click)="apriModalIndirizzo(indirizzo)"><ion-icon name="pencil-outline" slot="start"></ion-icon></ion-button>
-              <ion-button fill="clear" size="small" color="danger" (click)="eliminaIndirizzo(indirizzo)"><ion-icon name="trash-outline" slot="start"></ion-icon></ion-button>
+              <ion-button
+                fill="clear"
+                size="small"
+                color="medium"
+                (click)="apriModalIndirizzo(indirizzo)"
+                ><ion-icon name="pencil-outline" slot="start"></ion-icon
+              ></ion-button>
+              <ion-button
+                fill="clear"
+                size="small"
+                color="danger"
+                (click)="eliminaIndirizzo(indirizzo)"
+                ><ion-icon name="trash-outline" slot="start"></ion-icon
+              ></ion-button>
             </div>
           </div>
           <app-indirizzo-accordion
@@ -100,18 +183,26 @@
             (onAddCommessa)="apriModalCommessa($event)"
             (onEditCommessa)="apriModalCommessa(indirizzo.id, $event)"
             (onDeleteCommessa)="eliminaCommessa($event)"
-            (onRefresh)="caricaDati(cliente.id)">
+            (onRefresh)="caricaDati(cliente.id)"
+          >
           </app-indirizzo-accordion>
         </div>
       </ion-accordion>
     </ion-accordion-group>
   </div>
 
-
-  <div class="sites-section fade-in" *ngIf="currentTab === 'commesse' && !isEditing">
+  <div
+    class="sites-section fade-in"
+    *ngIf="currentTab === 'commesse' && !isEditing"
+  >
     <div class="section-header-row ion-padding-horizontal ion-padding-top">
       <h3>Commesse Dirette</h3>
-      <ion-button *ngIf="hasManagerAccess" size="small" fill="solid" (click)="apriModalCommessa(null)">
+      <ion-button
+        *ngIf="hasManagerAccess"
+        size="small"
+        fill="solid"
+        (click)="apriModalCommessa(null)"
+      >
         <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuova
       </ion-button>
     </div>
@@ -121,15 +212,32 @@
       <p>Nessuna commessa diretta (slegata da cantiere).</p>
     </div>
 
-    <ion-accordion-group expand="inset" class="custom-accordion" [multiple]="true" [value]="commesseDiretteAperte" (ionChange)="accordionCommessaChange($event)">
-      <ion-accordion *ngFor="let c of commesseDirette" [value]="c.id.toString()">
-        
-        <ion-item slot="header" [id]="'commessa-diretta-header-' + c.id" lines="none" class="accordion-header-item">
+    <ion-accordion-group
+      expand="inset"
+      class="custom-accordion"
+      [multiple]="true"
+      [value]="commesseDiretteAperte"
+      (ionChange)="accordionCommessaChange($event)"
+    >
+      <ion-accordion
+        *ngFor="let c of commesseDirette"
+        [value]="c.id.toString()"
+      >
+        <ion-item
+          slot="header"
+          [id]="'commessa-diretta-header-' + c.id"
+          lines="none"
+          class="accordion-header-item"
+        >
           <div class="site-header-content">
-            <div class="site-icon"><ion-icon name="documents" color="tertiary"></ion-icon></div>
+            <div class="site-icon">
+              <ion-icon name="documents" color="tertiary"></ion-icon>
+            </div>
             <div class="site-info">
-              <div style="display: flex; gap: 8px; align-items: center;">
-                <span style="font-weight: bold; color: var(--ion-color-dark);">{{ c.seriale }}</span>
+              <div style="display: flex; gap: 8px; align-items: center">
+                <span style="font-weight: bold; color: var(--ion-color-dark)"
+                  >{{ c.seriale }}</span
+                >
                 <ion-badge color="light">{{ c.stato }}</ion-badge>
               </div>
               <p class="site-city">{{ c.descrizione || 'Commessa interna' }}</p>
@@ -137,26 +245,48 @@
           </div>
         </ion-item>
 
-        <div slot="content" class="accordion-content-box" style="padding-top: 0">
-           <div class="commessa-actions-bar" *ngIf="hasManagerAccess" style="display: flex; justify-content: flex-end;">
-             <ion-button fill="clear" size="small" color="medium" (click)="apriModalCommessa(null, c)"><ion-icon name="pencil-outline" slot="start"></ion-icon></ion-button>
-             <ion-button fill="clear" size="small" color="danger" (click)="eliminaCommessa(c)"><ion-icon name="trash-outline" slot="start"></ion-icon></ion-button>
-           </div>
-           
-           <app-commessa-item
-              [commessa]="c"
-              [hasManagerAccess]="hasManagerAccess"
-              [targetAppuntamentoId]="targetAppuntamentoId"
-              (refreshReq)="caricaDati(cliente.id)">
-            </app-commessa-item>
-        </div>
+        <div
+          slot="content"
+          class="accordion-content-box"
+          style="padding-top: 0"
+        >
+          <div
+            class="commessa-actions-bar"
+            *ngIf="hasManagerAccess"
+            style="display: flex; justify-content: flex-end"
+          >
+            <ion-button
+              fill="clear"
+              size="small"
+              color="medium"
+              (click)="apriModalCommessa(null, c)"
+              ><ion-icon name="pencil-outline" slot="start"></ion-icon
+            ></ion-button>
+            <ion-button
+              fill="clear"
+              size="small"
+              color="danger"
+              (click)="eliminaCommessa(c)"
+              ><ion-icon name="trash-outline" slot="start"></ion-icon
+            ></ion-button>
+          </div>
 
+          <app-commessa-item
+            [commessa]="c"
+            [hasManagerAccess]="hasManagerAccess"
+            [targetAppuntamentoId]="targetAppuntamentoId"
+            (refreshReq)="caricaDati(cliente.id)"
+          >
+          </app-commessa-item>
+        </div>
       </ion-accordion>
     </ion-accordion-group>
   </div>
 
-
-  <div class="sites-section fade-in" *ngIf="currentTab === 'appuntamenti' && !isEditing">
+  <div
+    class="sites-section fade-in"
+    *ngIf="currentTab === 'appuntamenti' && !isEditing"
+  >
     <div class="section-header-row ion-padding-horizontal ion-padding-top">
       <h3>Appuntamenti Slegati</h3>
     </div>
@@ -166,17 +296,28 @@
       <p>Nessun intervento diretto registrato.</p>
     </div>
 
-    <ion-list lines="full" class="ion-margin-horizontal" style="background: transparent;">
-      <ion-item *ngFor="let app of appuntamentiDiretti" style="--background: var(--ion-card-background); border-radius: 12px; margin-bottom: 10px;">
+    <ion-list
+      lines="full"
+      class="ion-margin-horizontal"
+      style="background: transparent"
+    >
+      <ion-item
+        *ngFor="let app of appuntamentiDiretti"
+        style="
+          --background: var(--ion-card-background);
+          border-radius: 12px;
+          margin-bottom: 10px;
+        "
+      >
         <ion-icon name="calendar" slot="start" color="warning"></ion-icon>
         <ion-label>
           <h2>{{ app.nome }}</h2>
           <p>{{ app.data_ora | date:'dd/MM/yyyy HH:mm' }}</p>
-          <p style="font-size: 0.8rem; color: var(--ion-color-medium);">{{ app.descrizione }}</p>
+          <p style="font-size: 0.8rem; color: var(--ion-color-medium)">
+            {{ app.descrizione }}
+          </p>
         </ion-label>
       </ion-item>
     </ion-list>
   </div>
-
-  <div class="spacer" style="height: 100px"></div>
 </ion-content>
