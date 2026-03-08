@@ -1,0 +1,89 @@
+<div class="accordion-content">
+  <div class="commesse-toolbar">
+    <span class="label-commesse">COMMESSE</span>
+    <ion-button
+      *ngIf="hasManagerAccess"
+      size="small"
+      fill="outline"
+      shape="round"
+      (click)="handleAddCommessa()"
+    >
+      <ion-icon name="add" slot="start"></ion-icon> Nuova
+    </ion-button>
+  </div>
+
+  <div *ngIf="!indirizzo.commesse?.length" class="empty-commesse">
+    <p>Nessuna commessa.</p>
+  </div>
+
+  <ion-accordion-group
+    [value]="commesseAperte"
+    [multiple]="true"
+  >
+    <ion-accordion
+      *ngFor="let c of indirizzo.commesse"
+      [value]="'commessa-' + c.id"
+      class="commessa-accordion"
+    >
+      <ion-item
+        slot="header"
+        lines="none"
+        class="commessa-header-item"
+        [id]="'commessa-header-' + c.id"
+      >
+        <div class="commessa-row-grid">
+          <div class="col-status">
+            <ion-badge [color]="getColoreStato(c.stato)" class="status-badge"
+              >{{ c.stato }}</ion-badge
+            >
+            <span class="serial-code">{{ c.seriale }}</span>
+          
+          </div>
+
+          <div class="col-info">
+            <p class="descrizione">
+              {{ c.descrizione || "Nessuna descrizione" }}
+            </p>
+            <div class="meta-info" *ngIf="c.valore_totale && hasManagerAccess">
+              <span class="price-tag"
+                >€ {{ c.valore_totale | number : "1.2-2" }}</span
+              >
+            </div>
+          </div>
+          </div>
+      </ion-item>
+
+      <div slot="content">
+        <div class="commessa-actions-bar" *ngIf="hasManagerAccess">
+          <span class="actions-label">Gestione Commessa</span>
+          <div class="actions-buttons">
+            <ion-button
+              fill="clear"
+              size="small"
+              color="medium"
+              (click)="onEditCommessa.emit(c)"
+            >
+              <ion-icon name="pencil-outline" slot="start"></ion-icon>
+            </ion-button>
+            <ion-button
+              fill="clear"
+              size="small"
+              color="danger"
+              (click)="onDeleteCommessa.emit(c)"
+            >
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+            </ion-button>
+          </div>
+        </div>
+
+        <app-commessa-item
+          [commessa]="c"
+          [hasManagerAccess]="hasManagerAccess"
+          [targetAppuntamentoId]="targetAppuntamentoId"
+          (refreshReq)="onRefresh.emit()"
+        >
+        </app-commessa-item>
+      </div>
+    </ion-accordion>
+  </ion-accordion-group>
+</div>

@@ -1,0 +1,137 @@
+.accordion-content {
+  background-color: var(--ion-background-color); 
+  padding: 0 16px 16px 16px;
+  border-top: 1px solid var(--ion-color-step-150);
+}
+
+.commesse-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 15px 0;
+  
+  .label-commesse {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--ion-color-medium);
+  }
+}
+
+.empty-commesse {
+  text-align: center;
+  padding: 20px;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  font-size: 0.9rem;
+  background: var(--ion-color-step-50);
+  border-radius: 8px;
+}
+
+/* STILI SPOSTATI DA COMMESSA-ITEM */
+.commessa-accordion {
+  border: 1px solid var(--ion-color-step-200);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  background: var(--ion-card-background); 
+  overflow: hidden;
+}
+
+.commessa-header-item {
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --background: transparent; 
+  --min-height: auto;
+}
+
+.commessa-row-grid {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px;
+  gap: 12px;
+}
+
+.col-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 75px;
+
+  .status-badge { font-size: 0.65rem; padding: 4px 8px; border-radius: 4px; font-weight: 700; }
+  .serial-code { font-weight: 800; font-size: 0.8rem; color: var(--ion-text-color); opacity: 0.8; }
+}
+
+.col-info {
+  flex: 1;
+  white-space: normal;
+  .descrizione { margin: 0 0 6px 0; font-size: 0.95rem; font-weight: 500; color: var(--ion-text-color); line-height: 1.4; }
+  .meta-info { display: flex; gap: 10px; align-items: center; }
+  .price-tag { font-size: 0.85rem; font-weight: bold; color: var(--ion-color-success); background: rgba(var(--ion-color-success-rgb), 0.1); padding: 2px 6px; border-radius: 4px; }
+}
+
+/* --- NUOVA BARRA AZIONI COMMESSA (Interna) --- */
+.commessa-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background-color: var(--ion-color-step-50); /* Sfondo leggermente diverso */
+  border-bottom: 1px dashed var(--ion-color-step-200);
+
+  .actions-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--ion-color-medium);
+    text-transform: uppercase;
+  }
+
+  .actions-buttons {
+    display: flex;
+    gap: 0;
+    
+    ion-button {
+      height: 28px;
+      font-size: 0.8rem;
+      margin: 0;
+    }
+  }
+}
+
+@keyframes flashHighlight {
+  0% {
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+  }
+  20% {
+    --background: rgba(var(--ion-color-warning-rgb), 0.5) !important; /* Giallo */
+  }
+  100% {
+    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
+  }
+}
+
+.highlight-item {
+  /* Ritardo di 0.4s per aspettare che l'accordion si apra */
+  animation: flashHighlight 3s ease-out 0.4s forwards;
+  
+  border-left: 5px solid var(--ion-color-warning);
+  
+  --background: transparent !important;
+  transition: --background 0.3s;
+}
+
+.btn-allegato {
+  --padding-start: 0;
+  --padding-end: 0;
+  height: 28px;
+  width: 28px;
+  margin-top: 4px;
+  
+  ion-icon {
+    font-size: 1.4rem;
+    color: var(--ion-color-primary);
+    transform: rotate(45deg); /* Graffetta obliqua */
+    filter: drop-shadow(0 2px 2px rgba(var(--ion-color-primary-rgb), 0.2));
+  }
+}
