@@ -1,126 +1,152 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="warning">
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
+      <ion-back-button defaultHref="/tabs/tab2"></ion-back-button>
     </ion-buttons>
-    <ion-title>Dettaglio Appuntamento</ion-title>
+    <ion-title>Appuntamento</ion-title>
 
-    <ion-buttons slot="end" *ngIf="hasManagerAccess">
-      <ion-button (click)="apriModalAppuntamento()">
+    <ion-buttons slot="end" *ngIf="hasManagerAccess()">
+      @if (!isEditing() && appuntamento()) {
+      <ion-button (click)="abilitaModifica()">
         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
       </ion-button>
+      <ion-button (click)="elimina()" color="danger">
+        <ion-icon
+          slot="icon-only"
+          name="trash-outline"
+          style="color: #ffcccc"
+        ></ion-icon>
+      </ion-button>
+      } @else if (isEditing()) {
+      <ion-button (click)="annullaModifica()" color="light">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="salvaModifica()" color="warning">
+        <ion-spinner *ngIf="isSaving()" name="crescent"></ion-spinner>
+        <ion-icon
+          *ngIf="!isSaving()"
+          slot="icon-only"
+          name="save-outline"
+        ></ion-icon>
+      </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
+
+  @if (appuntamento() && !isEditing()) {
+  <div class="context-banner">
+    <ion-icon name="link-outline"></ion-icon>
+    <span>Collegato a: <strong>{{ getParentContext() }}</strong></span>
+  </div>
+  }
 </ion-header>
 
-<ion-content [fullscreen]="true" class="light-bg" *ngIf="appuntamento">
-  <div
-    class="site-header-card ion-padding ion-margin"
-    style="
-      background: var(--ion-card-background);
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    "
-  >
-    <div style="display: flex; align-items: flex-start; gap: 15px">
-      <div
-        style="
-          background: rgba(var(--ion-color-warning-rgb), 0.1);
-          padding: 15px;
-          border-radius: 50%;
-        "
-      >
-        <ion-icon
-          name="calendar"
-          color="warning"
-          style="font-size: 32px"
-        ></ion-icon>
+<ion-content [fullscreen]="true" class="light-bg">
+  @if (!appuntamento()) {
+  <div class="loading-state">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Caricamento appuntamento...</p>
+  </div>
+  } @else { @if (!isEditing()) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div class="calendar-badge">
+        <span class="month">{{ appuntamento()!.data_ora | date:'MMM' }}</span>
+        <span class="day">{{ appuntamento()!.data_ora | date:'dd' }}</span>
       </div>
-      <div style="flex-grow: 1">
-        <h2 style="margin: 0; font-weight: bold; color: var(--ion-color-dark)">
-          {{ appuntamento.nome }}
-        </h2>
-        <p
-          style="
-            margin: 8px 0 0 0;
-            color: var(--ion-color-medium);
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          "
-        >
+      <div class="title-area">
+        <h3>{{ appuntamento()!.nome }}</h3>
+        <p class="time">
           <ion-icon name="time-outline"></ion-icon>
-          <strong>{{ appuntamento.data_ora | date:'dd/MM/yyyy HH:mm' }}</strong>
-        </p>
-        <p
-          style="
-            margin: 8px 0 0 0;
-            color: var(--ion-color-medium);
-            font-size: 1rem;
-          "
-          *ngIf="appuntamento.descrizione"
-        >
-          {{ appuntamento.descrizione }}
+          {{ appuntamento()!.data_ora | date:'HH:mm' }}
         </p>
       </div>
     </div>
+
+    <div class="card-body">
+      @if (appuntamento()!.descrizione) {
+      <div class="info-row">
+        <ion-icon name="document-text-outline" color="medium"></ion-icon>
+        <p class="desc">{{ appuntamento()!.descrizione }}</p>
+      </div>
+      } @if (appuntamento()!.commessa) {
+      <div class="info-row">
+        <ion-icon name="briefcase-outline" color="secondary"></ion-icon>
+        <span
+          >Commessa:
+          <strong>{{ appuntamento()!.commessa?.seriale }}</strong></span
+        >
+      </div>
+      } @if (appuntamento()!.indirizzo || appuntamento()!.commessa?.indirizzo) {
+      <div class="info-row">
+        <ion-icon name="location-outline" color="tertiary"></ion-icon>
+        <span
+          >{{ (appuntamento()!.indirizzo ||
+          appuntamento()!.commessa?.indirizzo)?.via }} {{
+          (appuntamento()!.indirizzo ||
+          appuntamento()!.commessa?.indirizzo)?.civico }}, {{
+          (appuntamento()!.indirizzo ||
+          appuntamento()!.commessa?.indirizzo)?.citta }}</span
+        >
+      </div>
+      } @if (appuntamento()!.cliente || (appuntamento()!.indirizzo ||
+      appuntamento()!.commessa?.indirizzo)?.cliente) {
+      <div class="info-row">
+        <ion-icon name="person-outline" color="primary"></ion-icon>
+        <span
+          >{{ (appuntamento()!.cliente || (appuntamento()!.indirizzo ||
+          appuntamento()!.commessa?.indirizzo)?.cliente)?.nome }}</span
+        >
+      </div>
+      }
+    </div>
   </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Coordinate</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-      >
-        <ion-icon name="person-outline"></ion-icon>
-        <strong>Riferimento:</strong>
-        <span
-          >{{ appuntamento.cliente?.nome ||
-          appuntamento.indirizzo?.cliente?.nome ||
-          appuntamento.commessa?.cliente?.nome ||
-          appuntamento.commessa?.indirizzo?.cliente?.nome || 'Generico' }}</span
-        >
-      </p>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-      >
-        <ion-icon name="location-outline"></ion-icon>
-        <strong>Luogo:</strong>
-        <span
-          >{{ appuntamento.indirizzo?.via ||
-          appuntamento.commessa?.indirizzo?.via || 'N.D.' }}</span
-        >
-      </p>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-        *ngIf="appuntamento.commessa"
-      >
-        <ion-icon name="document-text-outline"></ion-icon>
-        <strong>Commessa:</strong>
-        <span
-          >{{ appuntamento.commessa.seriale }} {{
-          appuntamento.commessa.descrizione ? ' - ' +
-          appuntamento.commessa.descrizione : '' }}</span
-        >
-      </p>
-    </ion-card-content>
-  </ion-card>
+  <div class="attachment-section fade-in">
+    <app-gestione-allegati
+      [entityId]="appuntamento()!.id"
+      entityType="appuntamento"
+      [readonly]="!hasManagerAccess()"
+    ></app-gestione-allegati>
+  </div>
+
+  } @else {
+  <!-- EDITING MODE -->
+  <div class="edit-card fade-in">
+    <h3>Modifica Appuntamento</h3>
+
+    <div class="form-group date-picker-group">
+      <ion-label>Data e Ora</ion-label>
+      <ion-datetime-button datetime="datetime-edit"></ion-datetime-button>
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="datetime-edit"
+            presentation="date-time"
+            [ngModel]="editDataOra()"
+            (ngModelChange)="editDataOra.set($event)"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+
+    <div class="form-group">
+      <ion-label position="stacked">Descrizione</ion-label>
+      <ion-textarea
+        fill="outline"
+        [ngModel]="editDescrizione()"
+        (ngModelChange)="editDescrizione.set($event)"
+        placeholder="Note intervento, cosa fare..."
+        [autoGrow]="true"
+      ></ion-textarea>
+    </div>
+
+    <!-- Possibilità di aggiungere allegati live durante la modifica -->
+    <app-gestione-allegati
+      [entityId]="appuntamento()!.id"
+      entityType="appuntamento"
+      [readonly]="false"
+    ></app-gestione-allegati>
+  </div>
+  } }
 </ion-content>

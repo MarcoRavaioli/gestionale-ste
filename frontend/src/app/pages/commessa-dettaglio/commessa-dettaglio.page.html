@@ -1,120 +1,181 @@
-<ion-header [translucent]="true">
-  <ion-toolbar color="tertiary">
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
     </ion-buttons>
-    <ion-title>Dettaglio Commessa</ion-title>
+    <ion-title>Commessa</ion-title>
 
-    <ion-buttons slot="end" *ngIf="hasManagerAccess">
-      <ion-button (click)="apriModalCommessa()">
+    <ion-buttons slot="end" *ngIf="hasManagerAccess()">
+      @if (!isEditing() && commessa()) {
+      <ion-button (click)="abilitaModifica()">
         <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
       </ion-button>
+      <ion-button (click)="elimina()" color="danger">
+        <ion-icon
+          slot="icon-only"
+          name="trash-outline"
+          style="color: #ffcccc"
+        ></ion-icon>
+      </ion-button>
+      } @else if (isEditing()) {
+      <ion-button (click)="annullaModifica()" color="light">
+        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="salvaModifica()" color="warning">
+        <ion-spinner *ngIf="isSaving()" name="crescent"></ion-spinner>
+        <ion-icon
+          *ngIf="!isSaving()"
+          slot="icon-only"
+          name="save-outline"
+        ></ion-icon>
+      </ion-button>
+      }
     </ion-buttons>
   </ion-toolbar>
+
+  @if (commessa() && !isEditing()) {
+  <div class="context-banner">
+    <ion-icon name="briefcase-outline"></ion-icon>
+    <span>Contesto: <strong>{{ getParentContext() }}</strong></span>
+  </div>
+  }
 </ion-header>
 
-<ion-content [fullscreen]="true" class="light-bg" *ngIf="commessa">
-  <div
-    class="site-header-card ion-padding ion-margin"
-    style="
-      background: var(--ion-card-background);
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-    "
-  >
-    <div style="display: flex; align-items: flex-start; gap: 15px">
-      <div
-        style="
-          background: rgba(var(--ion-color-tertiary-rgb), 0.1);
-          padding: 15px;
-          border-radius: 50%;
-        "
-      >
-        <ion-icon
-          name="documents"
-          color="tertiary"
-          style="font-size: 32px"
-        ></ion-icon>
+<ion-content [fullscreen]="true" class="light-bg">
+  @if (!commessa()) {
+  <div class="loading-state">
+    <ion-spinner name="crescent" color="primary"></ion-spinner>
+    <p>Caricamento commessa...</p>
+  </div>
+  } @else { @if (!isEditing()) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div class="icon-badge">
+        <ion-icon name="briefcase-outline"></ion-icon>
       </div>
-      <div style="flex-grow: 1">
-        <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-          "
-        >
-          <h2
-            style="margin: 0; font-weight: bold; color: var(--ion-color-dark)"
-          >
-            {{ commessa.seriale }}
-          </h2>
-          <ion-badge [color]="getColoreStato(commessa.stato)"
-            >{{ commessa.stato }}</ion-badge
-          >
-        </div>
-        <p
-          style="
-            margin: 8px 0 0 0;
-            color: var(--ion-color-medium);
-            font-size: 1.1rem;
-          "
-        >
-          {{ commessa.descrizione || 'Nessuna descrizione pattuita.' }}
+      <div class="title-area">
+        <h3>{{ commessa()!.seriale }}</h3>
+        <p class="status-badge" [class]="commessa()!.stato.toLowerCase()">
+          {{ commessa()!.stato }}
         </p>
       </div>
     </div>
+
+    <div class="card-body">
+      @if (commessa()!.descrizione) {
+      <div class="info-row">
+        <ion-icon name="document-text-outline" color="medium"></ion-icon>
+        <p class="desc">{{ commessa()!.descrizione }}</p>
+      </div>
+      } @if (commessa()!.indirizzo) {
+      <div class="info-row">
+        <ion-icon name="location-outline" color="tertiary"></ion-icon>
+        <span
+          >{{ commessa()!.indirizzo?.via }} {{ commessa()!.indirizzo?.civico }},
+          {{ commessa()!.indirizzo?.citta }}</span
+        >
+      </div>
+      } @if (commessa()!.cliente || commessa()!.indirizzo?.cliente) {
+      <div class="info-row">
+        <ion-icon name="person-outline" color="primary"></ion-icon>
+        <span
+          >{{ (commessa()!.cliente || commessa()!.indirizzo?.cliente)?.nome
+          }}</span
+        >
+      </div>
+      }
+    </div>
   </div>
 
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Dettagli Riferimento</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-        *ngIf="hasManagerAccess"
+  <div class="section-title fade-in">
+    <h4>Appuntamenti</h4>
+    <ion-button
+      fill="clear"
+      size="small"
+      (click)="creaNuovoAppuntamento()"
+      *ngIf="hasManagerAccess()"
+    >
+      <ion-icon name="add-circle-outline" slot="icon-only"></ion-icon>
+    </ion-button>
+  </div>
+
+  <div class="entity-list fade-in">
+    @if (commessa()!.appuntamenti && commessa()!.appuntamenti!.length > 0) {
+    @for (app of commessa()!.appuntamenti; track app.id) {
+    <div class="flat-appointment-card" (click)="apriAppuntamento(app)">
+      <div class="date-box" [class.warning]="!app.commessa">
+        <span class="day">{{ app.data_ora | date:'dd' }}</span>
+        <span class="month">{{ app.data_ora | date:'MMM' }}</span>
+      </div>
+      <div class="app-info">
+        <span class="time">{{ app.data_ora | date:'HH:mm' }}</span>
+        <h4>{{ app.nome }}</h4>
+        <span class="desc" *ngIf="app.descrizione">{{ app.descrizione }}</span>
+      </div>
+      <ion-icon name="chevron-forward-outline" color="medium"></ion-icon>
+    </div>
+    } } @else {
+    <div class="empty-state-mini">Nessun appuntamento in questa commessa.</div>
+    }
+  </div>
+
+  <div class="section-title fade-in">
+    <h4>Documenti</h4>
+  </div>
+  <div class="attachment-section fade-in">
+    <app-gestione-allegati
+      [entityId]="commessa()!.id"
+      entityType="commessa"
+      [readonly]="!hasManagerAccess()"
+    ></app-gestione-allegati>
+  </div>
+
+  } @else {
+  <!-- EDITING MODE -->
+  <div class="edit-card fade-in">
+    <h3>Modifica Commessa</h3>
+
+    <div class="form-group">
+      <ion-label position="stacked">Seriale</ion-label>
+      <ion-input
+        fill="outline"
+        [ngModel]="editSeriale()"
+        (ngModelChange)="editSeriale.set($event)"
+        placeholder="Es: COM-2023-01"
+      ></ion-input>
+    </div>
+
+    <div class="form-group">
+      <ion-label position="stacked">Stato</ion-label>
+      <ion-select
+        interface="popover"
+        fill="outline"
+        [ngModel]="editStato()"
+        (ngModelChange)="editStato.set($event)"
       >
-        <ion-icon name="barcode-outline"></ion-icon>
-        <strong>ID Sistema:</strong> {{ commessa.id }}
-      </p>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-        *ngIf="hasManagerAccess"
-      >
-        <ion-icon name="person-outline"></ion-icon>
-        <strong>Committente:</strong>
-        <span
-          >{{ commessa.cliente?.nome || commessa.indirizzo?.cliente?.nome ||
-          'Commessa Interna' }}</span
-        >
-      </p>
-      <p
-        style="
-          margin-bottom: 12px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        "
-        *ngIf="commessa.indirizzo"
-      >
-        <ion-icon name="location-outline"></ion-icon>
-        <strong>Cantiere:</strong>
-        <span
-          >{{ commessa.indirizzo.via }} {{ commessa.indirizzo.civico }}, {{
-          commessa.indirizzo.citta }}</span
-        >
-      </p>
-    </ion-card-content>
-  </ion-card>
+        <ion-select-option value="APERTA">Aperta</ion-select-option>
+        <ion-select-option value="IN_CORSO">In Corso</ion-select-option>
+        <ion-select-option value="CHIUSA">Chiusa</ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="form-group">
+      <ion-label position="stacked">Descrizione</ion-label>
+      <ion-textarea
+        fill="outline"
+        [ngModel]="editDescrizione()"
+        (ngModelChange)="editDescrizione.set($event)"
+        placeholder="Lavori da eseguire, specifiche..."
+        [autoGrow]="true"
+      ></ion-textarea>
+    </div>
+
+    <!-- Possibilità di aggiungere allegati live durante la modifica -->
+    <app-gestione-allegati
+      [entityId]="commessa()!.id"
+      entityType="commessa"
+      [readonly]="false"
+    ></app-gestione-allegati>
+  </div>
+  } }
 </ion-content>

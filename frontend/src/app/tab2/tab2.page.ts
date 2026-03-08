@@ -4,9 +4,23 @@ import {
   ModalController,
   ToastController,
   Platform,
-  IonHeader, IonToolbar, IonButton, IonIcon, IonContent, IonFab, IonFabButton, 
-  IonModal, IonDatetime, IonItem, IonLabel, IonDatetimeButton, IonTitle, IonButtons,
-  IonBadge, IonText, IonRippleEffect
+  IonHeader,
+  IonToolbar,
+  IonButton,
+  IonIcon,
+  IonContent,
+  IonFab,
+  IonFabButton,
+  IonModal,
+  IonDatetime,
+  IonItem,
+  IonLabel,
+  IonDatetimeButton,
+  IonTitle,
+  IonButtons,
+  IonBadge,
+  IonText,
+  IonRippleEffect,
 } from '@ionic/angular/standalone';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -20,15 +34,35 @@ import { Share } from '@capacitor/share';
 import { NuovoAppuntamentoGlobaleModalComponent } from '../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 import { addIcons } from 'ionicons';
 import {
-  chevronBackOutline, chevronForwardOutline, chevronDownOutline, chevronUpOutline,
-  calendarOutline, timeOutline, locationOutline, personOutline, add, documentsOutline,
-  gridOutline, calendarNumberOutline, todayOutline, shareSocialOutline, downloadOutline,
+  chevronBackOutline,
+  chevronForwardOutline,
+  chevronDownOutline,
+  chevronUpOutline,
+  calendarOutline,
+  timeOutline,
+  locationOutline,
+  personOutline,
+  add,
+  documentsOutline,
+  gridOutline,
+  calendarNumberOutline,
+  todayOutline,
+  shareSocialOutline,
+  downloadOutline,
   createOutline,
 } from 'ionicons/icons';
 
 import {
-  format, startOfWeek, endOfWeek, eachDayOfInterval, addWeeks, subWeeks,
-  isSameDay, isToday, startOfMonth, endOfMonth,
+  format,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addWeeks,
+  subWeeks,
+  isSameDay,
+  isToday,
+  startOfMonth,
+  endOfMonth,
 } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { Router } from '@angular/router';
@@ -39,16 +73,28 @@ import { Router } from '@angular/router';
   styleUrls: ['tab2.page.scss'],
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     FormsModule,
     // INSERIMENTO DEI COMPONENTI GRAFICI IONIC QUI
-    IonHeader, IonToolbar, IonButton, IonIcon, IonContent, IonFab, IonFabButton, 
-    IonModal, IonDatetime, IonItem, IonLabel, IonDatetimeButton, IonTitle, IonButtons,
-    IonBadge, IonText, IonRippleEffect
+    IonHeader,
+    IonToolbar,
+    IonButton,
+    IonIcon,
+    IonContent,
+    IonFab,
+    IonFabButton,
+    IonModal,
+    IonDatetime,
+    IonItem,
+    IonLabel,
+    IonDatetimeButton,
+    IonTitle,
+    IonButtons,
+    IonBadge,
+    IonText,
+    IonRippleEffect,
   ],
 })
-
-
 export class Tab2Page implements OnInit {
   // STATO CALENDARIO
   viewMode: 'week' | 'month' = 'week';
@@ -309,25 +355,7 @@ export class Tab2Page implements OnInit {
   }
 
   goToAppuntamento(app: Appuntamento) {
-    if (this.isManager) {
-      if (app.commessa?.indirizzo?.cliente?.id) {
-        this.router.navigate(
-          ['/cliente-dettaglio', app.commessa.indirizzo.cliente.id],
-          {
-            queryParams: {
-              cantiereId: app.commessa.indirizzo.id,
-              commessaId: app.commessa.id,
-              appuntamentoId: app.id,
-            },
-          },
-        );
-      } else {
-        this.mostraToast(
-          'Impossibile aprire: Appuntamento non collegato a un cliente.',
-          'warning',
-        );
-      }
-    }
+    this.router.navigate(['/appuntamento-dettaglio', app.id]);
   }
 
   setExportModal(open: boolean) {

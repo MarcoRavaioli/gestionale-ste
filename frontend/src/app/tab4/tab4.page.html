@@ -2,6 +2,56 @@
   <ion-toolbar color="primary">
     <ion-title>Contabilità</ion-title>
   </ion-toolbar>
+</ion-header>
+
+<ion-popover
+  trigger="trigger-date-popover"
+  [dismissOnSelect]="false"
+  class="date-popover"
+>
+  <ng-template>
+    <div class="popover-content">
+      <p class="popover-title">Seleziona Periodo</p>
+
+      <div class="date-input-group">
+        <ion-label>Dal</ion-label>
+        <ion-datetime-button datetime="dt-start"></ion-datetime-button>
+      </div>
+
+      <div class="date-input-group">
+        <ion-label>Al</ion-label>
+        <ion-datetime-button datetime="dt-end"></ion-datetime-button>
+      </div>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="dt-start"
+            presentation="date"
+            [value]="filtroDataInizio()"
+            (ionChange)="onDateChangeInizio($event)"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+
+      <ion-modal [keepContentsMounted]="true">
+        <ng-template>
+          <ion-datetime
+            id="dt-end"
+            presentation="date"
+            [value]="filtroDataFine()"
+            (ionChange)="onDateChangeFine($event)"
+          ></ion-datetime>
+        </ng-template>
+      </ion-modal>
+    </div>
+  </ng-template>
+</ion-popover>
+
+<ion-content [fullscreen]="true" class="light-bg">
+  <ion-refresher slot="fixed" (ionRefresh)="caricaDati($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
   <div class="summary-card ion-margin-horizontal ion-margin-top">
     <div class="card-header-row">
@@ -75,7 +125,7 @@
     </div>
   </div>
 
-  <ion-toolbar class="segment-toolbar">
+  <div class="segment-toolbar-content">
     <ion-segment
       [value]="filtroCorrente()"
       (ionChange)="cambiaFiltro($event)"
@@ -89,57 +139,7 @@
         <ion-label color="danger">Scadute</ion-label>
       </ion-segment-button>
     </ion-segment>
-  </ion-toolbar>
-</ion-header>
-
-<ion-popover
-  trigger="trigger-date-popover"
-  [dismissOnSelect]="false"
-  class="date-popover"
->
-  <ng-template>
-    <div class="popover-content">
-      <p class="popover-title">Seleziona Periodo</p>
-
-      <div class="date-input-group">
-        <ion-label>Dal</ion-label>
-        <ion-datetime-button datetime="dt-start"></ion-datetime-button>
-      </div>
-
-      <div class="date-input-group">
-        <ion-label>Al</ion-label>
-        <ion-datetime-button datetime="dt-end"></ion-datetime-button>
-      </div>
-
-      <ion-modal [keepContentsMounted]="true">
-        <ng-template>
-          <ion-datetime
-            id="dt-start"
-            presentation="date"
-            [value]="filtroDataInizio()"
-            (ionChange)="onDateChangeInizio($event)"
-          ></ion-datetime>
-        </ng-template>
-      </ion-modal>
-
-      <ion-modal [keepContentsMounted]="true">
-        <ng-template>
-          <ion-datetime
-            id="dt-end"
-            presentation="date"
-            [value]="filtroDataFine()"
-            (ionChange)="onDateChangeFine($event)"
-          ></ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </div>
-  </ng-template>
-</ion-popover>
-
-<ion-content [fullscreen]="true" class="light-bg">
-  <ion-refresher slot="fixed" (ionRefresh)="caricaDati($event)">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
+  </div>
 
   <ion-list class="invoice-list">
     @for (gruppo of fattureFiltrate(); track gruppo.titolo) {

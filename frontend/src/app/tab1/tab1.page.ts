@@ -280,17 +280,8 @@ export class Tab1Page implements OnInit {
     });
   }
 
-  async goToAppuntamento(app: Appuntamento) {
-    const modal = await this.modalCtrl.create({
-      component: NuovoAppuntamentoGlobaleModalComponent,
-      componentProps: { appuntamento: app },
-    });
-    await modal.present();
-
-    const { data } = await modal.onWillDismiss();
-    if (data && (data.creato || data.aggiornato)) {
-      this.caricaDati();
-    }
+  goToAppuntamento(app: Appuntamento) {
+    this.router.navigate(['/appuntamento-dettaglio', app.id]);
   }
 
   async openProfilo() {

@@ -1,41 +1,51 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+
 import {
   IonHeader,
   IonToolbar,
   IonTitle,
-  IonContent,
   IonButtons,
   IonBackButton,
+  IonContent,
   IonIcon,
+  IonItem,
+  IonLabel,
+  IonButton,
+  IonSpinner,
+  IonTextarea,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
   ToastController,
-  ModalController,
   AlertController,
   NavController,
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardSubtitle,
-  IonBadge,
+  ModalController,
 } from '@ionic/angular/standalone';
 
-import { CommessaService } from 'src/app/services/commessa.service';
-import { AuthService } from 'src/app/services/auth.service';
-import { Commessa } from 'src/app/interfaces/models';
-import { NuovaCommessaModalComponent } from '../../components/nuova-commessa-modal/nuova-commessa-modal.component';
+import { CommessaService } from '../../services/commessa.service';
+import { AuthService } from '../../services/auth.service';
+import { Commessa, Appuntamento } from '../../interfaces/models';
+import { GestioneAllegatiComponent } from '../../components/gestione-allegati/gestione-allegati.component';
 
 import { addIcons } from 'ionicons';
 import {
-  documents,
-  pencilOutline,
-  trashOutline,
+  calendarOutline,
+  documentTextOutline,
+  timeOutline,
+  buildOutline,
   personOutline,
+  mapOutline,
   locationOutline,
-  barcodeOutline,
+  pencilOutline,
+  saveOutline,
+  closeOutline,
+  trashOutline,
+  briefcaseOutline,
+  addCircleOutline,
+  chevronForwardOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -49,88 +59,204 @@ import {
     IonHeader,
     IonToolbar,
     IonTitle,
-    IonContent,
     IonButtons,
     IonBackButton,
+    IonContent,
     IonIcon,
+    IonItem,
+    IonLabel,
     IonButton,
-    IonCard,
-    IonCardContent,
-    IonCardHeader,
-    IonCardTitle,
-    IonBadge,
+    IonSpinner,
+    IonTextarea,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    GestioneAllegatiComponent,
   ],
 })
 export class CommessaDettaglioPage implements OnInit {
-  commessa: Commessa | null = null;
-  hasManagerAccess = false;
+  commessaId = signal<number | null>(null);
+  commessa = signal<Commessa | null>(null);
+
+  hasManagerAccess = signal<boolean>(false);
+  isEditing = signal<boolean>(false);
+  isSaving = signal<boolean>(false);
+
+  // Form state
+  editSeriale = signal<string>('');
+  editDescrizione = signal<string>('');
+  editStato = signal<'APERTA' | 'CHIUSA' | 'IN_CORSO'>('APERTA');
+  editValoreTotale = signal<number | null>(null);
+
+  @ViewChild(GestioneAllegatiComponent)
+  gestioneAllegati!: GestioneAllegatiComponent;
 
   constructor(
     private route: ActivatedRoute,
-    private navCtrl: NavController,
     private commessaService: CommessaService,
     private authService: AuthService,
-    private modalCtrl: ModalController,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
+    private navCtrl: NavController,
+    private modalCtrl: ModalController,
   ) {
     addIcons({
-      documents,
-      pencilOutline,
-      trashOutline,
+      calendarOutline,
+      documentTextOutline,
+      timeOutline,
+      buildOutline,
       personOutline,
+      mapOutline,
       locationOutline,
-      barcodeOutline,
+      pencilOutline,
+      saveOutline,
+      closeOutline,
+      trashOutline,
+      briefcaseOutline,
+      addCircleOutline,
+      chevronForwardOutline,
     });
   }
 
   ngOnInit() {
-    this.hasManagerAccess = this.authService.hasManagerAccess();
+    this.hasManagerAccess.set(this.authService.hasManagerAccess());
     const idParam = this.route.snapshot.paramMap.get('id');
-    const commessaId = parseInt(idParam || '', 10);
+    const id = parseInt(idParam || '', 10);
 
-    if (isNaN(commessaId) || !commessaId) {
-      this.navCtrl.navigateRoot('/tabs/tab3');
+    if (isNaN(id) || !id) {
+      this.navCtrl.back();
       return;
     }
-    this.caricaDati(commessaId);
+
+    this.commessaId.set(id);
+    this.caricaDati();
   }
 
-  caricaDati(id: number) {
+  caricaDati() {
+    const id = this.commessaId();
+    if (!id) return;
+
     this.commessaService.getOne(id).subscribe({
-      next: (res: Commessa) => {
-        this.commessa = res;
+      next: (data) => this.commessa.set(data),
+      error: () =>
+        this.mostraToast('Impossibile caricare la commessa', 'danger'),
+    });
+  }
+
+  abilitaModifica() {
+    const c = this.commessa();
+    if (!c) return;
+
+    this.editSeriale.set(c.seriale);
+    this.editDescrizione.set(c.descrizione || '');
+    this.editStato.set(c.stato);
+    this.editValoreTotale.set(c.valore_totale || null);
+
+    this.isEditing.set(true);
+  }
+
+  annullaModifica() {
+    this.isEditing.set(false);
+  }
+
+  salvaModifica() {
+    const c = this.commessa();
+    if (!c || !this.editSeriale()) return;
+
+    this.isSaving.set(true);
+    const payload = {
+      seriale: this.editSeriale(),
+      descrizione: this.editDescrizione(),
+      stato: this.editStato(),
+      valore_totale: this.editValoreTotale() ?? undefined,
+    };
+
+    this.commessaService.update(c.id, payload).subscribe({
+      next: async (res) => {
+        if (this.gestioneAllegati) {
+          await this.gestioneAllegati.uploadAllPendingFiles(res.id);
+        }
+
+        this.commessa.set({ ...c, ...payload });
+        this.isEditing.set(false);
+        this.isSaving.set(false);
+        this.mostraToast('Modifiche salvate!', 'success');
       },
-      error: (err) => {
-        console.error('Errore caricamento commessa', err);
-        this.navCtrl.navigateRoot('/tabs/tab3');
+      error: () => {
+        this.isSaving.set(false);
+        this.mostraToast('Errore nel salvataggio.', 'danger');
       },
     });
   }
 
-  async apriModalCommessa() {
-    const m = await this.modalCtrl.create({
-      component: NuovaCommessaModalComponent,
+  async elimina() {
+    const alert = await this.alertCtrl.create({
+      header: 'Elimina Commessa',
+      message:
+        'Sei sicuro di voler eliminare questa commessa in modo definitivo?',
+      buttons: [
+        { text: 'Annulla', role: 'cancel' },
+        {
+          text: 'Elimina',
+          role: 'destructive',
+          handler: () => {
+            this.commessaService.delete(this.commessaId()!).subscribe({
+              next: () => {
+                this.mostraToast('Eliminato con successo', 'success');
+                this.navCtrl.back();
+              },
+              error: () =>
+                this.mostraToast("Errore durante l'eliminazione", 'danger'),
+            });
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  apriAppuntamento(app: Appuntamento) {
+    this.navCtrl.navigateForward(['/appuntamento-dettaglio', app.id]);
+  }
+
+  async creaNuovoAppuntamento() {
+    // TODO: Could navigate to a creation step or open global modal prefilled.
+    // For complete consistency with "flat pages", we can dispatch the event or open the modal.
+    // Right now opening the modal with preselezione.
+    const m =
+      await import('../../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component').then(
+        (c) => c.NuovoAppuntamentoGlobaleModalComponent,
+      );
+    const modal = await this.modalCtrl.create({
+      component: m,
       componentProps: {
-        commessaEsistente: this.commessa,
-        indirizzoId: this.commessa?.indirizzo?.id,
+        commessaIdPreselezionato: this.commessaId(),
       },
     });
-    await m.present();
-    const { data } = await m.onWillDismiss();
-    if (data?.aggiornato && this.commessa) this.caricaDati(this.commessa.id);
+    modal.onDidDismiss().then((data: any) => {
+      if (data.data && data.data.creato) {
+        this.caricaDati(); // refresh
+      }
+    });
+    await modal.present();
   }
 
-  getColoreStato(stato: string): string {
-    switch (stato) {
-      case 'APERTA':
-        return 'success';
-      case 'IN_CORSO':
-        return 'warning';
-      case 'CHIUSA':
-        return 'medium';
-      default:
-        return 'primary';
-    }
+  // Let's inject it properly
+
+  getParentContext(): string {
+    const c = this.commessa();
+    if (!c) return 'Dettaglio Commessa';
+    if (c.indirizzo) return `Cantiere ${c.indirizzo.via}`;
+    if (c.cliente) return `Cliente ${c.cliente.nome}`;
+    return 'Commessa Diretta';
+  }
+
+  async mostraToast(msg: string, color: string) {
+    const t = await this.toastCtrl.create({
+      message: msg,
+      color,
+      duration: 2500,
+    });
+    t.present();
   }
 }

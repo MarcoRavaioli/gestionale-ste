@@ -351,6 +351,10 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
 
   // --- MODALI ESPANSIONE ---
 
+  apriCantiere(id: number) {
+    this.navCtrl.navigateForward(['/cantiere-dettaglio', id]);
+  }
+
   async apriModalIndirizzo(esistente?: Indirizzo) {
     const modal = await this.modalCtrl.create({
       component: NuovoIndirizzoModalComponent,
@@ -396,6 +400,10 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
       ],
     });
     await alert.present();
+  }
+
+  apriCommessa(id: number) {
+    this.navCtrl.navigateForward(['/commessa-dettaglio', id]);
   }
 
   async apriModalCommessa(indirizzoId: number | null, esistente?: Commessa) {
@@ -444,6 +452,10 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
       ],
     });
     await alert.present();
+  }
+
+  apriAppuntamento(id: number) {
+    this.navCtrl.navigateForward(['/appuntamento-dettaglio', id]);
   }
 
   async apriModalAppuntamento(

@@ -48,6 +48,7 @@ export class GestioneAllegatiComponent implements OnInit, OnChanges {
   @Input() entityType!: 'commessa' | 'cliente' | 'indirizzo' | 'appuntamento';
   @Input() entityId?: number | null;
   @Input() allegatiEsistenti: Allegato[] = [];
+  @Input() readonly: boolean = false;
 
   pendingFiles = signal<File[]>([]);
   isUploading = signal<boolean>(false);
