@@ -1,0 +1,81 @@
+@if (appuntamento) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div class="calendar-badge">
+        <span class="month">{{ appuntamento.data_ora | date: "MMM" }}</span>
+        <span class="day">{{ appuntamento.data_ora | date: "dd" }}</span>
+      </div>
+      <div class="title-area">
+        <h3>{{ appuntamento.nome }}</h3>
+        <p class="time">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ appuntamento.data_ora | date: "HH:mm" }}
+        </p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (appuntamento.descrizione) {
+        <div class="info-row">
+          <ion-icon name="document-text-outline" color="medium"></ion-icon>
+          <p class="desc">{{ appuntamento.descrizione }}</p>
+        </div>
+      }
+
+      <!-- Contesto Grafo -->
+      <div class="parent-context-box">
+        @if (appuntamento.commessa) {
+          <div class="info-row compact">
+            <ion-icon name="folder-outline" color="secondary"></ion-icon>
+            <span class="desc"
+              >Commessa:
+              <strong>{{ appuntamento.commessa.seriale }}</strong></span
+            >
+          </div>
+        }
+
+        @if (appuntamento.indirizzo || appuntamento.commessa?.indirizzo) {
+          <div class="info-row compact">
+            <ion-icon name="location-outline" color="tertiary"></ion-icon>
+            <span class="desc"
+              >Cantiere:
+              <strong
+                >{{
+                  (appuntamento.indirizzo || appuntamento.commessa?.indirizzo)
+                    ?.via
+                }}
+                {{
+                  (appuntamento.indirizzo || appuntamento.commessa?.indirizzo)
+                    ?.civico
+                }},
+                {{
+                  (appuntamento.indirizzo || appuntamento.commessa?.indirizzo)
+                    ?.citta
+                }}</strong
+              ></span
+            >
+          </div>
+        }
+
+        @if (
+          appuntamento.cliente ||
+          (appuntamento.indirizzo || appuntamento.commessa?.indirizzo)?.cliente
+        ) {
+          <div class="info-row compact">
+            <ion-icon name="person-outline" color="primary"></ion-icon>
+            <span class="desc"
+              >Cliente:
+              <strong>{{
+                (
+                  appuntamento.cliente ||
+                  (appuntamento.indirizzo || appuntamento.commessa?.indirizzo)
+                    ?.cliente
+                )?.nome
+              }}</strong></span
+            >
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

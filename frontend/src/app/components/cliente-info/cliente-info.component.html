@@ -1,0 +1,33 @@
+@if (cliente) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div class="avatar-badge">
+        <ion-icon name="person-outline"></ion-icon>
+      </div>
+      <div class="title-area">
+        <h3>{{ cliente.nome }}</h3>
+        <p class="subtitle">Cliente</p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (cliente.telefono) {
+        <div class="info-row">
+          <ion-icon name="call-outline" color="primary"></ion-icon>
+          <a [href]="'tel:' + cliente.telefono" class="desc link">{{
+            cliente.telefono
+          }}</a>
+        </div>
+      }
+
+      @if (cliente.email) {
+        <div class="info-row">
+          <ion-icon name="mail-outline" color="secondary"></ion-icon>
+          <a [href]="'mailto:' + cliente.email" class="desc link">{{
+            cliente.email
+          }}</a>
+        </div>
+      }
+    </div>
+  </div>
+}

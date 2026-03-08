@@ -1,0 +1,58 @@
+<ion-accordion-group expand="inset">
+  <ion-accordion value="children">
+    <ion-item slot="header" [color]="color">
+      <ion-icon [name]="iconName" slot="start"></ion-icon>
+      <ion-label>
+        <h2>{{ title }}</h2>
+      </ion-label>
+      <ion-badge slot="end" color="light">{{ _items().length }}</ion-badge>
+    </ion-item>
+
+    <div class="ion-padding" slot="content">
+      @if (_items().length > 0) {
+        <!-- Local Searchbar -->
+        <ion-searchbar
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          placeholder="Cerca in {{ title.toLowerCase() }}..."
+          animated="true"
+          class="child-searchbar"
+          color="light"
+        ></ion-searchbar>
+
+        <ion-list lines="full" class="child-list">
+          @for (item of filteredItems(); track item.id) {
+            <ion-item [routerLink]="item.url" detail="true" class="child-item">
+              <ion-avatar
+                slot="start"
+                class="type-avatar"
+                [ngClass]="item.tipo"
+              >
+                <ion-icon
+                  [name]="getIconForType(item.tipo)"
+                  [color]="getColorForType(item.tipo)"
+                ></ion-icon>
+              </ion-avatar>
+              <ion-label>
+                <h3>{{ item.titolo }}</h3>
+                @if (item.sottotitolo) {
+                  <p>{{ item.sottotitolo }}</p>
+                }
+              </ion-label>
+            </ion-item>
+          }
+
+          @if (filteredItems().length === 0) {
+            <div class="empty-state-search">
+              <p>Nessun risultato per "{{ searchQuery() }}"</p>
+            </div>
+          }
+        </ion-list>
+      } @else {
+        <div class="empty-state">
+          <p>Nessun elemento presente.</p>
+        </div>
+      }
+    </div>
+  </ion-accordion>
+</ion-accordion-group>

@@ -1,0 +1,72 @@
+ion-accordion {
+  background: var(--ion-color-light);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+
+  &::part(content) {
+    background: white;
+  }
+}
+
+.child-searchbar {
+  padding: 0 0 16px 0;
+  --box-shadow: none;
+  --background: var(--ion-color-step-50, #f4f5f8);
+  --border-radius: 8px;
+}
+
+.child-list {
+  background: transparent;
+  padding: 0;
+
+  .child-item {
+    --background: transparent;
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    
+    ion-label {
+      h3 {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+      p {
+        font-size: 0.85rem;
+        color: var(--ion-color-medium);
+      }
+    }
+
+    .type-avatar {
+      background: var(--ion-color-step-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px; /* Squircle style instead of full circle */
+
+      ion-icon {
+        font-size: 20px;
+      }
+      
+      &.cantiere { background: rgba(var(--ion-color-tertiary-rgb), 0.1); }
+      &.commessa { background: rgba(var(--ion-color-secondary-rgb), 0.1); }
+      &.appuntamento { background: rgba(var(--ion-color-primary-rgb), 0.1); }
+      &.fattura { background: rgba(var(--ion-color-success-rgb), 0.1); }
+    }
+  }
+}
+
+.empty-state, .empty-state-search {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--ion-color-medium);
+  font-style: italic;
+  
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}

@@ -1,0 +1,12 @@
+@if (items && items.length > 0) {
+  <div class="breadcrumb-container">
+    <ion-breadcrumbs>
+      @for (item of items; track item.url; let isLast = $last) {
+        <ion-breadcrumb [routerLink]="item.url" [active]="isLast">
+          {{ item.label }}
+          <ion-icon slot="separator" name="chevron-forward-outline"></ion-icon>
+        </ion-breadcrumb>
+      }
+    </ion-breadcrumbs>
+  </div>
+}

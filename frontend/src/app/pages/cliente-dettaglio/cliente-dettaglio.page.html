@@ -1,14 +1,14 @@
-<ion-header [translucent]="true">
+<ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/tab3"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ cliente()?.nome }}</ion-title>
+    <ion-title>Dettaglio Cliente</ion-title>
 
     <ion-buttons slot="end" *ngIf="hasManagerAccess()">
       @if (!isEditing()) {
       <ion-button (click)="abilitaModifica()">
-        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
       </ion-button>
       <ion-button (click)="chiediConfermaCancellazione()" color="danger">
         <ion-icon
@@ -26,258 +26,72 @@
       </ion-button>
       }
     </ion-buttons>
-
-    <div class="quick-contact ion-padding-horizontal ion-padding-top">
-      @if (cliente()?.telefono) {
-      <span
-        ><ion-icon name="call-outline"></ion-icon> {{ cliente()?.telefono
-        }}</span
-      >
-      } @if (cliente()?.email) {
-      <span
-        ><ion-icon name="mail-outline"></ion-icon> {{ cliente()?.email }}</span
-      >
-      }
-    </div>
   </ion-toolbar>
-
-  @if (cliente() && !isEditing()) {
-  <ion-toolbar>
-    <ion-segment
-      [value]="currentTab()"
-      (ionChange)="onTabChange($event)"
-      mode="ios"
-    >
-      <ion-segment-button value="cantieri">
-        <ion-label>Cantieri</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="commesse">
-        <ion-label>Commesse ({{ commesseDirette().length }})</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="appuntamenti">
-        <ion-label>App. ({{ appuntamentiDiretti().length }})</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-  </ion-toolbar>
-  }
 </ion-header>
 
-<ion-content [fullscreen]="true" *ngIf="cliente()" class="light-bg">
-  @if (isEditing()) {
-  <div class="contact-card ion-margin fade-in">
-    <div class="card-header"><h3>Modifica Contatto</h3></div>
-    <div class="contact-grid">
-      <div class="contact-item full-width">
-        <ion-input
-          label="Nome Committente"
-          label-placement="stacked"
-          fill="outline"
-          [(ngModel)]="cliente()!.nome"
-        ></ion-input>
-      </div>
-      <div class="contact-item">
-        <ion-input
-          label="Email"
-          label-placement="stacked"
-          fill="outline"
-          [(ngModel)]="cliente()!.email"
-        ></ion-input>
-      </div>
-      <div class="contact-item">
-        <ion-input
-          label="Telefono"
-          label-placement="stacked"
-          fill="outline"
-          [(ngModel)]="cliente()!.telefono"
-        ></ion-input>
-      </div>
+<ion-content [fullscreen]="true" class="light-bg ion-padding">
+  @if (!cliente()) {
+  <div class="empty-state">
+    <p>Caricamento cliente in corso...</p>
+  </div>
+  } @else { @if (!isEditing()) {
+  <!-- 1. VIEW MODE: Info Component -->
+  <app-cliente-info [cliente]="cliente()"></app-cliente-info>
+
+  <!-- 2. VIEW MODE: Children Lists -->
+  <div class="children-section fade-in">
+    <app-child-list-accordion
+      title="Cantieri"
+      iconName="construct-outline"
+      color="tertiary"
+      [items]="cantieriItems()"
+    >
+    </app-child-list-accordion>
+
+    <app-child-list-accordion
+      title="Commesse Dirette"
+      iconName="folder-outline"
+      color="secondary"
+      [items]="commesseDiretteItems()"
+    >
+    </app-child-list-accordion>
+
+    <app-child-list-accordion
+      title="Appuntamenti Diretti"
+      iconName="time-outline"
+      color="primary"
+      [items]="appuntamentiDirettiItems()"
+    >
+    </app-child-list-accordion>
+  </div>
+  } @else {
+  <!-- EDITING MODE -->
+  <div class="edit-card fade-in">
+    <h3>Modifica Contatto</h3>
+    <div class="form-group">
+      <ion-input
+        label="Nome Committente"
+        label-placement="stacked"
+        fill="outline"
+        [(ngModel)]="cliente()!.nome"
+      ></ion-input>
+    </div>
+    <div class="form-group" style="margin-top: 16px">
+      <ion-input
+        label="Email"
+        label-placement="stacked"
+        fill="outline"
+        [(ngModel)]="cliente()!.email"
+      ></ion-input>
+    </div>
+    <div class="form-group" style="margin-top: 16px">
+      <ion-input
+        label="Telefono"
+        label-placement="stacked"
+        fill="outline"
+        [(ngModel)]="cliente()!.telefono"
+      ></ion-input>
     </div>
   </div>
-  } @if (currentTab() === 'cantieri' && !isEditing()) {
-  <div class="sites-section fade-in">
-    <div class="section-header-row ion-padding-horizontal">
-      <h3>Cantieri ({{ indirizziFiltrati().length }})</h3>
-      @if (hasManagerAccess()) {
-      <ion-button size="small" fill="solid" (click)="apriModalIndirizzo()">
-        <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuovo
-      </ion-button>
-      }
-    </div>
-
-    <div class="ion-padding-horizontal search-wrapper">
-      <ion-searchbar
-        placeholder="Cerca via o commessa..."
-        [value]="searchTerm()"
-        (ionInput)="onSearchChange($event)"
-        animated="true"
-      ></ion-searchbar>
-    </div>
-
-    @if (indirizziFiltrati().length === 0) {
-    <div class="empty-state">
-      <ion-icon name="business-outline"></ion-icon>
-      <p>Nessun cantiere trovato.</p>
-    </div>
-    }
-
-    <div class="flat-list blur-bg ion-padding-horizontal">
-      @for (cantiere of indirizziFiltrati(); track cantiere.id) {
-      <div class="entity-card" [id]="'cantiere-card-' + cantiere.id">
-        <div class="card-top-header">
-          <div class="title-with-icon">
-            <ion-icon name="location" color="secondary"></ion-icon>
-            <div class="text-group">
-              <h3>{{ cantiere.via }} {{ cantiere.civico }}</h3>
-              <p>{{ cantiere.citta }}</p>
-            </div>
-          </div>
-
-          @if (hasManagerAccess()) {
-          <div class="inline-actions">
-            <ion-button
-              fill="clear"
-              size="small"
-              color="medium"
-              (click)="apriModalIndirizzo(cantiere)"
-            >
-              <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              color="danger"
-              (click)="eliminaIndirizzo(cantiere)"
-            >
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-          </div>
-          }
-        </div>
-
-        <div class="nested-content">
-          <div class="nested-header">
-            <h4>Commesse di Cantiere ({{ cantiere.commesse?.length || 0 }})</h4>
-            <ion-button
-              fill="clear"
-              size="small"
-              (click)="apriModalCommessa(cantiere.id)"
-            >
-              <ion-icon name="add"></ion-icon> Aggiungi
-            </ion-button>
-          </div>
-
-          @if (!cantiere.commesse || cantiere.commesse.length === 0) {
-          <div class="empty-state-mini">
-            Nessuna commessa assegnata a questo cantiere.
-          </div>
-          } @else {
-          <div class="card-list">
-            @for (commessa of cantiere.commesse; track commessa.id) {
-            <app-commessa-item
-              [commessa]="commessa"
-              [hasManagerAccess]="hasManagerAccess()"
-              [targetAppuntamentoId]="targetAppuntamentoId()"
-              (refreshReq)="caricaDati()"
-            ></app-commessa-item>
-            }
-          </div>
-          }
-        </div>
-      </div>
-      }
-    </div>
-  </div>
-  } @if (currentTab() === 'commesse' && !isEditing()) {
-  <div class="sites-section fade-in">
-    <div class="section-header-row ion-padding-horizontal ion-padding-top">
-      <h3>Commesse Slegate dal Cantiere</h3>
-      @if (hasManagerAccess()) {
-      <ion-button size="small" fill="solid" (click)="apriModalCommessa(null)">
-        <ion-icon name="add-circle-outline" slot="start"></ion-icon> Nuova
-      </ion-button>
-      }
-    </div>
-
-    @if (commesseDirette().length === 0) {
-    <div class="empty-state">
-      <ion-icon name="documents-outline"></ion-icon>
-      <p>Nessuna commessa diretta trovata.</p>
-    </div>
-    }
-
-    <div class="flat-list blur-bg ion-padding-horizontal">
-      <div class="card-list">
-        @for (c of commesseDirette(); track c.id) {
-        <div class="wrapper-card" [id]="'commessa-card-' + c.id">
-          <div class="inline-actions top-right" *ngIf="hasManagerAccess()">
-            <ion-button
-              fill="clear"
-              size="small"
-              color="medium"
-              (click)="apriModalCommessa(null, c)"
-            >
-              <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-            <ion-button
-              fill="clear"
-              size="small"
-              color="danger"
-              (click)="eliminaCommessa(c)"
-            >
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-button>
-          </div>
-
-          <app-commessa-item
-            [commessa]="c"
-            [hasManagerAccess]="hasManagerAccess()"
-            [targetAppuntamentoId]="targetAppuntamentoId()"
-            (refreshReq)="caricaDati()"
-          ></app-commessa-item>
-        </div>
-        }
-      </div>
-    </div>
-  </div>
-  } @if (currentTab() === 'appuntamenti' && !isEditing()) {
-  <div class="sites-section fade-in">
-    <div class="section-header-row ion-padding-horizontal ion-padding-top">
-      <h3>Appuntamenti Slegati (Senza Commessa)</h3>
-    </div>
-
-    @if (appuntamentiDiretti().length === 0) {
-    <div class="empty-state">
-      <ion-icon name="calendar-outline"></ion-icon>
-      <p>Nessun appuntamento diretto registrato.</p>
-    </div>
-    }
-
-    <div class="flat-list blur-bg ion-padding-horizontal">
-      @for (app of appuntamentiDiretti(); track app.id) {
-      <div class="flat-appointment-card">
-        <div class="date-box warning">
-          <span class="day">{{ app.data_ora | date:'dd' }}</span>
-          <span class="month">{{ app.data_ora | date:'MMM' }}</span>
-        </div>
-        <div class="app-info">
-          <span class="time">{{ app.data_ora | date:'HH:mm' }}</span>
-          <h4>{{ app.nome }}</h4>
-          <span class="desc">{{ app.descrizione }}</span>
-        </div>
-        <div class="actions" *ngIf="hasManagerAccess()">
-          <ion-button
-            fill="clear"
-            size="small"
-            (click)="apriModalAppuntamento(null, null, app)"
-          >
-            <ion-icon name="pencil-outline" slot="icon-only"></ion-icon>
-          </ion-button>
-        </div>
-      </div>
-      }
-    </div>
-  </div>
-  }
-
-  <div style="height: 50px"></div>
+  } }
 </ion-content>

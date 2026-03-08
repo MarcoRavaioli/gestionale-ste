@@ -1,0 +1,80 @@
+@if (commessa) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div
+        class="icon-badge"
+        style="
+          background: rgba(var(--ion-color-secondary-rgb), 0.1);
+          color: var(--ion-color-secondary);
+        "
+      >
+        <ion-icon name="folder-outline"></ion-icon>
+      </div>
+      <div class="title-area">
+        <h3>{{ commessa.seriale }}</h3>
+        <div class="subtitle">
+          Commessa
+          <ion-badge
+            [color]="getStatoColor(commessa.stato)"
+            style="margin-left: 8px"
+          >
+            {{ formatStato(commessa.stato) }}
+          </ion-badge>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+      @if (commessa.descrizione) {
+        <div class="info-row">
+          <ion-icon name="document-text-outline" color="medium"></ion-icon>
+          <p class="desc">{{ commessa.descrizione }}</p>
+        </div>
+      }
+
+      @if (commessa.valore_totale) {
+        <div class="info-row">
+          <ion-icon name="cash-outline" color="success"></ion-icon>
+          <span class="desc">
+            Valore:
+            <strong>{{
+              commessa.valore_totale
+                | currency: "EUR" : "symbol" : "1.2-2" : "it-IT"
+            }}</strong>
+          </span>
+        </div>
+      }
+
+      <!-- Visualizzazione dei collegamenti genitore per contesto -->
+      @if (commessa.indirizzo || commessa.cliente) {
+        <div class="parent-context-box">
+          @if (commessa.indirizzo) {
+            <div class="info-row compact">
+              <ion-icon name="construct-outline" color="tertiary"></ion-icon>
+              <span class="desc"
+                >Cantiere:
+                <strong
+                  >{{ commessa.indirizzo.via }} {{ commessa.indirizzo.civico }},
+                  {{ commessa.indirizzo.citta }}</strong
+                ></span
+              >
+            </div>
+          }
+
+          <!-- Cliente derivato o diretto -->
+          @if (commessa.cliente || commessa.indirizzo?.cliente) {
+            <div class="info-row compact">
+              <ion-icon name="business-outline" color="primary"></ion-icon>
+              <span class="desc"
+                >Cliente:
+                <strong>{{
+                  commessa.cliente?.nome || commessa.indirizzo?.cliente!.nome
+                }}</strong></span
+              >
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}

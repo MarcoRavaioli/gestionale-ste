@@ -3,12 +3,12 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/tabs/tab2"></ion-back-button>
     </ion-buttons>
-    <ion-title>Appuntamento</ion-title>
+    <ion-title>Dettaglio Appuntamento</ion-title>
 
     <ion-buttons slot="end" *ngIf="hasManagerAccess()">
       @if (!isEditing() && appuntamento()) {
       <ion-button (click)="abilitaModifica()">
-        <ion-icon slot="icon-only" name="pencil-outline"></ion-icon>
+        <ion-icon slot="icon-only" name="pencil"></ion-icon>
       </ion-button>
       <ion-button (click)="elimina()" color="danger">
         <ion-icon
@@ -32,121 +32,144 @@
       }
     </ion-buttons>
   </ion-toolbar>
-
-  @if (appuntamento() && !isEditing()) {
-  <div class="context-banner">
-    <ion-icon name="link-outline"></ion-icon>
-    <span>Collegato a: <strong>{{ getParentContext() }}</strong></span>
-  </div>
-  }
 </ion-header>
 
 <ion-content [fullscreen]="true" class="light-bg">
-  @if (!appuntamento()) {
-  <div class="loading-state">
-    <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p>Caricamento appuntamento...</p>
-  </div>
-  } @else { @if (!isEditing()) {
-  <div class="info-card fade-in">
-    <div class="card-header">
-      <div class="calendar-badge">
-        <span class="month">{{ appuntamento()!.data_ora | date:'MMM' }}</span>
-        <span class="day">{{ appuntamento()!.data_ora | date:'dd' }}</span>
-      </div>
-      <div class="title-area">
-        <h3>{{ appuntamento()!.nome }}</h3>
-        <p class="time">
-          <ion-icon name="time-outline"></ion-icon>
-          {{ appuntamento()!.data_ora | date:'HH:mm' }}
-        </p>
-      </div>
+  <!-- 1. BREADCRUMBS -->
+  @if(appuntamento() && !isEditing()) {
+  <app-breadcrumb-grafo [items]="breadcrumbItems()"></app-breadcrumb-grafo>
+  }
+
+  <div class="ion-padding">
+    @if (!appuntamento()) {
+    <div class="loading-state empty-state">
+      <ion-spinner name="crescent" color="primary"></ion-spinner>
+      <p>Caricamento appuntamento...</p>
+    </div>
+    } @else { @if (!isEditing()) {
+
+    <!-- 2. INFO COMPONENT -->
+    <app-appuntamento-info
+      [appuntamento]="appuntamento()"
+    ></app-appuntamento-info>
+
+    <!-- 3. ALLEGATI -->
+    <h4 class="section-title-minor fade-in">Documenti Allegati</h4>
+    <div class="attachment-section fade-in" style="margin-bottom: 24px">
+      <app-gestione-allegati
+        [entityId]="appuntamento()!.id"
+        entityType="appuntamento"
+        [readonly]="!hasManagerAccess()"
+      ></app-gestione-allegati>
     </div>
 
-    <div class="card-body">
-      @if (appuntamento()!.descrizione) {
-      <div class="info-row">
-        <ion-icon name="document-text-outline" color="medium"></ion-icon>
-        <p class="desc">{{ appuntamento()!.descrizione }}</p>
+    } @else {
+    <!-- EDITING MODE -->
+    <div class="edit-card fade-in">
+      <h3>Modifica Appuntamento</h3>
+
+      <!-- MUTAZIONE GRAFO (Svincolo/Assegnazione) -->
+      <p class="section-mini-label">
+        Scegli <strong>uno e un solo</strong> collegamento (Padre Diretto):
+      </p>
+
+      <div class="grid-form-selectors">
+        <div class="form-group parent-selector">
+          <ion-label position="stacked" color="secondary"
+            ><strong>Commessa</strong></ion-label
+          >
+          <ion-select
+            fill="outline"
+            label="Nessuna Commessa"
+            labelPlacement="floating"
+            [ngModel]="editCommessaId()"
+            (ngModelChange)="onChangeCommessa($event)"
+          >
+            <ion-select-option [value]="null">Svincola</ion-select-option>
+            @for (com of commesseDisponibili(); track com.id) {
+            <ion-select-option [value]="com.id"
+              >{{ com.seriale }}</ion-select-option
+            >
+            }
+          </ion-select>
+        </div>
+
+        <div class="form-group parent-selector" style="margin-top: 16px">
+          <ion-label position="stacked" color="tertiary"
+            ><strong>Cantiere (Indirizzo)</strong></ion-label
+          >
+          <ion-select
+            fill="outline"
+            label="Nessun Cantiere"
+            labelPlacement="floating"
+            [ngModel]="editIndirizzoId()"
+            (ngModelChange)="onChangeCantiere($event)"
+          >
+            <ion-select-option [value]="null">Svincola</ion-select-option>
+            @for (cant of cantieriDisponibili(); track cant.id) {
+            <ion-select-option [value]="cant.id"
+              >{{ cant.via }} {{ cant.civico }}</ion-select-option
+            >
+            }
+          </ion-select>
+        </div>
+
+        <div class="form-group parent-selector" style="margin-top: 16px">
+          <ion-label position="stacked" color="primary"
+            ><strong>Cliente Diretto</strong></ion-label
+          >
+          <ion-select
+            fill="outline"
+            label="Nessun Cliente"
+            labelPlacement="floating"
+            [ngModel]="editClienteId()"
+            (ngModelChange)="onChangeCliente($event)"
+          >
+            <ion-select-option [value]="null">Svincola</ion-select-option>
+            @for (cli of clientiDisponibili(); track cli.id) {
+            <ion-select-option [value]="cli.id"
+              >{{ cli.nome }}</ion-select-option
+            >
+            }
+          </ion-select>
+        </div>
       </div>
-      } @if (appuntamento()!.commessa) {
-      <div class="info-row">
-        <ion-icon name="briefcase-outline" color="secondary"></ion-icon>
-        <span
-          >Commessa:
-          <strong>{{ appuntamento()!.commessa?.seriale }}</strong></span
-        >
+
+      <hr style="opacity: 0.2; margin: 24px 0" />
+
+      <div class="form-group date-picker-group">
+        <ion-label>Data e Ora Inizio</ion-label>
+        <ion-datetime-button datetime="datetime-edit"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="datetime-edit"
+              presentation="date-time"
+              [ngModel]="editDataOra()"
+              (ngModelChange)="editDataOra.set($event)"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
       </div>
-      } @if (appuntamento()!.indirizzo || appuntamento()!.commessa?.indirizzo) {
-      <div class="info-row">
-        <ion-icon name="location-outline" color="tertiary"></ion-icon>
-        <span
-          >{{ (appuntamento()!.indirizzo ||
-          appuntamento()!.commessa?.indirizzo)?.via }} {{
-          (appuntamento()!.indirizzo ||
-          appuntamento()!.commessa?.indirizzo)?.civico }}, {{
-          (appuntamento()!.indirizzo ||
-          appuntamento()!.commessa?.indirizzo)?.citta }}</span
-        >
+
+      <div class="form-group" style="margin-top: 20px">
+        <ion-label position="stacked">Descrizione / Note</ion-label>
+        <ion-textarea
+          fill="outline"
+          [ngModel]="editDescrizione()"
+          (ngModelChange)="editDescrizione.set($event)"
+          placeholder="Intervento di manutenzione ordinaria..."
+          [autoGrow]="true"
+        ></ion-textarea>
       </div>
-      } @if (appuntamento()!.cliente || (appuntamento()!.indirizzo ||
-      appuntamento()!.commessa?.indirizzo)?.cliente) {
-      <div class="info-row">
-        <ion-icon name="person-outline" color="primary"></ion-icon>
-        <span
-          >{{ (appuntamento()!.cliente || (appuntamento()!.indirizzo ||
-          appuntamento()!.commessa?.indirizzo)?.cliente)?.nome }}</span
-        >
-      </div>
-      }
+
+      <h4 style="margin-top: 24px">Allegati</h4>
+      <app-gestione-allegati
+        [entityId]="appuntamento()!.id"
+        entityType="appuntamento"
+        [readonly]="false"
+      ></app-gestione-allegati>
     </div>
+    } }
   </div>
-
-  <div class="attachment-section fade-in">
-    <app-gestione-allegati
-      [entityId]="appuntamento()!.id"
-      entityType="appuntamento"
-      [readonly]="!hasManagerAccess()"
-    ></app-gestione-allegati>
-  </div>
-
-  } @else {
-  <!-- EDITING MODE -->
-  <div class="edit-card fade-in">
-    <h3>Modifica Appuntamento</h3>
-
-    <div class="form-group date-picker-group">
-      <ion-label>Data e Ora</ion-label>
-      <ion-datetime-button datetime="datetime-edit"></ion-datetime-button>
-      <ion-modal [keepContentsMounted]="true">
-        <ng-template>
-          <ion-datetime
-            id="datetime-edit"
-            presentation="date-time"
-            [ngModel]="editDataOra()"
-            (ngModelChange)="editDataOra.set($event)"
-          ></ion-datetime>
-        </ng-template>
-      </ion-modal>
-    </div>
-
-    <div class="form-group">
-      <ion-label position="stacked">Descrizione</ion-label>
-      <ion-textarea
-        fill="outline"
-        [ngModel]="editDescrizione()"
-        (ngModelChange)="editDescrizione.set($event)"
-        placeholder="Note intervento, cosa fare..."
-        [autoGrow]="true"
-      ></ion-textarea>
-    </div>
-
-    <!-- Possibilità di aggiungere allegati live durante la modifica -->
-    <app-gestione-allegati
-      [entityId]="appuntamento()!.id"
-      entityType="appuntamento"
-      [readonly]="false"
-    ></app-gestione-allegati>
-  </div>
-  } }
 </ion-content>

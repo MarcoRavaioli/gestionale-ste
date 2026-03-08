@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -21,31 +21,33 @@ import {
   AlertController,
   NavController,
   ModalController,
+  IonSelect,
+  IonSelectOption,
 } from '@ionic/angular/standalone';
 
 import { IndirizzoService } from '../../services/indirizzo.service';
+import { ClienteService } from '../../services/cliente.service';
 import { AuthService } from '../../services/auth.service';
-import { Indirizzo, Commessa, Appuntamento } from '../../interfaces/models';
+import { Indirizzo, Cliente } from '../../interfaces/models';
 import { GestioneAllegatiComponent } from '../../components/gestione-allegati/gestione-allegati.component';
-import { CommessaItemComponent } from '../../components/commessa-item/commessa-item.component';
+
+// Nuovi Componenti Dumb
+import { CantiereInfoComponent } from '../../components/cantiere-info/cantiere-info.component';
+import {
+  ChildListAccordionComponent,
+  ChildListItem,
+} from '../../components/child-list-accordion/child-list-accordion.component';
+import {
+  BreadcrumbGrafoComponent,
+  BreadcrumbItem,
+} from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 
 import { addIcons } from 'ionicons';
 import {
-  calendarOutline,
-  documentTextOutline,
-  timeOutline,
-  buildOutline,
-  personOutline,
-  mapOutline,
-  locationOutline,
-  pencilOutline,
+  pencil,
   saveOutline,
   closeOutline,
   trashOutline,
-  briefcaseOutline,
-  addCircleOutline,
-  chevronForwardOutline,
-  businessOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -69,8 +71,12 @@ import {
     IonSpinner,
     IonTextarea,
     IonInput,
+    IonSelect,
+    IonSelectOption,
     GestioneAllegatiComponent,
-    CommessaItemComponent,
+    CantiereInfoComponent,
+    ChildListAccordionComponent,
+    BreadcrumbGrafoComponent,
   ],
 })
 export class CantiereDettaglioPage implements OnInit {
@@ -81,19 +87,61 @@ export class CantiereDettaglioPage implements OnInit {
   isEditing = signal<boolean>(false);
   isSaving = signal<boolean>(false);
 
+  // Per il selettore Cliente durante la modifica
+  clientiDisponibili = signal<Cliente[]>([]);
+
   // Form state
   editVia = signal<string>('');
   editCivico = signal<string>('');
   editCitta = signal<string>('');
   editCap = signal<string>('');
   editProvincia = signal<string>('');
+  editClienteId = signal<number | null>(null);
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
 
+  // COMPUTED: Breadcrumb
+  breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+    const c = this.cantiere();
+    if (!c || !c.cliente) return []; // Se è orfano non mostra nulla
+    return [
+      {
+        label: `Cliente ${c.cliente.nome}`,
+        url: `/tabs/tab3/cliente-dettaglio/${c.cliente.id}`,
+      },
+    ];
+  });
+
+  // COMPUTED: Accordion Items
+  commesseItems = computed<ChildListItem[]>(() => {
+    const c = this.cantiere();
+    if (!c || !c.commesse) return [];
+    return c.commesse.map((com) => ({
+      id: com.id,
+      tipo: 'commessa',
+      titolo: com.seriale,
+      sottotitolo: com.descrizione,
+      url: `/commessa-dettaglio/${com.id}`,
+    }));
+  });
+
+  appuntamentiItems = computed<ChildListItem[]>(() => {
+    const c = this.cantiere();
+    if (!c || !c.appuntamenti) return [];
+    return c.appuntamenti.map((app) => ({
+      id: app.id,
+      tipo: 'appuntamento',
+      titolo: app.nome,
+      sottotitolo: new Date(app.data_ora).toLocaleString('it-IT'),
+      url: `/appuntamento-dettaglio/${app.id}`,
+    }));
+  });
+
   constructor(
     private route: ActivatedRoute,
     private indirizzoService: IndirizzoService,
+    private clienteService: ClienteService,
     private authService: AuthService,
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
@@ -101,21 +149,10 @@ export class CantiereDettaglioPage implements OnInit {
     private modalCtrl: ModalController,
   ) {
     addIcons({
-      calendarOutline,
-      documentTextOutline,
-      timeOutline,
-      buildOutline,
-      personOutline,
-      mapOutline,
-      locationOutline,
-      pencilOutline,
+      pencil,
       saveOutline,
       closeOutline,
       trashOutline,
-      briefcaseOutline,
-      addCircleOutline,
-      chevronForwardOutline,
-      businessOutline,
     });
   }
 
@@ -144,6 +181,17 @@ export class CantiereDettaglioPage implements OnInit {
     });
   }
 
+  caricaClientiPerSelettore() {
+    this.clienteService.getAll().subscribe({
+      next: (res: any) => {
+        // Handle both possible API return formats
+        const clienti = Array.isArray(res) ? res : res.data || [];
+        this.clientiDisponibili.set(clienti);
+      },
+      error: () => console.error('Errore caricamento clienti'),
+    });
+  }
+
   abilitaModifica() {
     const c = this.cantiere();
     if (!c) return;
@@ -153,7 +201,9 @@ export class CantiereDettaglioPage implements OnInit {
     this.editCitta.set(c.citta);
     this.editCap.set(c.cap);
     this.editProvincia.set(c.provincia || '');
+    this.editClienteId.set(c.cliente ? c.cliente.id : null);
 
+    this.caricaClientiPerSelettore();
     this.isEditing.set(true);
   }
 
@@ -173,6 +223,7 @@ export class CantiereDettaglioPage implements OnInit {
       cap: this.editCap(),
       provincia: this.editProvincia(),
       stato: c.stato, // preserved
+      clienteId: this.editClienteId(),
     };
 
     this.indirizzoService.update(c.id, payload).subscribe({
@@ -181,7 +232,8 @@ export class CantiereDettaglioPage implements OnInit {
           await this.gestioneAllegati.uploadAllPendingFiles(res.id);
         }
 
-        this.cantiere.set({ ...c, ...payload });
+        // Ricarica tutto da server per aggiornare i genitore calcolati (per sicurezza)
+        this.caricaDati();
         this.isEditing.set(false);
         this.isSaving.set(false);
         this.mostraToast('Modifiche salvate!', 'success');
@@ -223,51 +275,6 @@ export class CantiereDettaglioPage implements OnInit {
       },
       error: () => this.mostraToast("Errore durante l'eliminazione", 'danger'),
     });
-  }
-
-  apriCommessa(com: Commessa) {
-    this.navCtrl.navigateForward(['/commessa-dettaglio', com.id]);
-  }
-
-  apriAppuntamento(app: Appuntamento) {
-    this.navCtrl.navigateForward(['/appuntamento-dettaglio', app.id]);
-  }
-
-  async creaNuovaCommessa() {
-    const m =
-      await import('../../components/nuova-commessa-modal/nuova-commessa-modal.component').then(
-        (c) => c.NuovaCommessaModalComponent,
-      );
-    const modal = await this.modalCtrl.create({
-      component: m,
-      componentProps: { cantiereIdPreselezionato: this.cantiereId() },
-    });
-    modal.onDidDismiss().then((data) => {
-      if (data.data && data.data.creato) this.caricaDati();
-    });
-    await modal.present();
-  }
-
-  async creaNuovoAppuntamento() {
-    const m =
-      await import('../../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component').then(
-        (c) => c.NuovoAppuntamentoGlobaleModalComponent,
-      );
-    const modal = await this.modalCtrl.create({
-      component: m,
-      componentProps: { cantiereIdPreselezionato: this.cantiereId() },
-    });
-    modal.onDidDismiss().then((data) => {
-      if (data.data && data.data.creato) this.caricaDati();
-    });
-    await modal.present();
-  }
-
-  getParentContext(): string {
-    const c = this.cantiere();
-    if (!c) return 'Dettaglio Cantiere';
-    if (c.cliente) return `Cliente ${c.cliente.nome}`;
-    return 'Cantiere Diretto';
   }
 
   async mostraToast(msg: string, color: string) {

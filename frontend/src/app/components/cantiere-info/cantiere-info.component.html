@@ -1,0 +1,51 @@
+@if (cantiere) {
+  <div class="info-card fade-in">
+    <div class="card-header">
+      <div
+        class="icon-badge"
+        style="
+          background: rgba(var(--ion-color-tertiary-rgb), 0.1);
+          color: var(--ion-color-tertiary);
+        "
+      >
+        <ion-icon name="construct-outline"></ion-icon>
+      </div>
+      <div class="title-area">
+        <h3>{{ cantiere.via }}, {{ cantiere.civico }}</h3>
+        <p class="subtitle">Cantiere (Indirizzo)</p>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div class="info-row">
+        <ion-icon name="location-outline" color="tertiary"></ion-icon>
+        <span class="desc">
+          {{ cantiere.cap }} {{ cantiere.citta }}<br />
+          {{ cantiere.provincia }} - {{ cantiere.stato }}
+        </span>
+      </div>
+
+      @if (cantiere.cliente) {
+        <div
+          class="info-row"
+          style="
+            margin-top: 16px;
+            align-items: center;
+            background: var(--ion-color-step-50);
+            padding: 8px 12px;
+            border-radius: 8px;
+          "
+        >
+          <ion-icon
+            name="business-outline"
+            color="medium"
+            style="margin-top: 0"
+          ></ion-icon>
+          <span class="desc"
+            >Cliente: <strong>{{ cantiere.cliente.nome }}</strong></span
+          >
+        </div>
+      }
+    </div>
+  </div>
+}
