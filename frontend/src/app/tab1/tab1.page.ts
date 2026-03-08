@@ -32,6 +32,7 @@ import { NuovoIndirizzoModalComponent } from '../components/nuovo-indirizzo-moda
 import { FatturaDettaglioModalComponent } from '../components/fattura-dettaglio-modal/fattura-dettaglio-modal.component';
 import { NuovoCollaboratoreModalComponent } from '../components/nuovo-collaboratore-modal/nuovo-collaboratore-modal.component';
 import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal.component';
+import { ImpostazioniModalComponent } from '../components/impostazioni-modal/impostazioni-modal.component';
 
 import { addIcons } from 'ionicons';
 import {
@@ -59,6 +60,7 @@ import {
   briefcaseOutline,
   location,
   helpCircleOutline,
+  settingsOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -132,6 +134,7 @@ export class Tab1Page implements OnInit {
       briefcaseOutline,
       location,
       helpCircleOutline,
+      settingsOutline,
     });
   }
 
@@ -295,6 +298,16 @@ export class Tab1Page implements OnInit {
       component: ProfiloModalComponent,
     });
     await modal.present();
+  }
+
+  async openImpostazioni() {
+    const modal = await this.modalCtrl.create({
+      component: ImpostazioniModalComponent,
+    });
+    await modal.present();
+    // Refresh user state after dismissal in case they updated profile or logged out
+    const { data } = await modal.onWillDismiss();
+    this.caricaDati();
   }
 
   async openModal(tipo: 'appuntamento' | 'commessa' | 'cantiere' | 'fattura') {

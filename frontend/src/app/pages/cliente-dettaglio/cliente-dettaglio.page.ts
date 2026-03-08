@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -18,8 +18,6 @@ import {
   IonInput,
   IonSearchbar,
   IonList,
-  IonAccordionGroup,
-  IonAccordion,
   IonItem,
   IonBadge,
   IonSegment,
@@ -43,9 +41,9 @@ import {
 
 import { NuovoIndirizzoModalComponent } from '../../components/nuovo-indirizzo-modal/nuovo-indirizzo-modal.component';
 import { NuovaCommessaModalComponent } from '../../components/nuova-commessa-modal/nuova-commessa-modal.component';
-import { IndirizzoAccordionComponent } from '../../components/indirizzo-accordion/indirizzo-accordion.component';
+import { NuovoAppuntamentoGlobaleModalComponent } from '../../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
 
-// Nuovo: Importa il componente per mostrare il contenuto della commessa orfana (lo stesso usato nell'accordion)
+// Per il rendering pulito delle card
 import { CommessaItemComponent } from '../../components/commessa-item/commessa-item.component';
 
 import { addIcons } from 'ionicons';
@@ -64,6 +62,7 @@ import {
   location,
   personOutline,
   documentsOutline,
+  calendar,
 } from 'ionicons/icons';
 
 @Component({
@@ -74,8 +73,7 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    IndirizzoAccordionComponent,
-    CommessaItemComponent,
+    CommessaItemComponent, // Riutilizzo per stilizzare le commesse in lista!
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -87,8 +85,6 @@ import {
     IonInput,
     IonSearchbar,
     IonList,
-    IonAccordionGroup,
-    IonAccordion,
     IonItem,
     IonBadge,
     IonSegment,
@@ -97,212 +93,29 @@ import {
   ],
 })
 export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
-  @ViewChild(IonContent, { static: false }) content!: IonContent;
+  clienteId = signal<number | null>(null);
+  cliente = signal<Cliente | null>(null);
 
-  cliente: Cliente | null = null;
-  hasManagerAccess: boolean = false;
-  isEditing: boolean = false;
+  hasManagerAccess = signal<boolean>(false);
+  isEditing = signal<boolean>(false);
   originalData: Partial<Cliente> = {};
 
-  // NUOVA GESTIONE A SCHEDE
-  currentTab: 'cantieri' | 'commesse' | 'appuntamenti' = 'cantieri';
+  // TAB STATE
+  currentTab = signal<'cantieri' | 'commesse' | 'appuntamenti'>('cantieri');
+  searchTerm = signal<string>('');
 
-  searchTerm: string = '';
-  indirizziVisualizzati: Indirizzo[] = [];
-  indirizziAperti: string[] = [];
+  // DATA
+  indirizzi = signal<Indirizzo[]>([]);
+  commesseDirette = signal<Commessa[]>([]);
+  appuntamentiDiretti = signal<Appuntamento[]>([]);
 
-  // Nuove liste per gli elementi orfani
-  commesseDirette: Commessa[] = [];
-  appuntamentiDiretti: Appuntamento[] = [];
-  commesseDiretteAperte: string[] = []; // Per l'accordion
+  // COMPUTED (Filtered Data)
+  indirizziFiltrati = computed(() => {
+    const list = this.indirizzi();
+    const term = this.searchTerm().trim().toLowerCase();
+    if (!term) return list;
 
-  targetCantiereId: number | null = null;
-  targetCommessaId: number | null = null;
-  targetAppuntamentoId: number | null = null;
-
-  private deepLinkGestito = false;
-
-  constructor(
-    private route: ActivatedRoute,
-    private clienteService: ClienteService,
-    private indirizzoService: IndirizzoService,
-    private commessaService: CommessaService,
-    private authService: AuthService,
-    private modalCtrl: ModalController,
-    private toastCtrl: ToastController,
-    private alertCtrl: AlertController,
-    private navCtrl: NavController,
-    private cd: ChangeDetectorRef,
-  ) {
-    addIcons({
-      mailOutline,
-      callOutline,
-      pencilOutline,
-      closeOutline,
-      saveOutline,
-      trashOutline,
-      addCircleOutline,
-      searchOutline,
-      locationOutline,
-      businessOutline,
-      calendarOutline,
-      location,
-      personOutline,
-      documentsOutline,
-    });
-  }
-
-  ngOnInit() {
-    this.hasManagerAccess = this.authService.hasManagerAccess();
-    this.deepLinkGestito = false;
-
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const clienteId = parseInt(idParam || '', 10);
-
-    if (isNaN(clienteId) || !clienteId) {
-      this.toastCtrl
-        .create({
-          message: 'Nessun cliente associato.',
-          duration: 2500,
-          color: 'warning',
-        })
-        .then((t) => t.present());
-      this.navCtrl.navigateRoot('/tabs/tab3');
-      return;
-    }
-
-    this.route.queryParams.subscribe((params) => {
-      this.targetCantiereId = params['cantiereId']
-        ? +params['cantiereId']
-        : null;
-      this.targetCommessaId = params['commessaId']
-        ? +params['commessaId']
-        : null;
-      this.targetAppuntamentoId = params['appuntamentoId']
-        ? +params['appuntamentoId']
-        : null;
-
-      // LOGICA TABS INTELLIGENTE
-      if (this.targetCommessaId && !this.targetCantiereId) {
-        this.currentTab = 'commesse';
-      } else if (
-        this.targetAppuntamentoId &&
-        !this.targetCantiereId &&
-        !this.targetCommessaId
-      ) {
-        this.currentTab = 'appuntamenti';
-      }
-
-      this.deepLinkGestito = false;
-      if (this.cliente) setTimeout(() => this.gestisciDeepLink(), 100);
-    });
-
-    this.caricaDati(clienteId);
-  }
-
-  ionViewDidEnter() {
-    if (this.cliente) this.gestisciDeepLink();
-  }
-
-  caricaDati(id: number) {
-    this.clienteService.getOne(id).subscribe({
-      next: (data) => {
-        this.cliente = data;
-
-        // Popoliamo le liste orfane grazie al Backend aggiornato in Fase 2!
-        this.commesseDirette = this.cliente.commesse || [];
-        this.appuntamentiDiretti = this.cliente.appuntamenti || [];
-
-        this.ordinaCantieriPerAttivita();
-        this.filtraCantieri();
-        this.cd.detectChanges();
-        setTimeout(() => this.gestisciDeepLink(), 300);
-      },
-      error: (err) => console.error(err),
-    });
-  }
-
-  // Il resto dei metodi di gestione DeepLink, Cantiere e Modifica restano identici
-  gestisciDeepLink() {
-    if (this.deepLinkGestito) return;
-
-    if (this.targetCantiereId && this.currentTab === 'cantieri') {
-      const visible = this.indirizziVisualizzati.find(
-        (i) => i.id === this.targetCantiereId,
-      );
-      if (!visible) {
-        this.searchTerm = '';
-        this.filtraCantieri();
-        this.cd.detectChanges();
-      }
-      this.indirizziAperti = [this.targetCantiereId.toString()];
-      this.cd.detectChanges();
-      this.trovaEScorri(this.targetCantiereId, 0, 'cantiere-header-');
-    } else if (this.targetCommessaId && this.currentTab === 'commesse') {
-      this.commesseDiretteAperte = [this.targetCommessaId.toString()];
-      this.cd.detectChanges();
-      this.trovaEScorri(this.targetCommessaId, 0, 'commessa-diretta-header-');
-    }
-
-    this.deepLinkGestito = true;
-  }
-
-  private trovaEScorri(id: number, attempts: number, prefix: string) {
-    if (attempts > 30) return;
-    const element = document.getElementById(prefix + id);
-    if (element) {
-      this.scrollaAElemento(element);
-      this.flashElementCss(element);
-    } else {
-      setTimeout(() => this.trovaEScorri(id, attempts + 1, prefix), 100);
-    }
-  }
-
-  private scrollaAElemento(element: HTMLElement) {
-    if (!this.content) return;
-    const y = element.getBoundingClientRect().top + window.scrollY;
-    this.content.scrollToPoint(0, y - 100, 600);
-  }
-
-  flashElementCss(element: HTMLElement) {
-    element.classList.remove('flash-highlight-target');
-    void element.offsetWidth;
-    element.classList.add('flash-highlight-target');
-    setTimeout(() => element.classList.remove('flash-highlight-target'), 3000);
-  }
-
-  ordinaCantieriPerAttivita() {
-    if (!this.cliente?.indirizzi) return;
-    this.cliente.indirizzi.sort((a, b) => {
-      const dataA = this.getUltimaDataIndirizzo(a);
-      const dataB = this.getUltimaDataIndirizzo(b);
-      return dataB.getTime() - dataA.getTime();
-    });
-  }
-
-  getUltimaDataIndirizzo(ind: Indirizzo): Date {
-    let maxDate = new Date(0);
-    if (ind.commesse) {
-      for (const com of ind.commesse) {
-        if (com.appuntamenti) {
-          for (const app of com.appuntamenti) {
-            const d = new Date(app.data_ora);
-            if (d > maxDate) maxDate = d;
-          }
-        }
-      }
-    }
-    return maxDate;
-  }
-
-  filtraCantieri() {
-    if (!this.cliente?.indirizzi) return;
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) {
-      this.indirizziVisualizzati = [...this.cliente.indirizzi];
-      return;
-    }
-    this.indirizziVisualizzati = this.cliente.indirizzi.filter((ind) => {
+    return list.filter((ind) => {
       if (
         ind.via.toLowerCase().includes(term) ||
         ind.citta.toLowerCase().includes(term)
@@ -328,46 +141,227 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
         return true;
       return false;
     });
+  });
+
+  // TARGETS FOR DEEP LINKING
+  targetCantiereId = signal<number | null>(null);
+  targetCommessaId = signal<number | null>(null);
+  targetAppuntamentoId = signal<number | null>(null);
+  deepLinkGestito = false;
+
+  constructor(
+    private route: ActivatedRoute,
+    private clienteService: ClienteService,
+    private indirizzoService: IndirizzoService,
+    private commessaService: CommessaService,
+    private authService: AuthService,
+    private modalCtrl: ModalController,
+    private toastCtrl: ToastController,
+    private alertCtrl: AlertController,
+    private navCtrl: NavController,
+  ) {
+    addIcons({
+      mailOutline,
+      callOutline,
+      pencilOutline,
+      closeOutline,
+      saveOutline,
+      trashOutline,
+      addCircleOutline,
+      searchOutline,
+      locationOutline,
+      businessOutline,
+      calendarOutline,
+      location,
+      personOutline,
+      documentsOutline,
+      calendar,
+    });
+  }
+
+  ngOnInit() {
+    this.hasManagerAccess.set(this.authService.hasManagerAccess());
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = parseInt(idParam || '', 10);
+
+    if (isNaN(id) || !id) {
+      this.toastCtrl
+        .create({
+          message: 'Nessun cliente associato.',
+          duration: 2500,
+          color: 'warning',
+        })
+        .then((t) => t.present());
+      this.navCtrl.navigateRoot('/tabs/tab3');
+      return;
+    }
+
+    this.clienteId.set(id);
+
+    this.route.queryParams.subscribe((params) => {
+      this.targetCantiereId.set(
+        params['cantiereId'] ? +params['cantiereId'] : null,
+      );
+      this.targetCommessaId.set(
+        params['commessaId'] ? +params['commessaId'] : null,
+      );
+      this.targetAppuntamentoId.set(
+        params['appuntamentoId'] ? +params['appuntamentoId'] : null,
+      );
+
+      if (this.targetCommessaId() && !this.targetCantiereId()) {
+        this.currentTab.set('commesse');
+      } else if (
+        this.targetAppuntamentoId() &&
+        !this.targetCantiereId() &&
+        !this.targetCommessaId()
+      ) {
+        this.currentTab.set('appuntamenti');
+      }
+
+      this.deepLinkGestito = false;
+      if (this.cliente()) setTimeout(() => this.gestisciDeepLink(), 100);
+    });
+
+    this.caricaDati();
+  }
+
+  ionViewDidEnter() {
+    if (this.cliente()) this.gestisciDeepLink();
+  }
+
+  caricaDati() {
+    const id = this.clienteId();
+    if (!id) return;
+
+    this.clienteService.getOne(id).subscribe({
+      next: (data) => {
+        this.cliente.set(data);
+
+        let inds = data.indirizzi || [];
+        inds.sort(
+          (a, b) =>
+            this.getUltimaDataIndirizzo(b).getTime() -
+            this.getUltimaDataIndirizzo(a).getTime(),
+        );
+        this.indirizzi.set(inds);
+
+        this.commesseDirette.set(data.commesse || []);
+        this.appuntamentiDiretti.set(data.appuntamenti || []);
+
+        setTimeout(() => this.gestisciDeepLink(), 300);
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
+  getUltimaDataIndirizzo(ind: Indirizzo): Date {
+    let maxDate = new Date(0);
+    if (ind.commesse) {
+      for (const com of ind.commesse) {
+        if (com.appuntamenti) {
+          for (const app of com.appuntamenti) {
+            const d = new Date(app.data_ora);
+            if (d > maxDate) maxDate = d;
+          }
+        }
+      }
+    }
+    return maxDate;
+  }
+
+  gestisciDeepLink() {
+    if (this.deepLinkGestito) return;
+    const cid = this.targetCantiereId();
+    const comid = this.targetCommessaId();
+    const tab = this.currentTab();
+
+    if (cid && tab === 'cantieri') {
+      const visible = this.indirizziFiltrati().find((i) => i.id === cid);
+      if (!visible) this.searchTerm.set('');
+      this.trovaEScorri(cid, 0, 'cantiere-card-');
+    } else if (comid && tab === 'commesse') {
+      this.trovaEScorri(comid, 0, 'commessa-card-');
+    }
+
+    this.deepLinkGestito = true;
+  }
+
+  private trovaEScorri(id: number, attempts: number, prefix: string) {
+    if (attempts > 15) return;
+    const element = document.getElementById(prefix + id);
+    if (element) {
+      const cnt = document.querySelector('ion-content');
+      if (cnt) {
+        const y = element.getBoundingClientRect().top + window.scrollY;
+        // Ignoring exact TS for custom element method since scrollToPoint exists on ion-content
+        (cnt as any).scrollToPoint(0, y - 100, 600);
+      }
+      element.classList.remove('flash-highlight-target');
+      void element.offsetWidth;
+      element.classList.add('flash-highlight-target');
+      setTimeout(
+        () => element.classList.remove('flash-highlight-target'),
+        3000,
+      );
+    } else {
+      setTimeout(() => this.trovaEScorri(id, attempts + 1, prefix), 100);
+    }
   }
 
   abilitaModifica() {
-    this.originalData = { ...this.cliente! };
-    this.isEditing = true;
+    this.originalData = { ...this.cliente()! };
+    this.isEditing.set(true);
   }
+
   annullaModifica() {
-    this.cliente!.nome = this.originalData.nome!;
-    this.cliente!.email = this.originalData.email;
-    this.cliente!.telefono = this.originalData.telefono;
-    this.isEditing = false;
+    const c = this.cliente()!;
+    c.nome = this.originalData.nome!;
+    c.email = this.originalData.email;
+    c.telefono = this.originalData.telefono;
+    this.cliente.set(c);
+    this.isEditing.set(false);
   }
 
   salvaModifica() {
+    const c = this.cliente()!;
     this.clienteService
-      .update(this.cliente!.id, {
-        nome: this.cliente!.nome,
-        email: this.cliente!.email,
-        telefono: this.cliente!.telefono,
+      .update(c.id, {
+        nome: c.nome,
+        email: c.email,
+        telefono: c.telefono,
       })
       .subscribe({
         next: () => {
-          this.isEditing = false;
+          this.isEditing.set(false);
           this.showToast('Contatti aggiornati!');
         },
         error: () => this.showToast('Errore salvataggio'),
       });
   }
 
+  onTabChange(ev: any) {
+    this.currentTab.set(ev.detail.value);
+  }
+
+  onSearchChange(ev: any) {
+    this.searchTerm.set(ev.detail.value);
+  }
+
+  // --- MODALI ESPANSIONE ---
+
   async apriModalIndirizzo(esistente?: Indirizzo) {
     const modal = await this.modalCtrl.create({
       component: NuovoIndirizzoModalComponent,
       componentProps: {
-        clienteId: this.cliente?.id,
+        clienteId: this.clienteId(),
         indirizzoEsistente: esistente,
       },
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data?.aggiornato || data?.creato) this.caricaDati(this.cliente!.id);
+    if (data?.aggiornato || data?.creato) this.caricaDati();
   }
 
   async eliminaIndirizzo(indirizzo: Indirizzo) {
@@ -394,7 +388,7 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
             this.indirizzoService.delete(indirizzo.id, cascade).subscribe({
               next: () => {
                 this.showToast('Cantiere eliminato');
-                this.caricaDati(this.cliente!.id);
+                this.caricaDati();
               },
             });
           },
@@ -404,36 +398,18 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
     await alert.present();
   }
 
-  isCantiereAperto(id: number): boolean {
-    return Array.isArray(this.indirizziAperti)
-      ? this.indirizziAperti.includes(id.toString())
-      : this.indirizziAperti === id.toString();
-  }
-  accordionChange(ev: any) {
-    this.indirizziAperti = ev.detail.value;
-  }
-
-  // Per accordions orfani
-  isCommessaDirettaAperta(id: number): boolean {
-    return Array.isArray(this.commesseDiretteAperte)
-      ? this.commesseDiretteAperte.includes(id.toString())
-      : this.commesseDiretteAperte === id.toString();
-  }
-  accordionCommessaChange(ev: any) {
-    this.commesseDiretteAperte = ev.detail.value;
-  }
-
   async apriModalCommessa(indirizzoId: number | null, esistente?: Commessa) {
     const modal = await this.modalCtrl.create({
       component: NuovaCommessaModalComponent,
       componentProps: {
-        indirizzoId: indirizzoId,
+        indirizzoId,
         commessaEsistente: esistente,
+        clienteId: this.clienteId(),
       },
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data?.aggiornato || data?.creato) this.caricaDati(this.cliente!.id);
+    if (data?.aggiornato || data?.creato) this.caricaDati();
   }
 
   async eliminaCommessa(commessa: Commessa) {
@@ -460,7 +436,7 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
             this.commessaService.delete(commessa.id, cascade).subscribe({
               next: () => {
                 this.showToast('Commessa eliminata');
-                this.caricaDati(this.cliente!.id);
+                this.caricaDati();
               },
             });
           },
@@ -470,12 +446,31 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
     await alert.present();
   }
 
+  async apriModalAppuntamento(
+    commessaId: number | null,
+    indirizzoId: number | null,
+    esistente?: Appuntamento,
+  ) {
+    const modal = await this.modalCtrl.create({
+      component: NuovoAppuntamentoGlobaleModalComponent,
+      componentProps: {
+        appuntamento: esistente,
+        targetCommessaId: commessaId,
+        targetCantiereId: indirizzoId,
+        targetClienteId: this.clienteId(),
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.creato || data?.aggiornato) this.caricaDati();
+  }
+
   async chiediConfermaCancellazione() {
     const alert = await this.alertCtrl.create({
       header: 'Attenzione!',
       subHeader: 'Cancellazione Cliente',
       message: new IonicSafeString(
-        `Stai per eliminare <strong>${this.cliente!.nome}</strong>.<br>Seleziona l'opzione per eliminare anche tutte le entità figlie.`,
+        `Stai per eliminare <strong>${this.cliente()!.nome}</strong>.<br>Seleziona l'opzione per eliminare anche tutte le entità figlie.`,
       ),
       inputs: [
         {
@@ -492,7 +487,7 @@ export class ClienteDettaglioPage implements OnInit, ViewDidEnter {
           role: 'destructive',
           handler: (data) => {
             const cascade = data && data.includes('cascade');
-            this.clienteService.delete(this.cliente!.id, cascade).subscribe({
+            this.clienteService.delete(this.clienteId()!, cascade).subscribe({
               next: () => {
                 this.showToast('Cliente eliminato');
                 this.navCtrl.navigateBack('/tabs/tab3');

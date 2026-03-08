@@ -1,259 +1,202 @@
-/* --- STILI GENERALI --- */
-/* Usiamo le variabili Ionic per gestire il cambio tema OS (Light/Dark) */
 :host {
-  /* --ion-background-color gestisce automaticamente bianco/nero */
-  --background: var(--ion-background-color); 
+  --page-bg: #f4f5f8;
+  --card-bg: #ffffff;
+  --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); 
+  --text-color-secondary: var(--ion-color-medium);
 }
 
-.light-bg {
-  --background: var(--ion-background-color);
+@media (prefers-color-scheme: dark) {
+  :host {
+    --page-bg: #000000;
+    --card-bg: #1c1c1e;
+    --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    --text-color-secondary: #98989d;
+  }
 }
 
-/* --- CARD CONTATTI --- */
-.contact-card {
-  /* Sfondo adattivo: bianco in light, grigio scuro in dark */
-  background: var(--ion-card-background);
-  border-radius: 16px;
-  /* Ombra più morbida e moderna */
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); 
-  padding: 20px; /* Spaziatura aumentata per respiro */
+ion-content { 
+  --background: var(--page-bg); 
+}
+
+ion-segment {
+  --background: transparent;
+  padding: 0 10px 10px 10px;
+}
+
+ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  font-weight: 500;
+  --color: var(--ion-color-medium);
+  --color-checked: var(--ion-color-primary);
+}
+
+.quick-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 12px;
   
-  .card-header {
-    margin-bottom: 20px;
-    h3 { 
-      margin: 0; 
-      font-size: 1.2rem; 
-      font-weight: 700; 
-      /* Colore testo principale adattivo */
-      color: var(--ion-text-color); 
-      letter-spacing: -0.02em;
-    }
-  }
-
-  .contact-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    
-    .contact-item {
-      display: flex; align-items: center; gap: 12px;
-      &.full-width { grid-column: span 2; }
-      
-      .icon-box {
-        width: 40px; height: 40px; border-radius: 10px;
-        /* Colore primario con opacità: sta bene su qualsiasi sfondo */
-        background: rgba(var(--ion-color-primary-rgb), 0.1);
-        display: flex; align-items: center; justify-content: center;
-        transition: transform 0.2s ease;
-        
-        ion-icon { color: var(--ion-color-primary); font-size: 1.3rem; }
-      }
-      
-      .info-content {
-        display: flex; flex-direction: column;
-        justify-content: center;
-        
-        label { 
-          font-size: 0.75rem; 
-          color: var(--ion-color-medium); 
-          font-weight: 600; 
-          text-transform: uppercase; 
-          letter-spacing: 0.05em;
-          margin-bottom: 2px;
-        }
-        span { 
-          font-size: 1rem; 
-          color: var(--ion-text-color); 
-          font-weight: 500; 
-          word-break: break-all; 
-        }
-      }
-    }
-  }
-}
-
-/* --- SEZIONE CANTIERI --- */
-.sites-section {
-  .section-header-row {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 10px;
-    
-    h3 { 
-      font-size: 1.3rem; 
-      font-weight: 800; 
-      color: var(--ion-text-color); 
-      margin: 0; 
-      letter-spacing: -0.02em;
-    }
-  }
-  
-  .search-wrapper {
-    margin-top: 10px; margin-bottom: 16px;
-    
-    ion-searchbar {
-      --box-shadow: none;
-      /* Sfondo input adattivo (es. grigio chiaro in light, grigio scuro in dark) */
-      --background: var(--ion-color-step-50); 
-      --border-radius: 12px;
-      padding-inline-start: 0; padding-inline-end: 0;
-      /* Nessun bordo fisico, usiamo il colore di sfondo per definizione */
-    }
-  }
-}
-
-/* --- LISTA CANTIERI CUSTOM --- */
-.custom-accordion {
-  background: transparent;
-  
-  ion-accordion {
-    margin-bottom: 16px;
-    background: var(--ion-card-background);
-    border-radius: 14px;
-    overflow: hidden;
-    /* Ombra sottile per separazione */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: transform 0.2s ease, border-color 0.2s;
-    border: 1px solid transparent; /* Preparazione per stato attivo */
-    
-    /* Quando aperto, aggiungi bordo colorato e rimuovi ombra per appiattimento */
-    &.accordion-expanding, &.accordion-expanded {
-      border-color: var(--ion-color-primary);
-      box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.15);
-    }
-  }
-}
-
-/* HEADER CANTIERE (La "card" chiusa) */
-.accordion-header-item {
-  --padding-start: 12px;
-  --inner-padding-end: 8px;
-  --background: var(--ion-card-background); /* Fondamentale per Dark Mode */
-  
-  .site-header-content {
-    display: flex; align-items: flex-start; gap: 14px;
-    padding: 14px 0;
-    width: 100%;
-    
-    .site-icon {
-      margin-top: 2px;
-      background: rgba(var(--ion-color-secondary-rgb), 0.12);
-      width: 44px; height: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      
-      ion-icon { font-size: 1.4rem; }
-    }
-    
-    .site-info {
-      display: flex; flex-direction: column;
-      
-      .site-address {
-        font-size: 1.05rem; font-weight: 700; color: var(--ion-text-color);
-        margin: 0 0 4px 0; line-height: 1.3;
-      }
-      
-      .site-city {
-        font-size: 0.9rem; color: var(--ion-color-medium);
-        margin: 0 0 8px 0; font-weight: 500;
-      }
-      
-      .site-badges {
-        .small-badge {
-          font-weight: 600; font-size: 0.75rem;
-          --padding-start: 8px; --padding-end: 8px;
-          border-radius: 6px;
-          /* Badge adattivo */
-          --background: var(--ion-color-step-100);
-          --color: var(--ion-text-color);
-        }
-      }
-    }
-  }
-}
-
-.accordion-content-box {
-  /* Bordo superiore sottile usando i colori step di Ionic */
-  border-top: 1px solid var(--ion-color-step-100);
-  /* Sfondo leggermente diverso dalla card per indicare "interno" */
-  background: var(--ion-background-color); 
-}
-
-/* --- NUOVA ACTION BAR CANTIERE --- */
-.cantiere-actions-bar {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  padding: 10px 16px;
-  
-  /* Sfondo che si fonde bene in entrambi i temi */
-  background-color: var(--ion-color-step-50);
-  border-bottom: 1px solid var(--ion-color-step-150);
-
-  .actions-label {
-    font-size: 0.7rem; 
-    font-weight: 800; 
-    color: var(--ion-color-medium); 
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .actions-buttons {
+  span {
     display: flex;
+    align-items: center;
     gap: 8px;
+    font-size: 0.9rem;
+    color: var(--ion-color-dark);
+    @media (prefers-color-scheme: dark) { color: white; }
     
-    ion-button {
-      margin: 0;
-      font-weight: 600;
-      font-size: 0.85rem;
-      --padding-start: 8px;
-      --padding-end: 8px;
-      height: 32px;
+    ion-icon {
+      color: var(--ion-color-primary);
+      font-size: 1.1rem;
     }
   }
 }
 
-/* --- EMPTY STATE --- */
+.contact-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--card-shadow);
+  
+  .card-header h3 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ion-color-primary);
+  }
+}
+
+.contact-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  
+  .contact-item {
+    flex: 1;
+    min-width: 200px;
+    &.full-width { flex: 100%; }
+  }
+  
+  ion-input {
+    --background: var(--page-bg);
+    --border-radius: 10px;
+    --padding-start: 12px;
+  }
+}
+
+.sites-section { margin-bottom: 30px; }
+
+.section-header-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+  h3 { margin: 0; font-size: 1.1rem; font-weight: 800; color: var(--ion-color-dark); @media (prefers-color-scheme: dark) { color: white; } }
+  ion-button { --border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
+}
+
+.search-wrapper { margin-bottom: 20px; }
+
+ion-searchbar {
+  padding: 0;
+  --background: var(--card-bg);
+  --border-radius: 12px;
+  --box-shadow: var(--card-shadow);
+  --icon-color: var(--ion-color-primary);
+}
+
 .empty-state {
+  text-align: center; padding: 40px 20px; color: var(--text-color-secondary);
+  ion-icon { font-size: 3rem; opacity: 0.4; margin-bottom: 10px; }
+  p { margin: 0; font-size: 1rem; font-weight: 500; }
+}
+
+.empty-state-mini {
+  padding: 15px; background: rgba(var(--ion-color-medium-rgb), 0.1);
+  border-radius: 10px; font-size: 0.85rem; color: var(--text-color-secondary);
   text-align: center;
-  padding: 60px 20px;
-  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+.entity-card {
+  background: var(--card-bg); border-radius: 16px; padding: 20px; margin-bottom: 20px;
+  box-shadow: var(--card-shadow); transition: all 0.3s ease; position: relative;
   
-  ion-icon { 
-    font-size: 4rem; 
-    margin-bottom: 16px; 
-    opacity: 0.4; 
-    color: var(--ion-color-step-400);
-  }
-  p { 
-    font-size: 1.1rem; 
-    margin: 0; 
-    font-weight: 500;
+  &.flash-highlight-target {
+    animation: flashTarget 3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
   }
 }
 
-@keyframes flashFocus {
-  0% { 
-    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
-    border-left-color: transparent;
-  }
-  20% { 
-    --background: rgba(var(--ion-color-warning-rgb), 0.3) !important; 
-    border-left-color: var(--ion-color-warning);
-  }
-  100% { 
-    --background: rgba(var(--ion-color-warning-rgb), 0) !important;
-    border-left-color: transparent;
+.card-top-header {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;
+}
+
+.title-with-icon {
+  display: flex; gap: 12px;
+  
+  ion-icon { font-size: 2rem; margin-top: 2px; }
+  .text-group {
+    h3 { margin: 0 0 5px 0; font-size: 1.1rem; font-weight: 800; color: var(--ion-text-color); }
+    p { margin: 0; font-size: 0.9rem; color: var(--text-color-secondary); font-weight: 500; }
   }
 }
 
-.flash-highlight-target {
-  position: relative;
-  /* L'animazione dura 2.5s */
-  animation: flashFocus 2.5s ease-out forwards;
+.inline-actions {
+  display: flex; gap: 5px;
+  background: rgba(var(--ion-color-medium-rgb), 0.1); border-radius: 20px; padding: 2px;
   
-  /* Bordo laterale evidente per l'evidenziazione */
-  border-left: 6px solid transparent; 
+  &.top-right {
+    position: absolute; top: 10px; right: 10px; z-index: 2;
+  }
+}
+
+.nested-content {
+  background: var(--page-bg); border-radius: 12px; padding: 15px; margin-top: 15px;
+  border-left: 3px solid var(--ion-color-primary);
+}
+
+.nested-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+  h4 { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--ion-color-dark); text-transform: uppercase; letter-spacing: 0.5px; @media (prefers-color-scheme: dark) { color: white; } }
+  ion-button { margin: 0; font-size: 0.75rem; font-weight: 600; --padding-start: 10px; --padding-end: 10px; }
+}
+
+.card-list { display: flex; flex-direction: column; gap: 10px; }
+
+.wrapper-card {
+  position: relative; margin-bottom: 15px;
+  &.flash-highlight-target { animation: flashTarget 3s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; }
+}
+
+.flat-appointment-card {
+  display: flex; align-items: center; background: var(--card-bg); border-radius: 14px;
+  padding: 16px; margin-bottom: 12px; box-shadow: var(--card-shadow); gap: 15px;
   
-  /* Transizione fluida per il background */
-  transition: --background 0.3s, border-left-color 0.3s;
+  .date-box {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 50px; height: 50px; border-radius: 12px; background: rgba(var(--ion-color-primary-rgb), 0.1);
+    color: var(--ion-color-primary);
+    
+    &.warning { background: rgba(var(--ion-color-warning-rgb), 0.2); color: var(--ion-color-warning-shade); }
+    
+    .day { font-size: 1.2rem; font-weight: 800; line-height: 1; margin-bottom: 2px;}
+    .month { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+  }
+  
+  .app-info {
+    flex: 1; display: flex; flex-direction: column; gap: 4px;
+    .time { font-size: 0.8rem; font-weight: 700; color: var(--ion-color-warning); }
+    h4 { margin: 0; font-size: 1rem; font-weight: 700; color: var(--ion-text-color); }
+    .desc { font-size: 0.85rem; color: var(--text-color-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  }
+}
+
+.fade-in { animation: fadeIn 0.4s ease forwards; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flashTarget {
+  0% { transform: scale(1); box-shadow: var(--card-shadow); }
+  10% { transform: scale(1.02); box-shadow: 0 0 0 3px var(--ion-color-tertiary); }
+  50% { transform: scale(1.02); box-shadow: 0 0 0 3px var(--ion-color-tertiary); }
+  100% { transform: scale(1); box-shadow: var(--card-shadow); }
 }
