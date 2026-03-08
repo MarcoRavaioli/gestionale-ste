@@ -13,6 +13,10 @@ export class CreateCollaboratoreDto {
 
   @IsNotEmpty()
   @IsString()
+  nickname: string;
+
+  @IsNotEmpty()
+  @IsString()
   cognome: string;
 
   @IsOptional()
@@ -24,6 +28,7 @@ export class CreateCollaboratoreDto {
   email: string;
 
   @IsNotEmpty()
+  @IsString()
   @MinLength(6, { message: 'La password deve essere di almeno 6 caratteri' })
   password: string;
 

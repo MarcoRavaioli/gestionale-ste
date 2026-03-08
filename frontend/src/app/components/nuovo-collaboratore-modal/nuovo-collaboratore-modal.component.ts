@@ -114,7 +114,13 @@ export class NuovoCollaboratoreModalComponent {
       error: async (err) => {
         await loader.dismiss();
         console.error(err);
-        this.mostraToast('Errore creazione. Nickname già in uso?', 'danger');
+        let errorMessage = 'Errore durante la creazione. Riprova.';
+        if (err.error?.message) {
+          errorMessage = Array.isArray(err.error.message)
+            ? err.error.message.join(', ')
+            : err.error.message;
+        }
+        this.mostraToast(`Errore: ${errorMessage}`, 'danger');
       },
     });
   }

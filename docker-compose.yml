@@ -6,6 +6,8 @@ services:
     build: ./backend
     container_name: gspose-api
     restart: always
+    ports:
+      - "3000:3000"
     environment:
       # Percorsi interni al container (NON TOCCARE)
       - DATABASE_FILE=/app/data/gestionale.db

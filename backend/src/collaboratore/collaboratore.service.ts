@@ -18,19 +18,21 @@ export class CollaboratoreService implements OnModuleInit {
     await this.seedUsers();
   }
 
-async seedUsers() {
+  async seedUsers() {
     // 1. ADMIN (Marco)
     const adminNick = 'marco123';
     const adminEsiste = await this.findOneByNickname(adminNick);
 
     if (!adminEsiste) {
       console.log('⚡ Creazione ADMIN in corso...');
-      
+
       const pass = process.env.ADMIN_PASSWORD;
       if (!pass) {
-        throw new Error('ERRORE CRITICO: Variabile ADMIN_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.');
+        throw new Error(
+          'ERRORE CRITICO: Variabile ADMIN_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.',
+        );
       }
-      
+
       const salt = await bcrypt.genSalt();
       const hash = await bcrypt.hash(pass, salt);
 
@@ -52,12 +54,14 @@ async seedUsers() {
 
     if (!managerEsiste) {
       console.log('Creazione MANAGER in corso...');
-      
+
       const pass = process.env.MANAGER_PASSWORD;
       if (!pass) {
-        throw new Error('ERRORE CRITICO: Variabile MANAGER_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.');
+        throw new Error(
+          'ERRORE CRITICO: Variabile MANAGER_PASSWORD mancante! Il sistema rifiuta di avviarsi con password deboli.',
+        );
       }
-      
+
       const salt = await bcrypt.genSalt();
       const hash = await bcrypt.hash(pass, salt);
 
@@ -75,15 +79,20 @@ async seedUsers() {
   // ----------------------------------------------------
 
   async create(createDto: CreateCollaboratoreDto) {
-    const salt = await bcrypt.genSalt();
-    const passwordHash = await bcrypt.hash(createDto.password, salt);
+    try {
+      const salt = await bcrypt.genSalt();
+      const passwordHash = await bcrypt.hash(createDto.password, salt);
 
-    const nuovoCollaboratore = this.collaboratoreRepository.create({
-      ...createDto,
-      password: passwordHash,
-    });
+      const nuovoCollaboratore = this.collaboratoreRepository.create({
+        ...createDto,
+        password: passwordHash,
+      });
 
-    return this.collaboratoreRepository.save(nuovoCollaboratore);
+      return await this.collaboratoreRepository.save(nuovoCollaboratore);
+    } catch (error) {
+      console.error('Errore durante la creazione del collaboratore:', error);
+      throw error;
+    }
   }
 
   async findOneByNickname(nickname: string): Promise<Collaboratore | null> {
@@ -94,9 +103,14 @@ async seedUsers() {
       .getOne();
   }
 
-  async findOneByUsernameOrEmail(identifier: string): Promise<Collaboratore | null> {
-    return this.collaboratoreRepository.createQueryBuilder('user')
-      .where('user.nickname = :identifier OR user.email = :identifier', { identifier })
+  async findOneByUsernameOrEmail(
+    identifier: string,
+  ): Promise<Collaboratore | null> {
+    return this.collaboratoreRepository
+      .createQueryBuilder('user')
+      .where('user.nickname = :identifier OR user.email = :identifier', {
+        identifier,
+      })
       .addSelect('user.password') // <--- IL TRUCCO È QUI: Forza il recupero del campo nascosto
       .getOne();
   }
