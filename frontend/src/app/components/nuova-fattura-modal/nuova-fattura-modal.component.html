@@ -76,13 +76,14 @@
             >
             <ion-datetime-button datetime="date-emi"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="date-emi"
-                  presentation="date"
-                  formControlName="data_emissione"
-                ></ion-datetime>
-              </ng-template>
+              <ion-datetime
+                id="date-emi"
+                presentation="date"
+                formControlName="data_emissione"
+                showDefaultButtons="true"
+                doneText="Ok"
+                cancelText="Annulla"
+              ></ion-datetime>
             </ion-modal>
           </div>
         </ion-col>
@@ -96,13 +97,14 @@
             >
             <ion-datetime-button datetime="date-scad"></ion-datetime-button>
             <ion-modal [keepContentsMounted]="true">
-              <ng-template>
-                <ion-datetime
-                  id="date-scad"
-                  presentation="date"
-                  formControlName="data_scadenza"
-                ></ion-datetime>
-              </ng-template>
+              <ion-datetime
+                id="date-scad"
+                presentation="date"
+                formControlName="data_scadenza"
+                showDefaultButtons="true"
+                doneText="Ok"
+                cancelText="Annulla"
+              ></ion-datetime>
             </ion-modal>
           </div>
         </ion-col>
