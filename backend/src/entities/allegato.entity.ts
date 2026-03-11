@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, DeleteDateColumn, AfterRemove } from 'typeorm';
 import { Commessa } from './commessa.entity';
 import { Fattura } from './fattura.entity';
 import { Cliente } from './cliente.entity';
@@ -40,4 +40,22 @@ export class Allegato {
 
   @DeleteDateColumn({ select: false })
   deletedAt: Date;
+
+  @AfterRemove()
+  async removePhysicalFile() {
+    if (this.percorso) {
+      // Cancellazione asincrona non bloccante
+      const fs = require('fs');
+      try {
+        if (fs.existsSync(this.percorso)) {
+          // Fire and forget
+          fs.promises.unlink(this.percorso).catch((err: any) => {
+            console.error(`Errore durante la rimozione asincrona del file ${this.percorso}:`, err);
+          });
+        }
+      } catch (err) {
+        console.error(`Errore nel check di esistenza file ${this.percorso}:`, err);
+      }
+    }
+  }
 }

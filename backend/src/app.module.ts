@@ -50,7 +50,7 @@ import { UploadsController } from './uploads/uploads.controller';
         TracciamentoPersonale,
         Allegato,
       ],
-      synchronize: true,
+      synchronize: false,
       migrationsRun: true,
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
     }),

@@ -172,20 +172,8 @@ export class AllegatoService {
   async remove(id: number) {
     const allegato = await this.findOne(id);
 
-    // 1. Rimuovi il file fisico dal disco
-    try {
-      if (fs.existsSync(allegato.percorso)) {
-        fs.unlinkSync(allegato.percorso);
-      }
-    } catch (err) {
-      console.error(
-        `Errore durante la rimozione del file ${allegato.percorso}:`,
-        err,
-      );
-    }
-
-    // 2. Rimuovi il record dal DB (HARD DELETE)
-    await this.allegatoRepository.delete(id);
+    // Rimuovi il record dal DB triggerando @AfterRemove per il file
+    await this.allegatoRepository.remove(allegato);
     return { success: true, message: 'Allegato eliminato fisicamente' };
   }
 }

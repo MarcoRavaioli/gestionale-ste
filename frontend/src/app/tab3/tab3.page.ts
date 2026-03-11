@@ -271,9 +271,8 @@ export class Tab3Page implements OnInit {
     this.caricaDatiGlobale(null, true);
   }
 
-  ionViewWillEnter() {
-    this.caricaDatiGlobale(null, true);
-  }
+  // Rimossa logica bloccante e azzeramento su ionViewWillEnter 
+  // per preservare lo scroll-history nativo della page.
 
   cambiaVista(ev: any) {
     const nuovaVista = ev.detail.value as VistaType;

@@ -43,33 +43,31 @@ export class ClienteService {
   }
 
   findAll() {
-    return this.clienteRepository.find({
-      relations: [
-        'indirizzi',
-        'indirizzi.commesse',
-        'indirizzi.commesse.appuntamenti',
-        'commesse', // <--- FASE 2: Commesse dirette del cliente
-        'appuntamenti', // <--- FASE 2: Appuntamenti diretti del cliente
-      ],
-    });
+    return this.clienteRepository
+      .createQueryBuilder('cliente')
+      .leftJoinAndSelect('cliente.indirizzi', 'indirizzo')
+      .leftJoinAndSelect('indirizzo.commesse', 'indirizzo_commessa')
+      .leftJoinAndSelect('indirizzo_commessa.appuntamenti', 'indirizzo_appuntamento')
+      .leftJoinAndSelect('cliente.commesse', 'commessa')
+      .leftJoinAndSelect('cliente.appuntamenti', 'appuntamento')
+      .getMany();
   }
 
   findOne(id: number) {
-    return this.clienteRepository.findOne({
-      where: { id },
-      relations: [
-        // Ramo standard: Cliente -> Cantiere -> Commessa -> App/All
-        'indirizzi',
-        'indirizzi.commesse',
-        'indirizzi.commesse.appuntamenti',
-        'indirizzi.commesse.allegati',
-        // Nuovi rami diretti
-        'commesse', // Commesse slegate da cantiere
-        'commesse.appuntamenti', // Appuntamenti di commesse slegate
-        'appuntamenti', // Appuntamenti isolati solo col cliente
-        'allegati', // Allegati generali del cliente
-      ],
-    });
+    return this.clienteRepository
+      .createQueryBuilder('cliente')
+      // Ramo standard: Cliente -> Cantiere -> Commessa -> App/All
+      .leftJoinAndSelect('cliente.indirizzi', 'indirizzo')
+      .leftJoinAndSelect('indirizzo.commesse', 'indirizzo_commessa')
+      .leftJoinAndSelect('indirizzo_commessa.appuntamenti', 'indirizzo_appuntamento')
+      .leftJoinAndSelect('indirizzo_commessa.allegati', 'indirizzo_allegato')
+      // Nuovi rami diretti
+      .leftJoinAndSelect('cliente.commesse', 'commessa')
+      .leftJoinAndSelect('commessa.appuntamenti', 'commessa_appuntamento')
+      .leftJoinAndSelect('cliente.appuntamenti', 'appuntamento')
+      .leftJoinAndSelect('cliente.allegati', 'allegato')
+      .where('cliente.id = :id', { id })
+      .getOne();
   }
 
   async update(id: number, updateClienteDto: UpdateClienteDto) {
@@ -124,22 +122,7 @@ export class ClienteService {
         if (cliente.fatture?.length)
           await queryRunner.manager.softRemove(cliente.fatture);
         if (cliente.allegati?.length) {
-          for (const allegato of cliente.allegati) {
-            try {
-              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
-                fs.unlinkSync(allegato.percorso);
-              }
-            } catch (err) {
-              console.error(
-                `Errore eliminazione file ${allegato.percorso}:`,
-                err,
-              );
-            }
-          }
-          await queryRunner.manager.delete(
-            Allegato,
-            cliente.allegati.map((a) => a.id),
-          );
+          await queryRunner.manager.remove(cliente.allegati);
         }
       } else {
         // Orphan
