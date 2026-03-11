@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -32,6 +33,15 @@ import { UploadsController } from './uploads/uploads.controller';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+
+    // Rate limiting globale: max 100 richieste ogni 60 secondi per IP
+    // Il login endpoint sovrascrive con @Throttle({ default: { limit: 5, ttl: 60000 } })
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
 
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -69,10 +79,15 @@ import { UploadsController } from './uploads/uploads.controller';
   controllers: [AppController, UploadsController],
   providers: [
     AppService,
-    // --- 3. ATTIVAZIONE GUARDIA AUTH (Esistente) ---
+    // Guardia JWT globale
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    // Rate limiting globale
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

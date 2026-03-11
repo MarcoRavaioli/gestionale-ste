@@ -53,10 +53,18 @@ export class CollaboratoreController {
     @Body() updateDto: UpdateCollaboratoreDto,
     @Request() req: any,
   ) {
-    // Controllo logico: O sei Admin, o stai modificando te stesso
+    // 1. Controllo base: O sei Admin, o stai modificando te stesso
     if (req.user.ruolo !== 'ADMIN' && req.user.userId !== +id) {
       throw new ForbiddenException('Non puoi modificare questo utente.');
     }
+
+    // 2. PRIVILEGE ESCALATION CHECK: solo un ADMIN può cambiare il ruolo
+    if (updateDto.ruolo !== undefined && req.user.ruolo !== 'ADMIN') {
+      throw new ForbiddenException(
+        'Solo un Admin può modificare il ruolo di un utente.',
+      );
+    }
+
     return this.collaboratoreService.update(+id, updateDto);
   }
 

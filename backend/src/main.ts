@@ -74,7 +74,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: true,           // Rimuove campi non dichiarati nel DTO
+      forbidNonWhitelisted: true, // Lancia errore 400 se arrivano campi extra
       transform: true,
     }),
   );
@@ -85,7 +86,7 @@ async function bootstrap() {
   // 5. DATA MASKING INTERCEPTOR (Log Sicuri + RBAC Response Masking)
   app.useGlobalInterceptors(new DataMaskingInterceptor());
 
-  // 5. PORTA DINAMICA O FALLBACK
+  // 6. PORTA DINAMICA O FALLBACK
   const port = process.env.PORT || 3000;
   await app.listen(port);
   console.log(`Applicazione avviata sulla porta ${port}`);
