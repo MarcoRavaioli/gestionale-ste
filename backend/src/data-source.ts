@@ -11,6 +11,6 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME || 'gestionale_db',
   synchronize: false,
   logging: true,
-  entities: ['src/entities/**/*.entity.ts'],
-  migrations: ['src/migrations/**/*.ts'],
+  entities: [__dirname + '/entities/**/*.entity{.ts,.js}'],
+  migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
 });
