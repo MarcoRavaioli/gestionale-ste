@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, Brackets } from 'typeorm';
 import { CreateClienteDto } from './dto/create-cliente.dto';
 import { UpdateClienteDto } from './dto/update-cliente.dto';
 import { Cliente } from '../entities/cliente.entity';
@@ -165,20 +165,23 @@ export class ClienteService {
   async findPaginated(page: number, limit: number, search: string) {
     const skip = (page - 1) * limit;
 
-    // Costruiamo la condizione di ricerca: Cerca in nome OPPURE in email
-    const whereCondition = search
-      ? [{ nome: ILike(`%${search}%`) }, { email: ILike(`%${search}%`) }]
-      : {};
+    const query = this.clienteRepository
+      .createQueryBuilder('cliente');
 
-    // findAndCount esegue 2 query ottimizzate in parallelo: una tira fuori i 20 record, l'altra conta il totale assoluto nel DB
-    const [data, total] = await this.clienteRepository.findAndCount({
-      where: whereCondition,
-      order: { nome: 'ASC' }, // Ordiniamo alfabeticamente
-      skip: skip,
-      take: limit,
-      // Se vuoi mostrare dei counter nell'HTML dell'archivio, puoi decommentare le relations
-      // relations: ['indirizzi', 'commesse', 'appuntamenti']
-    });
+    // Ricerca flessibile multi-campo: cerca in nome, telefono o email simultaneamente
+    if (search) {
+      query.andWhere(
+        new Brackets((qb) => {
+          qb.where('cliente.nome ILIKE :search', { search: `%${search}%` })
+            .orWhere('cliente.telefono ILIKE :search', { search: `%${search}%` })
+            .orWhere('cliente.email ILIKE :search', { search: `%${search}%` });
+        }),
+      );
+    }
+
+    query.orderBy('cliente.nome', 'ASC').skip(skip).take(limit);
+
+    const [data, total] = await query.getManyAndCount();
 
     return {
       data,

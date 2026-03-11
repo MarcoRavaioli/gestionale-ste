@@ -8,6 +8,7 @@ import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { DataMaskingInterceptor } from './common/interceptors/data-masking.interceptor';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   // 1. CONFIGURAZIONE WINSTON LOGGER
@@ -78,7 +79,10 @@ async function bootstrap() {
     }),
   );
 
-  // 4. DATA MASKING INTERCEPTOR (Log Sicuri)
+  // 4. GLOBAL EXCEPTION FILTER (Debug aggressivo)
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // 5. DATA MASKING INTERCEPTOR (Log Sicuri + RBAC Response Masking)
   app.useGlobalInterceptors(new DataMaskingInterceptor());
 
   // 5. PORTA DINAMICA O FALLBACK
