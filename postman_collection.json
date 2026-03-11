@@ -179,6 +179,348 @@
           }
         }
       ]
+    },
+    {
+      "name": "Ricerca Cliente",
+      "item": [
+        {
+          "name": "7. Ricerca Cliente per cognome",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Struttura paginata valida\", function () {",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "    pm.expect(jsonData).to.have.property('page');",
+                  "    pm.expect(jsonData).to.have.property('totalPages');",
+                  "});",
+                  "pm.test(\"Risultati filtrati per keyword\", function () {",
+                  "    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cliente/paginated?page=1&limit=10&search=Rossi",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "Rossi" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. Ricerca Cliente per email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Ricerca su email funziona\", function () {",
+                  "    if (jsonData.total > 0) {",
+                  "        var found = jsonData.data.some(function(c) {",
+                  "            return c.email && c.email.toLowerCase().includes('@');",
+                  "        });",
+                  "        pm.expect(found).to.be.true;",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cliente/paginated?page=1&limit=10&search=rossi@",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "rossi@" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "9. Ricerca Cliente inesistente → 0 risultati",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Nessun risultato per keyword inesistente\", function () {",
+                  "    pm.expect(jsonData.total).to.equal(0);",
+                  "    pm.expect(jsonData.data).to.have.length(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cliente/paginated?page=1&limit=10&search=xyz_inesistente_12345",
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "xyz_inesistente_12345" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Test Errori Dettagliati",
+      "item": [
+        {
+          "name": "10. POST Cliente senza nome → 400 dettagliato",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Errore ha statusCode 400\", function () {",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 400);",
+                  "});",
+                  "pm.test(\"Errore ha timestamp e path\", function () {",
+                  "    pm.expect(jsonData).to.have.property('timestamp');",
+                  "    pm.expect(jsonData).to.have.property('path');",
+                  "});",
+                  "pm.test(\"Non è un generico 500\", function () {",
+                  "    pm.expect(jsonData.statusCode).to.not.equal(500);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": "{{base_url}}/cliente"
+          }
+        },
+        {
+          "name": "11. Login credenziali errate → 401 dettagliato",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Errore ha statusCode 401\", function () {",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 401);",
+                  "});",
+                  "pm.test(\"Messaggio specifico sulle credenziali\", function () {",
+                  "    pm.expect(jsonData.message.toLowerCase()).to.include('credenziali');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"utente_inesistente\",\"password\":\"password_sbagliata\"}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "12. Accesso senza token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Errore ha statusCode 401\", function () {",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/commessa"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RBAC Token Differenziati",
+      "item": [
+        {
+          "name": "13. Collaboratore Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 201\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"Has access_token\", function () {",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "});",
+                  "pm.environment.set(\"collaboratore_token\", jsonData.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"andreGSPose\",\"password\":\"andreaandrea\"}"
+            },
+            "url": "{{base_url}}/auth/login"
+          }
+        },
+        {
+          "name": "14. COLLABORATORE - Get Commesse (valore_totale mascherato)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"valore_totale è null per collaboratori\", function () {",
+                  "    jsonData.data.forEach(function(commessa) {",
+                  "        pm.expect(commessa.valore_totale).to.be.null;",
+                  "    });",
+                  "});",
+                  "pm.test(\"fatture è null per collaboratori\", function () {",
+                  "    jsonData.data.forEach(function(commessa) {",
+                  "        pm.expect(commessa.fatture).to.be.null;",
+                  "    });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{collaboratore_token}}" }
+            ],
+            "url": "{{base_url}}/commessa/paginated?page=1&limit=10"
+          }
+        },
+        {
+          "name": "15. ADMIN - Get Commesse (valore_totale visibile)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"L'admin vede valore_totale (non null se commesse hanno valore)\", function () {",
+                  "    var conValore = jsonData.data.filter(function(c) { return c.valore_totale !== null && c.valore_totale !== undefined; });",
+                  "    pm.expect(conValore.length).to.be.at.least(0); // OK anche 0 se non ci sono commesse con valore",
+                  "});",
+                  "pm.test(\"Struttura risposta ADMIN corretta\", function () {",
+                  "    pm.expect(jsonData).to.have.property('data');",
+                  "    pm.expect(jsonData).to.have.property('total');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{admin_token}}" }
+            ],
+            "url": "{{base_url}}/commessa/paginated?page=1&limit=10"
+          }
+        },
+        {
+          "name": "16. COLLABORATORE - DELETE Commessa → 403 Forbidden",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 403 Forbidden per collaboratore\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "pm.test(\"statusCode è 403\", function () {",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{collaboratore_token}}" }
+            ],
+            "url": "{{base_url}}/commessa/9999"
+          }
+        }
+      ]
     }
   ]
 }

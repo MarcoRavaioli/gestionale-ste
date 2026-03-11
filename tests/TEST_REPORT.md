@@ -1,26 +1,48 @@
-# QA Penetration & Backend Report
+# QA Penetration & Backend Report — Suite E2E Automatizzata
 
-### 1. Authenticating as Admin
-✅ Admin authenticated successfully.
+**Data:** 2026-03-11 | **Framework:** NestJS / Supertest / Jest
+**DB di Test:** PostgreSQL `gestionale_test` (Raspberry Pi — isolato da produzione)
+**Comando di esecuzione:**
+```bash
+cd ~/docker-data/gestionale-gspose/backend && npm run test:e2e
+```
 
-### 2. Fetching existing Collaboratore User
-✅ Found Collaboratore: Stefano03 (ID: 2)
-✅ Reset password and set role to COLLABORATORE for Stefano03
-✅ Collaboratore (Stefano03) authenticated successfully.
+---
 
-### 3. Creating Dummy Cantiere (Indirizzo)
-✅ Dummy Cantiere created with ID: 10
+## Full-Text Search (Cliente)
 
-### 4. Creating Dummy Commessa linked to Cantiere
-✅ Dummy Commessa created with ID: 7 and valore_totale: 2500.50
+✅ `[1]` Ricerca `"Rossi"` → 1 risultato, `nome === 'Mario Rossi'`
+✅ `[2]` Ricerca `"luca"` (case-insensitive) → 1 risultato
+✅ `[3]` Ricerca `"anna@test.it"` (campo email) → 1 risultato
+✅ `[4]` Ricerca `"xyz_inesistente"` → `total === 0`, `data.length === 0`
 
-### 5. RBAC Test (Collaboratore Role)
-✅ RBAC READ PASS: `valore_totale` is fully masked or absent for COLLABORATORE.
-✅ RBAC DELETE PASS: Server correctly rejected deletion with 403 Forbidden.
+---
 
-### 6. Full Text Search (FTS) Test
-✅ FTS PASS: Searching for 'SearchTest' correctly returned the associated Commessa.
+## Global Exception Filter
 
-### 7. Deletion Test (cascade=false)
-✅ Cantiere deleted successfully with `cascade=false`.
-✅ CASCADE PASS: Commessa 7 still exists after Cantiere deletion (cascade prevented deletion).
+✅ `[5]` `POST /cliente` payload vuoto → `400` con `statusCode`, `message`, `timestamp`, `path`
+✅ `[6]` `POST /cliente` con campo extra (forbidNonWhitelisted) → `400`
+✅ `[7]` `POST /auth/login` credenziali errate → `401`, `message` contiene "credenziali"
+✅ `[8]` `POST /collaboratore` nickname duplicato → `422`, `dbErrorCode: '23505'`, `detail` presente
+✅ `[9]` `GET /commessa` senza token → `401`
+
+---
+
+## RBAC & Data Masking
+
+✅ `[10]` COLLABORATORE → `GET /commessa/paginated` → ogni item: `valore_totale === null`
+✅ `[11]` COLLABORATORE → `GET /commessa/:id` → `valore_totale === null`, `fatture === null`
+✅ `[12]` ADMIN → `GET /commessa/:id` → `valore_totale === 9999.99` (visibile)
+✅ `[13]` MANAGER → `GET /commessa/:id` → `valore_totale === 9999.99` (visibile)
+✅ `[14]` COLLABORATORE → `DELETE /commessa/:id` → `403 Forbidden`
+
+---
+
+## Riepilogo
+
+| Categoria | Test | Passed | Failed |
+|-----------|------|--------|--------|
+| Full-Text Search | 4 | 4 | 0 |
+| Exception Filter | 5 | 5 | 0 |
+| RBAC & Masking | 5 | 5 | 0 |
+| **TOTALE** | **14** | **14** | **0** |
