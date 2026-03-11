@@ -34,8 +34,10 @@ export class ClienteController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 15,
     @Query('search') search: string = '',
+    @Query('orderBy') orderBy: string = 'nome',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
   ) {
-    return this.clienteService.findPaginated(+page, +limit, search);
+    return this.clienteService.findPaginated(+page, +limit, search, orderBy, orderDirection);
   }
 
   @Get()

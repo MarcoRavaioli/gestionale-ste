@@ -95,8 +95,17 @@ export class CommessaService {
     return this.findOne(id);
   }
 
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    orderBy: string = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'DESC',
+  ) {
     const skip = (page - 1) * limit;
+
+    const allowedOrderFields = ['id', 'seriale', 'descrizione', 'stato', 'valore_totale'];
+    const safeOrderBy = allowedOrderFields.includes(orderBy) ? orderBy : 'id';
 
     const query = this.commessaRepository
       .createQueryBuilder('commessa')
@@ -123,7 +132,7 @@ export class CommessaService {
       );
     }
 
-    query.orderBy('commessa.id', 'DESC').skip(skip).take(limit);
+    query.orderBy(`commessa.${safeOrderBy}`, orderDirection).skip(skip).take(limit);
 
     const [data, total] = await query.getManyAndCount();
 

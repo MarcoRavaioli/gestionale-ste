@@ -48,12 +48,16 @@ export class CommessaController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @Query('search') search: string = '',
+    @Query('orderBy') orderBy: string = 'id',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'DESC',
   ) {
     const user = req.user;
     const result = await this.commessaService.findPaginated(
       Number(page),
       Number(limit),
       search,
+      orderBy,
+      orderDirection,
     );
     if (user?.ruolo === 'COLLABORATORE') {
       result.data = result.data.map((c: any) => {

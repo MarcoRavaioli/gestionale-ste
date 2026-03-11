@@ -33,7 +33,7 @@ export class Fattura {
   totale: number;
 
   @Column({
-    type: 'simple-enum', // Su SQLite simple-enum salva la stringa, va benissimo
+    type: 'enum',
     enum: TipoFattura,
     default: TipoFattura.ENTRATA,
   })

@@ -127,8 +127,17 @@ export class IndirizzoService {
     }
   }
 
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    orderBy: string = 'citta',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ) {
     const skip = (page - 1) * limit;
+
+    const allowedOrderFields = ['citta', 'via', 'cap', 'id'];
+    const safeOrderBy = allowedOrderFields.includes(orderBy) ? orderBy : 'citta';
 
     const query = this.indirizzoRepository
       .createQueryBuilder('indirizzo')
@@ -146,7 +155,7 @@ export class IndirizzoService {
     }
 
     query
-      .orderBy('indirizzo.citta', 'ASC') // Ordine di default
+      .orderBy(`indirizzo.${safeOrderBy}`, orderDirection)
       .skip(skip)
       .take(limit);
 

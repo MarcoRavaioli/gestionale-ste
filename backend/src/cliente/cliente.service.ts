@@ -162,13 +162,21 @@ export class ClienteService {
     }
   }
 
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    orderBy: string = 'nome',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
+  ) {
     const skip = (page - 1) * limit;
 
-    const query = this.clienteRepository
-      .createQueryBuilder('cliente');
+    // Whitelist delle colonne ordinabili (sicurezza: evita SQL injection sul campo ORDER BY)
+    const allowedOrderFields = ['nome', 'email', 'telefono', 'id'];
+    const safeOrderBy = allowedOrderFields.includes(orderBy) ? orderBy : 'nome';
 
-    // Ricerca flessibile multi-campo: cerca in nome, telefono o email simultaneamente
+    const query = this.clienteRepository.createQueryBuilder('cliente');
+
     if (search) {
       query.andWhere(
         new Brackets((qb) => {
@@ -179,7 +187,10 @@ export class ClienteService {
       );
     }
 
-    query.orderBy('cliente.nome', 'ASC').skip(skip).take(limit);
+    query
+      .orderBy(`cliente.${safeOrderBy}`, orderDirection)
+      .skip(skip)
+      .take(limit);
 
     const [data, total] = await query.getManyAndCount();
 

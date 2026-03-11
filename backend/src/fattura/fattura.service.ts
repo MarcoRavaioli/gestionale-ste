@@ -1,12 +1,13 @@
 /* backend/src/fattura/fattura.service.ts */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial } from 'typeorm'; // <--- Importa DeepPartial
+import { Repository, DeepPartial } from 'typeorm';
 import { CreateFatturaDto } from './dto/create-fattura.dto';
 import { UpdateFatturaDto } from './dto/update-fattura.dto';
 import { Fattura } from '../entities/fattura.entity';
 import { Cliente } from '../entities/cliente.entity';
 import { Commessa } from '../entities/commessa.entity';
+import { Allegato } from '../entities/allegato.entity';
 
 @Injectable()
 export class FatturaService {
@@ -17,6 +18,8 @@ export class FatturaService {
     private readonly clienteRepository: Repository<Cliente>,
     @InjectRepository(Commessa)
     private readonly commessaRepository: Repository<Commessa>,
+    @InjectRepository(Allegato)
+    private readonly allegatoRepository: Repository<Allegato>,
   ) {}
 
   // ... (gli altri metodi create, findAll, etc. rimangono uguali)
@@ -77,28 +80,31 @@ export class FatturaService {
     return this.fatturaRepository.softDelete(id);
   }
 
-  // --- CORREZIONE QUI SOTTO ---
-  createWithAttachment(
-    fatturaData: DeepPartial<Fattura>, // TIPAGGIO FORTE QUI
+  // --- CREAZIONE CON ALLEGATO OPZIONALE ---
+  async createWithAttachment(
+    fatturaData: DeepPartial<Fattura>,
     file?: Express.Multer.File,
   ) {
-    // Ora TypeORM sa che fatturaData è UN oggetto, quindi nuovaFattura è UNA Fattura
     const nuovaFattura = this.fatturaRepository.create(fatturaData);
+    const savedFattura = await this.fatturaRepository.save(nuovaFattura);
 
     if (file) {
-      // TypeScript ora sa che nuovaFattura è un oggetto singolo e ha la proprietà allegati
-      nuovaFattura.allegati = [
-        // @ts-ignore (Se Allegato entity si aspetta un oggetto completo, ignoriamo per brevità, o meglio: crea istanza Allegato)
-        { nome_file: file.filename, percorso: file.path },
-      ] as any;
+      const allegato = this.allegatoRepository.create({
+        nome_file: file.originalname || file.filename,
+        percorso: file.path,
+        tipo_file: file.mimetype,
+        fattura: savedFattura,
+      });
+      await this.allegatoRepository.save(allegato);
     }
 
-    return this.fatturaRepository.save(nuovaFattura);
+    return this.findOne(savedFattura.id);
   }
 
+  // --- MODIFICA CON ALLEGATO OPZIONALE ---
   async updateWithAttachment(
     id: number,
-    fatturaData: any,
+    fatturaData: DeepPartial<Fattura>,
     file?: Express.Multer.File,
   ) {
     const fatturaEsistente = await this.fatturaRepository.findOne({
@@ -112,14 +118,18 @@ export class FatturaService {
       fatturaEsistente,
       fatturaData,
     );
+    await this.fatturaRepository.save(fatturaAggiornata);
 
     if (file) {
-      // Nota: assicurati che la proprietà 'allegati' esista e sia gestita
-      fatturaAggiornata.allegati = [
-        { nome_file: file.filename, percorso: file.path } as any,
-      ];
+      const allegato = this.allegatoRepository.create({
+        nome_file: file.originalname || file.filename,
+        percorso: file.path,
+        tipo_file: file.mimetype,
+        fattura: fatturaEsistente,
+      });
+      await this.allegatoRepository.save(allegato);
     }
 
-    return this.fatturaRepository.save(fatturaAggiornata);
+    return this.findOne(id);
   }
 }

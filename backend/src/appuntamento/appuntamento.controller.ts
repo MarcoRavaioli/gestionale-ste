@@ -34,11 +34,15 @@ export class AppuntamentoController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '10',
     @Query('search') search: string = '',
+    @Query('orderBy') orderBy: string = 'id',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'DESC',
   ) {
     return this.appuntamentoService.findPaginated(
       Number(page),
       Number(limit),
       search,
+      orderBy,
+      orderDirection,
     );
   }
 

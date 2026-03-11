@@ -63,10 +63,14 @@ export class IndirizzoService {
     page: number = 1,
     limit: number = 15,
     search: string = '',
+    orderBy: string = 'citta',
+    orderDirection: 'ASC' | 'DESC' = 'ASC',
   ): Observable<PaginatedResult<Indirizzo>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('limit', limit.toString());
+      .set('limit', limit.toString())
+      .set('orderBy', orderBy)
+      .set('orderDirection', orderDirection);
 
     if (search) {
       params = params.set('search', search);

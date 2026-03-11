@@ -38,8 +38,10 @@ export class IndirizzoController {
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 15,
     @Query('search') search: string = '',
+    @Query('orderBy') orderBy: string = 'citta',
+    @Query('orderDirection') orderDirection: 'ASC' | 'DESC' = 'ASC',
   ) {
-    return this.indirizzoService.findPaginated(+page, +limit, search);
+    return this.indirizzoService.findPaginated(+page, +limit, search, orderBy, orderDirection);
   }
 
   @Get(':id')

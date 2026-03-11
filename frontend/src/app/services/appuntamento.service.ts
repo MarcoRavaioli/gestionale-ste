@@ -70,24 +70,25 @@ export class AppuntamentoService {
     page: number = 1,
     limit: number = 15,
     search: string = '',
+    orderBy: string = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'DESC',
   ): Observable<PaginatedResult<Appuntamento>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('limit', limit.toString());
+      .set('limit', limit.toString())
+      .set('orderBy', orderBy)
+      .set('orderDirection', orderDirection);
 
     if (search) {
       params = params.set('search', search);
     }
 
     return this.http
-      .get<
-        PaginatedResult<Appuntamento>
-      >(`${this.apiUrl}/paginated`, { params })
+      .get<PaginatedResult<Appuntamento>>(`${this.apiUrl}/paginated`, { params })
       .pipe(
         tap((res) => {
           if (page === 1) this.appuntamentiState.set(res.data);
-          else
-            this.appuntamentiState.update((state) => [...state, ...res.data]);
+          else this.appuntamentiState.update((state) => [...state, ...res.data]);
         }),
       );
   }

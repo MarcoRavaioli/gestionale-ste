@@ -62,10 +62,14 @@ export class CommessaService {
     page: number = 1,
     limit: number = 15,
     search: string = '',
+    orderBy: string = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'DESC',
   ): Observable<PaginatedResult<Commessa>> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('limit', limit.toString());
+      .set('limit', limit.toString())
+      .set('orderBy', orderBy)
+      .set('orderDirection', orderDirection);
 
     if (search) {
       params = params.set('search', search);

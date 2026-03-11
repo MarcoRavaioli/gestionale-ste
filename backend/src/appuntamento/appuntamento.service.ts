@@ -90,8 +90,17 @@ export class AppuntamentoService {
     return this.findOne(id);
   }
 
-  async findPaginated(page: number, limit: number, search: string) {
+  async findPaginated(
+    page: number,
+    limit: number,
+    search: string,
+    orderBy: string = 'id',
+    orderDirection: 'ASC' | 'DESC' = 'DESC',
+  ) {
     const skip = (page - 1) * limit;
+
+    const allowedOrderFields = ['id', 'titolo', 'data_ora', 'descrizione'];
+    const safeOrderBy = allowedOrderFields.includes(orderBy) ? orderBy : 'id';
 
     const query = this.appuntamentoRepository
       .createQueryBuilder('appuntamento')
@@ -143,7 +152,7 @@ export class AppuntamentoService {
       );
     }
 
-    query.orderBy('appuntamento.id', 'DESC').skip(skip).take(limit);
+    query.orderBy(`appuntamento.${safeOrderBy}`, orderDirection).skip(skip).take(limit);
 
     const [data, total] = await query.getManyAndCount();
 
