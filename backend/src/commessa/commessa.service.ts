@@ -157,22 +157,7 @@ export class CommessaService {
         if (commessa.fatture?.length)
           await queryRunner.manager.softRemove(commessa.fatture);
         if (commessa.allegati?.length) {
-          for (const allegato of commessa.allegati) {
-            try {
-              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
-                fs.unlinkSync(allegato.percorso);
-              }
-            } catch (err) {
-              console.error(
-                `Errore eliminazione file ${allegato.percorso}:`,
-                err,
-              );
-            }
-          }
-          await queryRunner.manager.delete(
-            Allegato,
-            commessa.allegati.map((a) => a.id),
-          );
+          await queryRunner.manager.remove(commessa.allegati);
         }
       } else {
         // Orphan

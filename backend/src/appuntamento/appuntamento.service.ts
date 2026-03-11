@@ -167,19 +167,7 @@ export class AppuntamentoService {
     }
 
     if (appuntamento.allegati?.length) {
-      for (const allegato of appuntamento.allegati) {
-        try {
-          if (allegato.percorso && fs.existsSync(allegato.percorso)) {
-            fs.unlinkSync(allegato.percorso);
-          }
-        } catch (err) {
-          console.error(`Errore eliminazione file ${allegato.percorso}:`, err);
-        }
-      }
-      await this.dataSource.manager.delete(
-        Allegato,
-        appuntamento.allegati.map((a) => a.id),
-      );
+      await this.dataSource.manager.remove(appuntamento.allegati);
     }
 
     return this.appuntamentoRepository.softRemove(appuntamento);

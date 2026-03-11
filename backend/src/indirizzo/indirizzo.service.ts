@@ -95,22 +95,7 @@ export class IndirizzoService {
         if (indirizzo.appuntamenti?.length)
           await queryRunner.manager.softRemove(indirizzo.appuntamenti);
         if (indirizzo.allegati?.length) {
-          for (const allegato of indirizzo.allegati) {
-            try {
-              if (allegato.percorso && fs.existsSync(allegato.percorso)) {
-                fs.unlinkSync(allegato.percorso);
-              }
-            } catch (err) {
-              console.error(
-                `Errore eliminazione file ${allegato.percorso}:`,
-                err,
-              );
-            }
-          }
-          await queryRunner.manager.delete(
-            Allegato,
-            indirizzo.allegati.map((a) => a.id),
-          );
+          await queryRunner.manager.remove(indirizzo.allegati);
         }
       } else {
         // Orphan
