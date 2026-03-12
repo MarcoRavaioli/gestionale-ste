@@ -34,10 +34,11 @@ export class CommessaController {
     const user = req.user;
     const commesse = await this.commessaService.findAll();
     if (user?.ruolo === 'COLLABORATORE') {
-      return commesse.map((c) => {
-        const { valore_totale, fatture, ...safeCommessa } = c;
-        return safeCommessa;
-      });
+      return commesse.map((c: any) => ({
+        ...c,
+        valore_totale: null,
+        fatture: null,
+      }));
     }
     return commesse;
   }
@@ -60,10 +61,11 @@ export class CommessaController {
       orderDirection,
     );
     if (user?.ruolo === 'COLLABORATORE') {
-      result.data = result.data.map((c: any) => {
-        const { valore_totale, fatture, ...safeCommessa } = c;
-        return safeCommessa;
-      }) as any;
+      result.data = result.data.map((c: any) => ({
+        ...c,
+        valore_totale: null,
+        fatture: null,
+      })) as any;
     }
     return result;
   }
@@ -73,8 +75,11 @@ export class CommessaController {
     const user = req.user;
     const commessa = await this.commessaService.findOne(id);
     if (user?.ruolo === 'COLLABORATORE' && commessa) {
-      const { valore_totale, fatture, ...safeCommessa } = commessa;
-      return safeCommessa;
+      return {
+        ...(commessa as any),
+        valore_totale: null,
+        fatture: null,
+      };
     }
     return commessa;
   }
