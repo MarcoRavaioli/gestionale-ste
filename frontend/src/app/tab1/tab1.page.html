@@ -138,13 +138,21 @@
       <div class="icon-box"><ion-icon name="receipt"></ion-icon></div>
       <div class="label"><span>Nuova</span><strong>Fattura</strong></div>
     </div>
-    @if (isAdmin()) {
+    @if (isManager()) {
     <div class="action-card dark" (click)="openNuovoCollaboratore()">
       <div class="icon-box" style="background: var(--ion-color-dark)">
         <ion-icon name="person-add"></ion-icon>
       </div>
       <div class="label">
-        <span>Gestione</span><strong>Nuovo Utente</strong>
+        <span>Crea</span><strong>Nuovo Utente</strong>
+      </div>
+    </div>
+    <div class="action-card dark" (click)="openGestioneUtenti()">
+      <div class="icon-box" style="background: var(--ion-color-dark)">
+        <ion-icon name="people"></ion-icon>
+      </div>
+      <div class="label">
+        <span>Gestione</span><strong>Utenti</strong>
       </div>
     </div>
     }

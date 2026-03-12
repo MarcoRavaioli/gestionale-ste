@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -128,7 +128,19 @@ export class CollaboratoreService implements OnModuleInit {
     return this.collaboratoreRepository.findOneBy({ id });
   }
 
-  async update(id: number, updateDto: UpdateCollaboratoreDto) {
+  async update(id: number, updateDto: UpdateCollaboratoreDto, currentUser: any) {
+    // SECURITY CHECK: Se l'utente è MANAGER, non può modificare un ADMIN
+    const targetUser = await this.findOne(id);
+    if (!targetUser) {
+      throw new Error('Utente non trovato');
+    }
+
+    if (currentUser.ruolo === 'MANAGER' && targetUser.ruolo === 'ADMIN') {
+      throw new ForbiddenException(
+        'I Manager non possono modificare gli Admin.',
+      );
+    }
+
     // Se stiamo aggiornando la password, dobbiamo hasharla di nuovo!
     if (updateDto.password) {
       const salt = await bcrypt.genSalt();
@@ -142,7 +154,19 @@ export class CollaboratoreService implements OnModuleInit {
     return this.findOne(id);
   }
 
-  remove(id: number) {
+  async remove(id: number, currentUser: any) {
+    // SECURITY CHECK: Se l'utente è MANAGER, non può eliminare un ADMIN
+    const targetUser = await this.findOne(id);
+    if (!targetUser) {
+      throw new Error('Utente non trovato');
+    }
+
+    if (currentUser.ruolo === 'MANAGER' && targetUser.ruolo === 'ADMIN') {
+      throw new ForbiddenException(
+        'I Manager non possono eliminare gli Admin.',
+      );
+    }
+
     return this.collaboratoreRepository.softDelete(id);
   }
 }

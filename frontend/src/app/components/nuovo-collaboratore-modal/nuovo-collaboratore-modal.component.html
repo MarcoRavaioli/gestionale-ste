@@ -1,6 +1,6 @@
 <ion-header>
   <ion-toolbar color="primary">
-    <ion-title>Nuovo Utente</ion-title>
+    <ion-title>{{ isEditMode ? 'Modifica Utente' : 'Nuovo Utente' }}</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="chiudi()">
         <ion-icon name="close-outline" slot="icon-only"></ion-icon>
@@ -13,13 +13,14 @@
   
   <div class="form-section">
     <p class="intro-text">
-      Crea un nuovo account per accedere all'app.
+      {{ isEditMode ? 'Aggiorna i dati dell\'utente.' : 'Crea un nuovo account per accedere all\'app.' }}
     </p>
 
     <ion-item lines="full" class="ion-margin-bottom">
       <ion-select label="Ruolo Aziendale" label-placement="stacked" [(ngModel)]="nuovoUtente.ruolo">
         <ion-select-option value="COLLABORATORE">Collaboratore</ion-select-option>
         <ion-select-option value="MANAGER">Manager</ion-select-option>
+        <ion-select-option value="ADMIN" *ngIf="collaboratore?.ruolo === 'ADMIN' || !isEditMode">Admin</ion-select-option>
       </ion-select>
     </ion-item>
 
@@ -38,7 +39,7 @@
     <div class="password-wrapper ion-margin-top">
       <ion-input 
         [type]="showPassword ? 'text' : 'password'" 
-        label="Password *" 
+        [label]="isEditMode ? 'Nuova Password (opzionale)' : 'Password *'" 
         label-placement="floating" 
         fill="outline" 
         [(ngModel)]="nuovoUtente.password">
@@ -50,9 +51,9 @@
 
   </div>
 
-  <ion-button expand="block" size="large" class="ion-margin-top" (click)="salva()" [disabled]="!isValid()">
-    <ion-icon name="person-add-outline" slot="start"></ion-icon>
-    CREA UTENTE
+  <ion-button expand="block" size="large" class="ion-margin-top" (click)="salva()" [disabled]="!isValid()" [color]="isEditMode ? 'warning' : 'primary'">
+    <ion-icon [name]="isEditMode ? 'save-outline' : 'person-add-outline'" slot="start"></ion-icon>
+    {{ isEditMode ? 'AGGIORNA UTENTE' : 'CREA UTENTE' }}
   </ion-button>
 
 </ion-content>

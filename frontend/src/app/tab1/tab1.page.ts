@@ -34,6 +34,8 @@ import { NuovoCollaboratoreModalComponent } from '../components/nuovo-collaborat
 import { ProfiloModalComponent } from '../components/profilo-modal/profilo-modal.component';
 import { ImpostazioniModalComponent } from '../components/impostazioni-modal/impostazioni-modal.component';
 
+import { GestioneUtentiModalComponent } from '../components/gestione-utenti-modal/gestione-utenti-modal.component';
+
 import { addIcons } from 'ionicons';
 import {
   calendar,
@@ -53,6 +55,7 @@ import {
   arrowDownCircle,
   logOutOutline,
   personAdd,
+  people,
   peopleOutline,
   walletOutline,
   personCircleOutline,
@@ -127,6 +130,7 @@ export class Tab1Page implements OnInit {
       arrowDownCircle,
       logOutOutline,
       personAdd,
+      people,
       peopleOutline,
       walletOutline,
       personCircleOutline,
@@ -348,5 +352,16 @@ export class Tab1Page implements OnInit {
       component: NuovoCollaboratoreModalComponent,
     });
     await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.creato) this.caricaDati();
+  }
+
+  async openGestioneUtenti() {
+    const modal = await this.modalCtrl.create({
+      component: GestioneUtentiModalComponent,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data?.aggiornato || data?.eliminato) this.caricaDati();
   }
 }

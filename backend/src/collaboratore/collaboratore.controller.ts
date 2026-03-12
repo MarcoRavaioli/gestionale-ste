@@ -24,7 +24,7 @@ export class CollaboratoreController {
   constructor(private readonly collaboratoreService: CollaboratoreService) {}
 
   @Post()
-  @Roles('ADMIN')
+  @Roles('ADMIN', 'MANAGER')
   create(@Body() createDto: CreateCollaboratoreDto, @Request() req: any) {
     // Il controllo if(createDto.ruolo === 'ADMIN') è ottimo tenerlo qui per sicurezza extra logic
     if (createDto.ruolo === 'ADMIN') {
@@ -48,29 +48,25 @@ export class CollaboratoreController {
   }
 
   @Patch(':id')
+  @Roles('ADMIN', 'MANAGER')
   update(
     @Param('id') id: string,
     @Body() updateDto: UpdateCollaboratoreDto,
     @Request() req: any,
   ) {
-    // 1. Controllo base: O sei Admin, o stai modificando te stesso
-    if (req.user.ruolo !== 'ADMIN' && req.user.userId !== +id) {
-      throw new ForbiddenException('Non puoi modificare questo utente.');
-    }
-
-    // 2. PRIVILEGE ESCALATION CHECK: solo un ADMIN può cambiare il ruolo
+    // 1. Logic check: Only Admin can change roles
     if (updateDto.ruolo !== undefined && req.user.ruolo !== 'ADMIN') {
       throw new ForbiddenException(
         'Solo un Admin può modificare il ruolo di un utente.',
       );
     }
 
-    return this.collaboratoreService.update(+id, updateDto);
+    return this.collaboratoreService.update(+id, updateDto, req.user);
   }
 
   @Delete(':id')
-  @Roles('ADMIN') // Solo Admin può cancellare
-  remove(@Param('id') id: string) {
-    return this.collaboratoreService.remove(+id);
+  @Roles('ADMIN', 'MANAGER')
+  remove(@Param('id') id: string, @Request() req: any) {
+    return this.collaboratoreService.remove(+id, req.user);
   }
 }

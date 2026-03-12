@@ -32,4 +32,9 @@ export class CollaboratoreService {
   update(id: number, data: any): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}`, data);
   }
+
+  // Elimina un utente
+  remove(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

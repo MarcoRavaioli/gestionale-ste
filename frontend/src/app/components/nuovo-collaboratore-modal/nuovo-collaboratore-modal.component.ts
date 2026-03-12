@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+// ... other imports ...
 import {
   IonHeader,
   IonToolbar,
@@ -25,6 +26,7 @@ import {
   saveOutline,
   eyeOutline,
   eyeOffOutline,
+  pencilOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -48,7 +50,9 @@ import {
     IonSelectOption,
   ],
 })
-export class NuovoCollaboratoreModalComponent {
+export class NuovoCollaboratoreModalComponent implements OnInit {
+  @Input() collaboratore: any; // Se passato, siamo in modalità EDIT
+
   nuovoUtente = {
     nome: '',
     cognome: '',
@@ -59,6 +63,7 @@ export class NuovoCollaboratoreModalComponent {
     ruolo: 'COLLABORATORE', // Default
   };
 
+  isEditMode = false;
   showPassword = false;
 
   constructor(
@@ -73,7 +78,19 @@ export class NuovoCollaboratoreModalComponent {
       saveOutline,
       eyeOutline,
       eyeOffOutline,
+      pencilOutline,
     });
+  }
+
+  ngOnInit() {
+    if (this.collaboratore) {
+      this.isEditMode = true;
+      this.nuovoUtente = {
+        ...this.nuovoUtente,
+        ...this.collaboratore,
+        password: '', // Non pre-popoliamo la password per sicurezza
+      };
+    }
   }
 
   chiudi() {
@@ -86,35 +103,41 @@ export class NuovoCollaboratoreModalComponent {
 
   isValid(): boolean {
     // Campi obbligatori minimi
-    return !!(
-      this.nuovoUtente.nome &&
-      this.nuovoUtente.nickname &&
-      this.nuovoUtente.password
-    );
+    const baseValid = !!(this.nuovoUtente.nome && this.nuovoUtente.nickname);
+    // Se è nuovo, la password è obbligatoria. Se è edit, è opzionale.
+    return this.isEditMode ? baseValid : baseValid && !!this.nuovoUtente.password;
   }
 
   async salva() {
     if (!this.isValid()) return;
 
     const loader = await this.loadingCtrl.create({
-      message: 'Creazione utente...',
+      message: this.isEditMode ? 'Aggiornamento utente...' : 'Creazione utente...',
     });
     await loader.present();
 
-    // Pulizia dati (email vuota manda null per evitare conflitti unique)
+    // Pulizia dati
     const payload = { ...this.nuovoUtente };
     if (!payload.email) delete (payload as any).email;
+    if (this.isEditMode && !payload.password) delete (payload as any).password;
 
-    this.collabService.create(payload).subscribe({
+    const request = this.isEditMode
+      ? this.collabService.update(this.collaboratore.id, payload)
+      : this.collabService.create(payload);
+
+    request.subscribe({
       next: async (res) => {
         await loader.dismiss();
-        this.mostraToast('Utente creato con successo!', 'success');
-        this.modalCtrl.dismiss({ creato: true });
+        this.mostraToast(
+          this.isEditMode ? 'Utente aggiornato!' : 'Utente creato!',
+          'success',
+        );
+        this.modalCtrl.dismiss({ [this.isEditMode ? 'aggiornato' : 'creato']: true });
       },
       error: async (err) => {
         await loader.dismiss();
         console.error(err);
-        let errorMessage = 'Errore durante la creazione. Riprova.';
+        let errorMessage = 'Errore durante l\'operazione. Riprova.';
         if (err.error?.message) {
           errorMessage = Array.isArray(err.error.message)
             ? err.error.message.join(', ')
