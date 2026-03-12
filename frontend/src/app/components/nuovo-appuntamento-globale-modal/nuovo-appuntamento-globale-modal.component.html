@@ -58,6 +58,16 @@
               [items]="listaCommesse"
               [(selectedId)]="selectedCommessaId"
             ></app-generic-selector>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="create-inline-btn"
+              (click)="apriCreazioneRapidaCommessa()"
+            >
+              <ion-icon name="add" slot="start"></ion-icon>
+              Nuova Commessa
+            </ion-button>
           </div>
         }
         @if (tipoCollegamento === "cantiere") {
@@ -68,6 +78,16 @@
               [items]="listaCantieri"
               [(selectedId)]="selectedCantiereId"
             ></app-generic-selector>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="create-inline-btn"
+              (click)="apriCreazioneRapidaCantiere()"
+            >
+              <ion-icon name="add" slot="start"></ion-icon>
+              Nuovo Cantiere
+            </ion-button>
           </div>
         }
         @if (tipoCollegamento === "cliente") {
@@ -78,6 +98,16 @@
               [items]="listaClienti"
               [(selectedId)]="selectedClienteId"
             ></app-generic-selector>
+
+            <ion-button
+              expand="block"
+              fill="outline"
+              class="create-inline-btn"
+              (click)="apriCreazioneRapidaCliente()"
+            >
+              <ion-icon name="add" slot="start"></ion-icon>
+              Nuovo Cliente
+            </ion-button>
           </div>
         }
         @if (tipoCollegamento === "nessuno") {

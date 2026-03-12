@@ -54,6 +54,10 @@ import {
   saveOutline,
 } from 'ionicons/icons';
 
+import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
+import { NuovoCantiereGlobaleModalComponent } from '../nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
+import { NuovaCommessaGlobaleModalComponent } from '../nuova-commessa-globale-modal/nuova-commessa-globale-modal.component';
+
 @Component({
   selector: 'app-nuovo-appuntamento-globale-modal',
   templateUrl: './nuovo-appuntamento-globale-modal.component.html',
@@ -177,6 +181,49 @@ export class NuovoAppuntamentoGlobaleModalComponent implements OnInit {
     this.comService.getAll().subscribe((res) => (this.listaCommesse = res));
     this.indService.getAll().subscribe((res) => (this.listaCantieri = res));
     this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+  }
+
+  async apriCreazioneRapidaCliente() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoClienteModalComponent,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaClienti.unshift(data.data);
+      this.selectedClienteId = data.data.id;
+    }
+  }
+
+  async apriCreazioneRapidaCantiere() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoCantiereGlobaleModalComponent,
+      componentProps: {
+        clienteIdPreselezionato: this.selectedClienteId,
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaCantieri.unshift(data.data);
+      this.selectedCantiereId = data.data.id;
+    }
+  }
+
+  async apriCreazioneRapidaCommessa() {
+    const modal = await this.modalCtrl.create({
+      component: NuovaCommessaGlobaleModalComponent,
+      componentProps: {
+        clienteIdPreselezionato: this.selectedClienteId,
+        cantiereIdPreselezionato: this.selectedCantiereId,
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaCommesse.unshift(data.data);
+      this.selectedCommessaId = data.data.id;
+    }
   }
 
   chiudi() {
