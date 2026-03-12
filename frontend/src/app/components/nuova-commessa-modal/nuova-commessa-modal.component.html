@@ -10,7 +10,45 @@
 </ion-header>
 
 <ion-content class="ion-padding">
-  <div class="form-grid">
+  <div class="form-grid modern-form">
+    <!-- Sezione Collegamento (Nuova) -->
+    <div class="form-section" style="padding: 10px; margin-bottom: 20px; border: 1px solid rgba(128,128,128,0.1); border-radius: 12px;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--ion-color-medium); text-transform: uppercase; margin-bottom: 10px;">
+        Collegamento
+      </div>
+
+      <ion-segment [(ngModel)]="tipoCollegamento" mode="ios" class="ion-margin-bottom">
+        <ion-segment-button value="cantiere">
+          <ion-label>Cantiere</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="cliente">
+          <ion-label>Cliente</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      @if (tipoCollegamento === 'cantiere') {
+        <app-generic-selector
+          label="Seleziona Cantiere..."
+          type="cantiere"
+          [items]="listaCantieri"
+          [(selectedId)]="selectedCantiereId"
+        ></app-generic-selector>
+        <ion-button expand="block" fill="outline" size="small" (click)="apriCreazioneRapidaCantiere()" style="margin-top: 8px;">
+          <ion-icon name="add" slot="start"></ion-icon> Nuovo Cantiere
+        </ion-button>
+      } @else {
+        <app-generic-selector
+          label="Seleziona Cliente..."
+          type="cliente"
+          [items]="listaClienti"
+          [(selectedId)]="selectedClienteId"
+        ></app-generic-selector>
+        <ion-button expand="block" fill="outline" size="small" (click)="apriCreazioneRapidaCliente()" style="margin-top: 8px;">
+          <ion-icon name="add" slot="start"></ion-icon> Nuovo Cliente
+        </ion-button>
+      }
+    </div>
+
     <ion-input
       label="Seriale (es. A123456) *"
       label-placement="floating"

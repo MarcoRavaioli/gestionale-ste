@@ -52,6 +52,9 @@ import {
   pricetagOutline,
 } from 'ionicons/icons';
 
+import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
+import { NuovoCantiereGlobaleModalComponent } from '../nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
+
 @Component({
   selector: 'app-nuova-commessa-globale-modal',
   templateUrl: './nuova-commessa-globale-modal.component.html',
@@ -160,6 +163,33 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
 
   chiudi() {
     this.modalCtrl.dismiss();
+  }
+
+  async apriCreazioneRapidaCliente() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoClienteModalComponent,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaClienti.unshift(data.data);
+      this.selectedClienteId = data.data.id;
+    }
+  }
+
+  async apriCreazioneRapidaCantiere() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoCantiereGlobaleModalComponent,
+      componentProps: {
+        clienteIdPreselezionato: this.selectedClienteId,
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaCantieri.unshift(data.data);
+      this.selectedCantiereId = data.data.id;
+    }
   }
 
   isValid(): boolean {

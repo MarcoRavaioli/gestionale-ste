@@ -1,4 +1,6 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   IonHeader,
   IonToolbar,
@@ -11,19 +13,32 @@ import {
   IonSelect,
   IonSelectOption,
   IonIcon,
+  IonLabel,
+  IonSegment,
+  IonSegmentButton,
+  IonSpinner,
+  IonItem,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+
 import { CommessaService } from '../../services/commessa.service';
+import { IndirizzoService } from '../../services/indirizzo.service';
+import { ClienteService } from '../../services/cliente.service';
 import { GestioneAllegatiComponent } from '../gestione-allegati/gestione-allegati.component';
-import { Commessa } from '../../interfaces/models';
+import { GenericSelectorComponent } from '../generic-selector/generic-selector.component';
+import { Cliente, Indirizzo, Commessa } from '../../interfaces/models';
+import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
+import { NuovoCantiereGlobaleModalComponent } from '../nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
 import { addIcons } from 'ionicons';
 import {
   cloudUploadOutline,
   documentAttachOutline,
   closeCircle,
+  add,
+  personOutline,
+  locationOutline,
+  saveOutline,
 } from 'ionicons/icons';
 
 @Component({
@@ -43,14 +58,26 @@ import {
     IonSelect,
     IonSelectOption,
     IonIcon,
+    IonLabel,
+    IonSegment,
+    IonSegmentButton,
+    IonSpinner,
+    IonItem,
     CommonModule,
     FormsModule,
     GestioneAllegatiComponent,
+    GenericSelectorComponent,
   ],
 })
 export class NuovaCommessaModalComponent implements OnInit {
-  @Input() indirizzoId!: number;
+  @Input() indirizzoId?: number;
   @Input() commessaEsistente?: Commessa;
+
+  tipoCollegamento: 'cantiere' | 'cliente' = 'cantiere';
+  listaCantieri: Indirizzo[] = [];
+  selectedCantiereId: number | null = null;
+  listaClienti: Cliente[] = [];
+  selectedClienteId: number | null = null;
 
   commessa: Partial<Commessa> = {
     seriale: '',
@@ -65,14 +92,39 @@ export class NuovaCommessaModalComponent implements OnInit {
   constructor(
     private modalCtrl: ModalController,
     private commessaService: CommessaService,
+    private indirizzoService: IndirizzoService,
+    private clienteService: ClienteService,
     private toastCtrl: ToastController,
   ) {
-    addIcons({ cloudUploadOutline, documentAttachOutline, closeCircle });
+    addIcons({
+      cloudUploadOutline,
+      documentAttachOutline,
+      closeCircle,
+      add,
+      personOutline,
+      locationOutline,
+      saveOutline,
+    });
   }
 
   ngOnInit() {
+    this.indirizzoService
+      .getAll()
+      .subscribe((res) => (this.listaCantieri = res));
+    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+
     if (this.commessaEsistente) {
       this.commessa = { ...this.commessaEsistente };
+      if (this.commessaEsistente.indirizzo?.id) {
+        this.tipoCollegamento = 'cantiere';
+        this.selectedCantiereId = this.commessaEsistente.indirizzo.id;
+      } else if (this.commessaEsistente.cliente?.id) {
+        this.tipoCollegamento = 'cliente';
+        this.selectedClienteId = this.commessaEsistente.cliente.id;
+      }
+    } else if (this.indirizzoId) {
+      this.tipoCollegamento = 'cantiere';
+      this.selectedCantiereId = this.indirizzoId;
     }
   }
 
@@ -80,12 +132,48 @@ export class NuovaCommessaModalComponent implements OnInit {
     this.modalCtrl.dismiss();
   }
 
+  async apriCreazioneRapidaCliente() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoClienteModalComponent,
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaClienti.unshift(data.data);
+      this.selectedClienteId = data.data.id;
+      this.tipoCollegamento = 'cliente';
+    }
+  }
+
+  async apriCreazioneRapidaCantiere() {
+    const modal = await this.modalCtrl.create({
+      component: NuovoCantiereGlobaleModalComponent,
+      componentProps: {
+        clienteIdPreselezionato: this.selectedClienteId,
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && data.creato && data.data) {
+      this.listaCantieri.unshift(data.data);
+      this.selectedCantiereId = data.data.id;
+      this.tipoCollegamento = 'cantiere';
+    }
+  }
+
   // --- SALVATAGGIO ---
   salva() {
-    const payload = {
+    const payload: any = {
       ...this.commessa,
-      indirizzo: { id: this.indirizzoId },
     };
+
+    if (this.tipoCollegamento === 'cantiere' && this.selectedCantiereId) {
+      payload.indirizzo = { id: this.selectedCantiereId };
+      payload.cliente = null;
+    } else if (this.tipoCollegamento === 'cliente' && this.selectedClienteId) {
+      payload.cliente = { id: this.selectedClienteId };
+      payload.indirizzo = null;
+    }
 
     // 1. Crea o Aggiorna Commessa
     let obs$;
