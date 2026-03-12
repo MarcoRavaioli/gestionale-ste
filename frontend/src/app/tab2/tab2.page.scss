@@ -140,6 +140,54 @@ ion-content {
     }
   }
 
+  .metadata-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 8px 0;
+
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--ion-color-step-50, #f4f4f4);
+      color: var(--ion-color-step-700, #444);
+      max-width: 100%;
+
+      ion-icon {
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
+
+      .ellipsis {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      &.client-chip {
+        background: rgba(var(--ion-color-primary-rgb), 0.08);
+        color: var(--ion-color-primary);
+        ion-icon { color: var(--ion-color-primary); }
+      }
+
+      &.location-chip {
+        background: rgba(var(--ion-color-medium-rgb), 0.08);
+        color: var(--ion-color-medium);
+      }
+
+      &.commessa-chip {
+        background: rgba(var(--ion-color-secondary-rgb), 0.08);
+        color: var(--ion-color-secondary);
+        font-weight: 700;
+      }
+    }
+  }
+
   /* FIX BADGE: Rimosso il colore forzato */
   .commessa-badge {
     margin-top: 8px;

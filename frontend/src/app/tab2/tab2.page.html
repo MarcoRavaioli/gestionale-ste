@@ -111,14 +111,38 @@
             
             <h3>{{ app.commessa?.descrizione || app.nome }}</h3>
 
-            <div class="info-row primary-text">
-              <ion-icon name="person-outline"></ion-icon>
-              <span>{{ app.commessa?.indirizzo?.cliente?.nome || 'Cliente N.D.' }}</span>
-            </div>
+            <!-- Sezione Metadati Rapidi -->
+            <div class="metadata-chips">
+              <!-- CLIENTE -->
+              <div 
+                class="meta-chip client-chip" 
+                *ngIf="app.commessa?.indirizzo?.cliente?.nome || app.commessa?.cliente?.nome || app.indirizzo?.cliente?.nome || app.cliente?.nome"
+              >
+                <ion-icon name="person-outline"></ion-icon>
+                <span class="ellipsis">
+                  {{ app.commessa?.indirizzo?.cliente?.nome || app.commessa?.cliente?.nome || app.indirizzo?.cliente?.nome || app.cliente?.nome }}
+                </span>
+              </div>
 
-            <div class="info-row" *ngIf="app.commessa?.indirizzo">
-              <ion-icon name="location-outline"></ion-icon>
-              <span>{{ app.commessa?.indirizzo?.via }}, {{ app.commessa?.indirizzo?.citta }}</span>
+              <!-- CANTIERE (INDIRIZZO) -->
+              <div 
+                class="meta-chip location-chip" 
+                *ngIf="app.commessa?.indirizzo || app.indirizzo"
+              >
+                <ion-icon name="location-outline"></ion-icon>
+                <span class="ellipsis">
+                  {{ (app.commessa?.indirizzo?.via || app.indirizzo?.via) }}, {{ (app.commessa?.indirizzo?.citta || app.indirizzo?.citta) }}
+                </span>
+              </div>
+
+              <!-- COMMESSA (SERIALE) -->
+              <div 
+                class="meta-chip commessa-chip" 
+                *ngIf="app.commessa?.seriale"
+              >
+                <ion-icon name="documents-outline"></ion-icon>
+                <span>#{{ app.commessa.seriale }}</span>
+              </div>
             </div>
 
             <div class="chip-row">
