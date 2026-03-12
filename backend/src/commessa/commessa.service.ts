@@ -42,12 +42,17 @@ export class CommessaService {
     }
   }
 
-  findAll() {
+  findAll(clienteId?: number, stato?: string) {
+    const where: any = {};
+    if (clienteId) where.cliente = { id: clienteId };
+    if (stato) where.stato = stato;
+
     return this.commessaRepository.find({
+      where,
       relations: [
         'indirizzo',
         'indirizzo.cliente',
-        'cliente', // <--- FASE 2: Estrae il cliente se la commessa è diretta
+        'cliente',
         'allegati',
       ],
       order: { id: 'DESC' },
@@ -175,8 +180,12 @@ export class CommessaService {
           await queryRunner.manager.save(commessa.appuntamenti);
         }
         if (commessa.fatture?.length) {
-          commessa.fatture.forEach((f) => (f.commessa = null as any));
-          await queryRunner.manager.save(commessa.fatture);
+          for (const f of commessa.fatture) {
+            if (f.commesse) {
+              f.commesse = f.commesse.filter((c) => c.id !== id);
+              await queryRunner.manager.save(f);
+            }
+          }
         }
         if (commessa.allegati?.length) {
           commessa.allegati.forEach((al) => (al.commessa = null as any));

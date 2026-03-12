@@ -1,7 +1,7 @@
 /* backend/src/fattura/fattura.service.ts */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial } from 'typeorm';
+import { Repository, DeepPartial, In } from 'typeorm';
 import { CreateFatturaDto } from './dto/create-fattura.dto';
 import { UpdateFatturaDto } from './dto/update-fattura.dto';
 import { Fattura } from '../entities/fattura.entity';
@@ -25,42 +25,62 @@ export class FatturaService {
   // ... (gli altri metodi create, findAll, etc. rimangono uguali)
 
   async create(createDto: CreateFatturaDto) {
-    let cliente: Cliente | null = null;
-    if (createDto.clienteId) {
-      cliente = await this.clienteRepository.findOneBy({
-        id: createDto.clienteId,
-      });
-      if (!cliente) {
-        throw new NotFoundException(
-          `Cliente con ID ${createDto.clienteId} non trovato`,
-        );
+    const queryRunner = this.fatturaRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      let cliente: Cliente | null = null;
+      if (createDto.clienteId) {
+        cliente = await queryRunner.manager.findOne(Cliente, {
+          where: { id: createDto.clienteId },
+        });
+        if (!cliente) {
+          throw new NotFoundException(
+            `Cliente con ID ${createDto.clienteId} non trovato`,
+          );
+        }
       }
-    }
 
-    let commessa: Commessa | null = null;
-    if (createDto.commessaId) {
-      commessa = await this.commessaRepository.findOneBy({
-        id: createDto.commessaId,
-      });
-      if (!commessa) {
-        throw new NotFoundException(
-          `Commessa con ID ${createDto.commessaId} non trovata`,
-        );
+      let commesse: Commessa[] = [];
+      if (createDto.commessa_ids && createDto.commessa_ids.length > 0) {
+        commesse = await queryRunner.manager.findBy(Commessa, {
+          id: In(createDto.commessa_ids),
+        });
+        if (commesse.length !== createDto.commessa_ids.length) {
+          throw new NotFoundException('Una o più commesse non trovate');
+        }
       }
+
+      const nuovaFattura = queryRunner.manager.create(Fattura, {
+        ...createDto,
+        cliente: cliente,
+        commesse: commesse,
+      });
+
+      const savedFattura = await queryRunner.manager.save(nuovaFattura);
+
+      // Chiudo le commesse collegate
+      if (commesse.length > 0) {
+        for (const commessa of commesse) {
+          commessa.stato = 'CHIUSA';
+          await queryRunner.manager.save(commessa);
+        }
+      }
+
+      await queryRunner.commitTransaction();
+      return this.findOne(savedFattura.id);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
     }
-
-    const nuovaFattura = this.fatturaRepository.create({
-      ...createDto,
-      cliente: cliente,
-      commessa: commessa,
-    });
-
-    return this.fatturaRepository.save(nuovaFattura);
   }
 
   findAll() {
     return this.fatturaRepository.find({
-      relations: ['cliente', 'commessa', 'allegati'],
+      relations: ['cliente', 'commesse', 'allegati'],
       order: { data_emissione: 'DESC' },
     });
   }
@@ -68,12 +88,57 @@ export class FatturaService {
   findOne(id: number) {
     return this.fatturaRepository.findOne({
       where: { id },
-      relations: ['cliente', 'commessa'],
+      relations: ['cliente', 'commesse', 'commesse.indirizzo'],
     });
   }
 
-  update(id: number, updateDto: UpdateFatturaDto) {
-    return this.fatturaRepository.update(id, updateDto);
+  async update(id: number, updateDto: UpdateFatturaDto) {
+    const queryRunner = this.fatturaRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const fattura = await queryRunner.manager.findOne(Fattura, {
+        where: { id },
+        relations: ['commesse'],
+      });
+      if (!fattura) throw new NotFoundException('Fattura non trovata');
+
+      if (updateDto.clienteId) {
+        const cliente = await queryRunner.manager.findOne(Cliente, {
+          where: { id: updateDto.clienteId },
+        });
+        if (!cliente) throw new NotFoundException('Cliente non trovato');
+        fattura.cliente = cliente;
+      }
+
+      if (updateDto.commessa_ids) {
+        const commesse = await queryRunner.manager.findBy(Commessa, {
+          id: In(updateDto.commessa_ids),
+        });
+        if (commesse.length !== updateDto.commessa_ids.length) {
+          throw new NotFoundException('Una o più commesse non trovate');
+        }
+        fattura.commesse = commesse;
+
+        // Chiudo le nuove commesse collegate
+        for (const commessa of commesse) {
+          commessa.stato = 'CHIUSA';
+          await queryRunner.manager.save(commessa);
+        }
+      }
+
+      this.fatturaRepository.merge(fattura, updateDto);
+      await queryRunner.manager.save(fattura);
+
+      await queryRunner.commitTransaction();
+      return this.findOne(id);
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
   }
 
   remove(id: number) {

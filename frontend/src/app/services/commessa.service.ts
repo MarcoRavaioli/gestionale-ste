@@ -14,10 +14,18 @@ export class CommessaService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(): Observable<Commessa[]> {
+  getAll(clienteId?: number, stato?: string): Observable<Commessa[]> {
+    let params = new HttpParams();
+    if (clienteId) params = params.set('clienteId', clienteId.toString());
+    if (stato) params = params.set('stato', stato);
+
     return this.http
-      .get<Commessa[]>(this.apiUrl)
-      .pipe(tap((res) => this.commesseState.set(res)));
+      .get<Commessa[]>(this.apiUrl, { params })
+      .pipe(
+        tap((res) => {
+          if (!clienteId && !stato) this.commesseState.set(res);
+        }),
+      );
   }
 
   getOne(id: number): Observable<Commessa> {

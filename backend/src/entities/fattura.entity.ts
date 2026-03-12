@@ -9,6 +9,7 @@ import {
 import { Cliente } from './cliente.entity';
 import { Commessa } from './commessa.entity';
 import { Allegato } from './allegato.entity';
+import { JoinTable, ManyToMany } from 'typeorm';
 
 export enum TipoFattura {
   ENTRATA = 'entrata', // Fattura emessa al cliente
@@ -50,8 +51,13 @@ export class Fattura {
   @ManyToOne(() => Cliente, (cliente) => cliente.fatture, { nullable: true })
   cliente: Cliente | null;
 
-  @ManyToOne(() => Commessa, (commessa) => commessa.fatture, { nullable: true })
-  commessa: Commessa | null;
+  @ManyToMany(() => Commessa, (commessa) => commessa.fatture, { nullable: true })
+  @JoinTable({
+    name: 'fattura_commesse',
+    joinColumn: { name: 'fattura_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'commessa_id', referencedColumnName: 'id' },
+  })
+  commesse: Commessa[] | null;
 
   @OneToMany(() => Allegato, (allegato) => allegato.fattura, {
     cascade: true,

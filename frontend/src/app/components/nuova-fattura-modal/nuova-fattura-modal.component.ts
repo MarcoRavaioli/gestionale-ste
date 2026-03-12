@@ -35,6 +35,7 @@ import {
 
 import { ClienteService } from 'src/app/services/cliente.service';
 import { FatturaService } from 'src/app/services/fattura.service';
+import { CommessaService } from 'src/app/services/commessa.service';
 import { Cliente, Commessa, TipoFattura } from 'src/app/interfaces/models';
 // Assicurati che il percorso sia corretto
 import { NuovoClienteModalComponent } from '../nuovo-cliente-modal/nuovo-cliente-modal.component';
@@ -100,6 +101,7 @@ export class NuovaFatturaModalComponent implements OnInit {
     private modalCtrl: ModalController,
     private clienteService: ClienteService,
     private fatturaService: FatturaService,
+    private commessaService: CommessaService,
   ) {
     addIcons({
       cloudUploadOutline,
@@ -123,7 +125,7 @@ export class NuovaFatturaModalComponent implements OnInit {
       totale: ['', [Validators.required, Validators.min(0.01)]],
       descrizione: [''],
       clienteId: [null],
-      commessaId: [null],
+      commessa_ids: [[]],
       incassata: [false],
     });
   }
@@ -145,16 +147,21 @@ export class NuovaFatturaModalComponent implements OnInit {
 
     // 2. FILTRO COMMESSE PER CLIENTE
     this.form.get('clienteId')?.valueChanges.subscribe((clienteId) => {
-      this.form.patchValue({ commessaId: null });
+      this.form.patchValue({ commessa_ids: [] });
 
       if (clienteId) {
-        const cliente = this.clienti.find((c) => c.id == clienteId);
-        this.commesseFiltrate = [];
-        if (cliente?.indirizzi) {
-          cliente.indirizzi.forEach((ind) => {
-            if (ind.commesse) this.commesseFiltrate.push(...ind.commesse);
-          });
-        }
+        // Query al backend per recuperare SOLO le Commesse appartenenti a quel Cliente che NON sono ancora chiuse
+        this.isLoading = true;
+        this.commessaService.getAll(clienteId, 'APERTA').subscribe({
+          next: (res) => {
+            this.commesseFiltrate = res;
+            this.isLoading = false;
+          },
+          error: (err) => {
+            console.error('Errore recupero commesse:', err);
+            this.isLoading = false;
+          },
+        });
       } else {
         this.commesseFiltrate = [];
       }

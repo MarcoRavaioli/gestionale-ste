@@ -152,17 +152,18 @@
         *ngIf="commesseFiltrate.length > 0"
       >
         <ion-select
-          label="Commessa Collegata"
+          label="Commesse Collegate"
           labelPlacement="stacked"
-          formControlName="commessaId"
-          placeholder="Opzionale"
-          interface="popover"
+          formControlName="commessa_ids"
+          multiple="true"
+          cancelText="Annulla"
+          okText="Seleziona"
+          [disabled]="!form.get('clienteId')?.value"
         >
-          <ion-select-option [value]="null">Nessuna</ion-select-option>
           <ion-select-option
             *ngFor="let com of commesseFiltrate"
             [value]="com.id"
-            >{{ com.seriale }}</ion-select-option
+            >{{ com.seriale }} - {{ com.descrizione }}</ion-select-option
           >
         </ion-select>
       </ion-item>

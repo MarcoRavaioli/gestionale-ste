@@ -176,6 +176,12 @@
             N. {{ f.numero_fattura }} • {{ f.data_emissione | date:'dd MMM yyyy'
             }}
           </p>
+          <p
+            *ngIf="f.commesse?.length"
+            style="font-size: 0.8rem; color: var(--ion-color-primary)"
+          >
+            {{ f.commesse.length }} commesse collegate
+          </p>
 
           @if (f.incassata) {
           <ion-badge color="success" class="mini-badge">

@@ -129,6 +129,6 @@ export interface Fattura {
   incassata: boolean;
   
   cliente?: Cliente;
-  commessa?: Commessa;
+  commesse?: Commessa[];
   allegati?: Allegato[];
 }

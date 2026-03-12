@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, DeleteDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, DeleteDateColumn, ManyToMany } from 'typeorm';
 import { Indirizzo } from './indirizzo.entity';
 import { Appuntamento } from './appuntamento.entity';
 import { Fattura } from './fattura.entity';
@@ -32,7 +32,7 @@ export class Commessa {
   @OneToMany(() => Appuntamento, (app) => app.commessa)
   appuntamenti: Appuntamento[];
 
-  @OneToMany(() => Fattura, (fattura) => fattura.commessa)
+  @ManyToMany(() => Fattura, (fattura) => fattura.commesse)
   fatture: Fattura[];
 
   @OneToMany(() => Allegato, (allegato) => allegato.commessa)

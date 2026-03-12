@@ -140,7 +140,7 @@ export class FatturaDettaglioModalComponent implements OnInit {
       totale: ['', Validators.required],
       descrizione: [''],
       clienteId: [null],
-      commessaId: [null],
+      commessa_ids: [[]],
       incassata: [false],
     });
   }
@@ -199,7 +199,7 @@ export class FatturaDettaglioModalComponent implements OnInit {
       descrizione: this.fattura.descrizione,
       incassata: this.fattura.incassata,
       clienteId: this.fattura.cliente?.id,
-      commessaId: this.fattura.commessa?.id,
+      commessa_ids: this.fattura.commesse?.map((c) => c.id) || [],
     });
     this.aggiornaCommesseFiltrate(this.fattura.cliente?.id);
   }
@@ -261,7 +261,7 @@ export class FatturaDettaglioModalComponent implements OnInit {
               ...this.fattura,
               incassata: true,
               clienteId: this.fattura.cliente?.id,
-              commessaId: this.fattura.commessa?.id,
+              commessa_ids: this.fattura.commesse?.map((c) => c.id) || [],
             };
 
             this.fatturaService

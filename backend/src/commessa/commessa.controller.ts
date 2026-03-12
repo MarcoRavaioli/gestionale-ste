@@ -30,9 +30,16 @@ export class CommessaController {
   }
 
   @Get()
-  async findAll(@Req() req: any) {
+  async findAll(
+    @Req() req: any,
+    @Query('clienteId') clienteId?: string,
+    @Query('stato') stato?: string,
+  ) {
     const user = req.user;
-    const commesse = await this.commessaService.findAll();
+    const commesse = await this.commessaService.findAll(
+      clienteId ? Number(clienteId) : undefined,
+      stato,
+    );
     if (user?.ruolo === 'COLLABORATORE') {
       return commesse.map((c: any) => ({
         ...c,

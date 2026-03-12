@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsOptional,
   IsBoolean,
+  IsArray,
 } from 'class-validator';
 import { TipoFattura } from '../../entities/fattura.entity'; // Importa l'Enum dall'entità centrale
 
@@ -44,6 +45,7 @@ export class CreateFatturaDto {
   clienteId?: number;
 
   @IsOptional()
-  @IsNumber()
-  commessaId?: number;
+  @IsArray()
+  @IsNumber({}, { each: true })
+  commessa_ids?: number[];
 }

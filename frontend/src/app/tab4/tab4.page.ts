@@ -156,6 +156,9 @@ export class Tab4Page implements OnInit {
           (f.cliente?.nome && f.cliente.nome.toLowerCase().includes(search)) ||
           (f.numero_fattura &&
             f.numero_fattura.toLowerCase().includes(search)) ||
+          (f.commesse?.some((c) =>
+            c.seriale.toLowerCase().includes(search),
+          )) ||
           (f.descrizione && f.descrizione.toLowerCase().includes(search)),
       );
     }
