@@ -42,13 +42,17 @@
       <ion-item>
         <ion-icon name="key-outline" slot="start"></ion-icon>
         <ion-label position="stacked">Nuova Password</ion-label>
-        <ion-input [(ngModel)]="passwordForm.new" name="newPass" type="password" placeholder="Lascia vuoto per non cambiare"></ion-input>
+        <ion-input [(ngModel)]="passwordForm.new" name="newPass" type="password" placeholder="Lascia vuoto per non cambiare">
+          <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+        </ion-input>
       </ion-item>
 
       <ion-item *ngIf="passwordForm.new">
         <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
         <ion-label position="stacked">Conferma Password</ion-label>
-        <ion-input [(ngModel)]="passwordForm.confirm" name="confPass" type="password"></ion-input>
+        <ion-input [(ngModel)]="passwordForm.confirm" name="confPass" type="password">
+          <ion-input-password-toggle slot="end"></ion-input-password-toggle>
+        </ion-input>
       </ion-item>
 
       <ion-text color="danger" *ngIf="passwordForm.new && passwordForm.new !== passwordForm.confirm" class="ion-padding-start">

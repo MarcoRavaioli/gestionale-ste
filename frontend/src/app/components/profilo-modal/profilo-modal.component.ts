@@ -17,6 +17,7 @@ import {
   IonText,
   ModalController,
   ToastController,
+  IonInputPasswordToggle,
 } from '@ionic/angular/standalone';
 import { AuthService } from '../../services/auth.service';
 import { CollaboratoreService } from '../../services/collaboratore.service';
@@ -49,6 +50,7 @@ import {
     IonText,
     CommonModule,
     FormsModule,
+    IonInputPasswordToggle,
   ],
 })
 export class ProfiloModalComponent implements OnInit {

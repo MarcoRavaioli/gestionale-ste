@@ -4,7 +4,7 @@ import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { 
-  IonContent, IonItem, IonInput, IonButton, IonIcon, IonSpinner 
+  IonContent, IonItem, IonInput, IonButton, IonIcon, IonSpinner, IonInputPasswordToggle 
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { personOutline, lockClosedOutline, business, alertCircle } from 'ionicons/icons';
@@ -15,7 +15,7 @@ import { personOutline, lockClosedOutline, business, alertCircle } from 'ionicon
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, IonContent, IonItem, IonInput, IonButton, IonIcon, IonSpinner]
+  imports: [IonicModule, CommonModule, FormsModule, IonContent, IonItem, IonInput, IonButton, IonIcon, IonSpinner, IonInputPasswordToggle]
 })
 export class LoginPage {
   
