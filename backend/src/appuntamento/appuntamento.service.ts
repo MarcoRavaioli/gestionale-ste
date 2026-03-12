@@ -104,10 +104,13 @@ export class AppuntamentoService {
 
     const query = this.appuntamentoRepository
       .createQueryBuilder('appuntamento')
+      // Join diretti
       .leftJoinAndSelect('appuntamento.cliente', 'cliente')
       .leftJoinAndSelect('appuntamento.indirizzo', 'indirizzo')
-      .leftJoinAndSelect('indirizzo.cliente', 'indirizzoCliente')
       .leftJoinAndSelect('appuntamento.commessa', 'commessa')
+      // Join tramite Indirizzo (Cantiere)
+      .leftJoinAndSelect('indirizzo.cliente', 'indirizzoCliente')
+      // Join tramite Commessa
       .leftJoinAndSelect('commessa.cliente', 'commessaCliente')
       .leftJoinAndSelect('commessa.indirizzo', 'commessaIndirizzo')
       .leftJoinAndSelect(
@@ -116,38 +119,26 @@ export class AppuntamentoService {
       );
 
     if (search) {
+      const searchTerm = `%${search}%`;
       query.andWhere(
         new Brackets((qb) => {
-          qb.where('appuntamento.titolo ILIKE :search', {
-            search: `%${search}%`,
-          })
-            .orWhere('appuntamento.descrizione ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('cliente.nome ILIKE :search', { search: `%${search}%` })
-            .orWhere('indirizzoCliente.nome ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('indirizzo.via ILIKE :search', { search: `%${search}%` })
-            .orWhere('indirizzo.citta ILIKE :search', { search: `%${search}%` })
-            .orWhere('commessa.descrizione ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('commessa.seriale ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('commessaCliente.nome ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('commessaIndirizzoCliente.nome ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('commessaIndirizzo.via ILIKE :search', {
-              search: `%${search}%`,
-            })
-            .orWhere('commessaIndirizzo.citta ILIKE :search', {
-              search: `%${search}%`,
-            });
+          qb.where('appuntamento.nome ILIKE :search', { search: searchTerm })
+            .orWhere('appuntamento.descrizione ILIKE :search', { search: searchTerm })
+            // Cliente (tutte le vie)
+            .orWhere('cliente.nome ILIKE :search', { search: searchTerm })
+            .orWhere('cliente.email ILIKE :search', { search: searchTerm })
+            .orWhere('indirizzoCliente.nome ILIKE :search', { search: searchTerm })
+            .orWhere('commessaCliente.nome ILIKE :search', { search: searchTerm })
+            .orWhere('commessaIndirizzoCliente.nome ILIKE :search', { search: searchTerm })
+            // Cantiere / Indirizzo (tutte le vie)
+            .orWhere('indirizzo.via ILIKE :search', { search: searchTerm })
+            .orWhere('indirizzo.citta ILIKE :search', { search: searchTerm })
+            .orWhere('indirizzo.provincia ILIKE :search', { search: searchTerm })
+            .orWhere('commessaIndirizzo.via ILIKE :search', { search: searchTerm })
+            .orWhere('commessaIndirizzo.citta ILIKE :search', { search: searchTerm })
+            // Commessa
+            .orWhere('commessa.seriale ILIKE :search', { search: searchTerm })
+            .orWhere('commessa.descrizione ILIKE :search', { search: searchTerm });
         }),
       );
     }
