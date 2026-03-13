@@ -15,14 +15,13 @@ import {
   IonLabel,
   IonButton,
   IonSpinner,
-  IonTextarea,
-  IonInput,
   ToastController,
   AlertController,
   NavController,
   ModalController,
-  IonSelect,
-  IonSelectOption,
+  IonCard,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 
 import { IndirizzoService } from '../../services/indirizzo.service';
@@ -31,16 +30,13 @@ import { AuthService } from '../../services/auth.service';
 import { Indirizzo, Cliente } from '../../interfaces/models';
 import { GestioneAllegatiComponent } from '../../components/gestione-allegati/gestione-allegati.component';
 
-// Nuovi Componenti Dumb
-import { CantiereInfoComponent } from '../../components/cantiere-info/cantiere-info.component';
+import {
+  BreadcrumbItem,
+} from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 import {
   ChildListAccordionComponent,
   ChildListItem,
 } from '../../components/child-list-accordion/child-list-accordion.component';
-import {
-  BreadcrumbGrafoComponent,
-  BreadcrumbItem,
-} from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 import { NuovoCantiereGlobaleModalComponent } from '../../components/nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
 
 import { addIcons } from 'ionicons';
@@ -70,14 +66,11 @@ import {
     IonLabel,
     IonButton,
     IonSpinner,
-    IonTextarea,
-    IonInput,
-    IonSelect,
-    IonSelectOption,
+    IonCard,
+    IonFab,
+    IonFabButton,
     GestioneAllegatiComponent,
-    CantiereInfoComponent,
     ChildListAccordionComponent,
-    BreadcrumbGrafoComponent,
   ],
 })
 export class CantiereDettaglioPage implements OnInit {

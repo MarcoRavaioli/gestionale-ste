@@ -17,8 +17,6 @@ import {
   IonLabel,
   IonSegment,
   IonSegmentButton,
-  IonSpinner,
-  IonItem,
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -62,8 +60,6 @@ import {
     IonLabel,
     IonSegment,
     IonSegmentButton,
-    IonSpinner,
-    IonItem,
     CommonModule,
     FormsModule,
     GestioneAllegatiComponent,

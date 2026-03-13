@@ -15,14 +15,13 @@ import {
   IonLabel,
   IonButton,
   IonSpinner,
-  IonTextarea,
-  IonInput,
-  IonSelect,
-  IonSelectOption,
   ToastController,
   AlertController,
   NavController,
   ModalController,
+  IonCard,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 
 import { CommessaService } from '../../services/commessa.service';
@@ -37,16 +36,13 @@ import {
 } from '../../interfaces/models';
 import { GestioneAllegatiComponent } from '../../components/gestione-allegati/gestione-allegati.component';
 
-// Nuovi Componenti Dumb
-import { CommessaInfoComponent } from '../../components/commessa-info/commessa-info.component';
+import {
+  BreadcrumbItem,
+} from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 import {
   ChildListAccordionComponent,
   ChildListItem,
 } from '../../components/child-list-accordion/child-list-accordion.component';
-import {
-  BreadcrumbGrafoComponent,
-  BreadcrumbItem,
-} from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 import { NuovaCommessaGlobaleModalComponent } from '../../components/nuova-commessa-globale-modal/nuova-commessa-globale-modal.component';
 
 import { addIcons } from 'ionicons';
@@ -76,14 +72,11 @@ import {
     IonLabel,
     IonButton,
     IonSpinner,
-    IonTextarea,
-    IonInput,
-    IonSelect,
-    IonSelectOption,
+    IonCard,
+    IonFab,
+    IonFabButton,
     GestioneAllegatiComponent,
-    CommessaInfoComponent,
     ChildListAccordionComponent,
-    BreadcrumbGrafoComponent,
   ],
 })
 export class CommessaDettaglioPage implements OnInit {

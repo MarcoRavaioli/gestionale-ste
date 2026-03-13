@@ -16,8 +16,6 @@ import {
   IonIcon,
   IonContent,
   IonInput,
-  IonFab,
-  IonFabButton,
 } from '@ionic/angular/standalone';
 
 import { IonicSafeString, ViewDidEnter } from '@ionic/angular';
@@ -67,8 +65,6 @@ import {
     IonIcon,
     IonContent,
     IonInput,
-    IonFab,
-    IonFabButton,
   ],
 })
 export class ClienteDettaglioPage implements OnInit, ViewDidEnter {

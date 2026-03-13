@@ -15,15 +15,12 @@ import {
   IonLabel,
   IonButton,
   IonSpinner,
-  IonTextarea,
-  IonDatetime,
-  IonDatetimeButton,
-  IonModal,
-  IonSelect,
-  IonSelectOption,
   ToastController,
   AlertController,
   NavController,
+  IonCard,
+  IonFab,
+  IonFabButton,
 } from '@ionic/angular/standalone';
 
 import { AppuntamentoService } from '../../services/appuntamento.service';
@@ -39,10 +36,7 @@ import {
 } from '../../interfaces/models';
 import { GestioneAllegatiComponent } from '../../components/gestione-allegati/gestione-allegati.component';
 
-// Nuovi Componenti Dumb
-import { AppuntamentoInfoComponent } from '../../components/appuntamento-info/appuntamento-info.component';
 import {
-  BreadcrumbGrafoComponent,
   BreadcrumbItem,
 } from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
 import { NuovoAppuntamentoGlobaleModalComponent } from '../../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
@@ -75,15 +69,10 @@ import {
     IonLabel,
     IonButton,
     IonSpinner,
-    IonTextarea,
-    IonDatetime,
-    IonDatetimeButton,
-    IonModal,
-    IonSelect,
-    IonSelectOption,
+    IonCard,
+    IonFab,
+    IonFabButton,
     GestioneAllegatiComponent,
-    AppuntamentoInfoComponent,
-    BreadcrumbGrafoComponent,
   ],
 })
 export class AppuntamentoDettaglioPage implements OnInit {
