@@ -32,13 +32,13 @@
           <span class="month">{{
             appuntamento()!.data_ora | date : "MMM"
           }}</span>
-          <span class="day">{{ appuntamento()!.data_ora | date : "dd" }}</span>
+          <span class="day">{{ appuntamento()?.data_ora | date : "dd" }}</span>
         </div>
         <div class="header-text">
           <h3>{{ appuntamento()!.nome || "Appuntamento" }}</h3>
           <p class="time">
             <ion-icon name="time-outline"></ion-icon>
-            {{ appuntamento()!.data_ora | date : "HH:mm" }}
+            {{ appuntamento()?.data_ora | date : "HH:mm" }}
           </p>
         </div>
       </div>
@@ -81,8 +81,8 @@
           </div>
           <ion-label>
             <p class="mini-label">Commessa collegata</p>
-            <h3>{{ appuntamento()!.commessa!.seriale }}</h3>
-            <p class="ellipsis">{{ appuntamento()!.commessa!.descrizione }}</p>
+            <h3>{{ appuntamento()?.commessa?.seriale }}</h3>
+            <p class="ellipsis">{{ appuntamento()?.commessa?.descrizione }}</p>
           </ion-label>
         </ion-item>
       </ion-card>

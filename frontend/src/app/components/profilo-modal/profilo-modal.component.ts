@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -58,6 +59,8 @@ export class ProfiloModalComponent implements OnInit {
   passwordForm = { new: '', confirm: '' };
   userId: number | null = null;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private modalCtrl: ModalController,
     private authService: AuthService,
@@ -84,7 +87,10 @@ export class ProfiloModalComponent implements OnInit {
 
   caricaDati() {
     if (!this.userId) return;
-    this.collabService.getOne(this.userId).subscribe({
+    this.collabService
+      .getOne(this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: (res) => (this.utente = res),
       error: () => this.mostraToast('Errore caricamento profilo', 'danger'),
     });
@@ -101,7 +107,10 @@ export class ProfiloModalComponent implements OnInit {
       payload.password = this.passwordForm.new;
     }
 
-    this.collabService.update(this.userId!, payload).subscribe({
+    this.collabService
+      .update(this.userId!, payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: () => {
         this.mostraToast('Profilo aggiornato con successo!', 'success');
         this.modalCtrl.dismiss();

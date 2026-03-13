@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // ... other imports ...
@@ -66,6 +67,8 @@ export class NuovoCollaboratoreModalComponent implements OnInit {
   isEditMode = false;
   showPassword = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private modalCtrl: ModalController,
     private collabService: CollaboratoreService,
@@ -125,7 +128,9 @@ export class NuovoCollaboratoreModalComponent implements OnInit {
       ? this.collabService.update(this.collaboratore.id, payload)
       : this.collabService.create(payload);
 
-    request.subscribe({
+    request
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: async (res) => {
         await loader.dismiss();
         this.mostraToast(

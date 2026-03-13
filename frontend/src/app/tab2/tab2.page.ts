@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 // RIMOZIONE DI IonicModule E IMPORT DEI SINGOLI COMPONENTI
 import {
   ModalController,
@@ -120,6 +121,8 @@ export class Tab2Page implements OnInit {
   expandedAppointmentId: number | null = null;
   hasManagerAccess: boolean = false;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private appService: AppuntamentoService,
     private authService: AuthService,
@@ -152,15 +155,17 @@ export class Tab2Page implements OnInit {
   ngOnInit() {
     this.hasManagerAccess = this.authService.hasManagerAccess();
     // --- MODIFICA: Sottoscrizione per aggiornare i permessi in tempo reale ---
-    this.authService.currentUser$.subscribe((user) => {
-      this.isAdmin = this.authService.isAdmin();
-      this.isManager = this.authService.hasManagerAccess(); // Admin + Manager
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        this.isAdmin = this.authService.isAdmin();
+        this.isManager = this.authService.hasManagerAccess(); // Admin + Manager
 
-      // Se l'utente è cambiato e ha i permessi, ricarichiamo i pallini verdi
-      if (this.isManager) {
-        this.caricaStatoTeam();
-      }
-    });
+        // Se l'utente è cambiato e ha i permessi, ricarichiamo i pallini verdi
+        if (this.isManager) {
+          this.caricaStatoTeam();
+        }
+      });
 
     this.generaSettimana();
   }

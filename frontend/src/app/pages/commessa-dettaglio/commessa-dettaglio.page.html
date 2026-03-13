@@ -32,8 +32,8 @@
           <ion-icon name="documents-outline"></ion-icon>
         </div>
         <div class="header-text">
-          <h3>{{ commessa()!.seriale }}</h3>
-          <p class="subtitle">{{ commessa()!.descrizione }}</p>
+          <h3>{{ commessa()?.seriale }}</h3>
+          <p class="subtitle">{{ commessa()?.descrizione }}</p>
         </div>
       </div>
 
@@ -75,8 +75,8 @@
           </div>
           <ion-label>
             <p class="mini-label">Cantiere collegato</p>
-            <h3>{{ commessa()!.indirizzo!.via }} {{ commessa()!.indirizzo!.civico }}</h3>
-            <p class="ellipsis">{{ commessa()!.indirizzo!.citta }}</p>
+            <h3>{{ commessa()?.indirizzo?.via }} {{ commessa()?.indirizzo?.civico }}</h3>
+            <p class="ellipsis">{{ commessa()?.indirizzo?.citta }}</p>
           </ion-label>
         </ion-item>
       </ion-card>
@@ -96,7 +96,7 @@
             <p class="mini-label">Cliente collegato</p>
             <h3>{{ commessa()!.cliente?.nome || commessa()!.indirizzo?.cliente?.nome }}</h3>
             <p class="ellipsis" *ngIf="commessa()!.cliente?.email || commessa()!.indirizzo?.cliente?.email">
-              {{ commessa()!.cliente?.email || commessa()!.indirizzo?.cliente?.email }}
+              {{ commessa()?.cliente?.email || commessa()?.indirizzo?.cliente?.email }}
             </p>
           </ion-label>
         </ion-item>

@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -89,6 +90,8 @@ export class NuovaCommessaModalComponent implements OnInit {
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
 
+  private destroyRef = inject(DestroyRef);
+
   constructor(
     private modalCtrl: ModalController,
     private commessaService: CommessaService,
@@ -110,8 +113,11 @@ export class NuovaCommessaModalComponent implements OnInit {
   ngOnInit() {
     this.indirizzoService
       .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((res) => (this.listaCantieri = res));
-    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+    this.clienteService.getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => (this.listaClienti = res));
 
     if (this.commessaEsistente) {
       this.commessa = { ...this.commessaEsistente };
@@ -186,7 +192,9 @@ export class NuovaCommessaModalComponent implements OnInit {
       obs$ = this.commessaService.create(payload as any);
     }
 
-    obs$.subscribe({
+    obs$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
       next: async (res) => {
         const idCommessa = this.commessaEsistente
           ? this.commessaEsistente.id
