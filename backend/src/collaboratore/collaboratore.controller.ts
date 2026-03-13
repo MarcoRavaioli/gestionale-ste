@@ -42,9 +42,15 @@ export class CollaboratoreController {
   }
 
   @Get(':id')
-  // Nessun @Roles = Accessibile a tutti gli utenti loggati (es. per vedere il proprio profilo)
-  findOne(@Param('id') id: string) {
-    return this.collaboratoreService.findOne(+id);
+  // Solo Admin/Manager possono vedere chiunque. I Collaboratori solo se stessi.
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    const userId = +id;
+    if (req.user.ruolo === 'COLLABORATORE' && req.user.id !== userId) {
+      throw new ForbiddenException(
+        'Non hai i permessi per visualizzare questo profilo.',
+      );
+    }
+    return this.collaboratoreService.findOne(userId);
   }
 
   @Patch(':id')

@@ -48,10 +48,13 @@ export class Fattura {
 
   // CORREZIONE CRITICA: nullable: true
   // Se è una spesa (benzina), non c'è un Cliente collegato.
-  @ManyToOne(() => Cliente, (cliente) => cliente.fatture, { nullable: true })
+  @ManyToOne(() => Cliente, (cliente) => cliente.fatture, { nullable: true, onDelete: 'CASCADE' })
   cliente: Cliente | null;
 
-  @ManyToMany(() => Commessa, (commessa) => commessa.fatture, { nullable: true })
+  @ManyToMany(() => Commessa, (commessa) => commessa.fatture, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   @JoinTable({
     name: 'fattura_commesse',
     joinColumn: { name: 'fattura_id', referencedColumnName: 'id' },
