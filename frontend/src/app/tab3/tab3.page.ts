@@ -509,51 +509,31 @@ export class Tab3Page implements OnInit {
     if (data && data.creato) this.caricaDatiGlobale(null, true);
   }
 
-  async goToDettaglioElemento(
-    item: any,
-    tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento',
-  ) {
-    let targetClienteId = null;
-    const queryParams: any = {};
-
-    if (tipo === 'cliente') targetClienteId = item.id;
-    else if (tipo === 'cantiere') {
-      targetClienteId = item.cliente?.id;
-      queryParams.cantiereId = item.id;
+  async goToDettaglioElemento(item: any, tipo: 'cliente' | 'cantiere' | 'commessa' | 'appuntamento' | 'fattura') {
+    if (tipo === 'cliente') {
+      this.router.navigate(['/tabs/tab3/cliente-dettaglio', item.id]);
+    } else if (tipo === 'cantiere') {
+      this.router.navigate(['/cantiere-dettaglio', item.id]);
     } else if (tipo === 'commessa') {
-      targetClienteId = item.cliente?.id || item.indirizzo?.cliente?.id;
-      if (item.indirizzo) queryParams.cantiereId = item.indirizzo.id;
-      queryParams.commessaId = item.id;
+      this.router.navigate(['/commessa-dettaglio', item.id]);
     } else if (tipo === 'appuntamento') {
       this.router.navigate(['/appuntamento-dettaglio', item.id]);
-      return;
+    } else if (tipo === 'fattura') {
+      // Se esiste una pagina di dettaglio fattura, altrimenti gestisci come preferito
+      this.mostraFatturaDettaglio(item);
     }
+  }
 
-    if (targetClienteId) {
-      this.router.navigate(['/cliente-dettaglio', targetClienteId], {
-        queryParams,
-      });
-    } else {
-      let componentToOpen: any;
-      let propsToPass: any = {};
-      if (tipo === 'commessa') {
-        this.router.navigate(['/commessa-dettaglio', item.id]);
-        return;
-      } else if (tipo === 'cantiere') {
-        this.router.navigate(['/cantiere-dettaglio', item.id]);
-        return;
-      }
-
-      if (componentToOpen) {
-        const modal = await this.modalCtrl.create({
-          component: componentToOpen,
-          componentProps: propsToPass,
-        });
-        await modal.present();
-        const { data } = await modal.onWillDismiss();
-        if (data && (data.creato || data.aggiornato || data.eliminato))
-          this.caricaDatiGlobale(null, true);
-      }
-    }
+  async mostraFatturaDettaglio(fattura: any) {
+    // Mantengo la modale per la fattura se non c'è una pagina dedicata
+    const { FatturaDettaglioModalComponent } = await import('../components/fattura-dettaglio-modal/fattura-dettaglio-modal.component');
+    const modal = await this.modalCtrl.create({
+      component: FatturaDettaglioModalComponent,
+      componentProps: { fattura }
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data && (data.creato || data.aggiornato || data.eliminato))
+      this.caricaDatiGlobale(null, true);
   }
 }

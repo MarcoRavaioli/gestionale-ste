@@ -49,7 +49,7 @@ export class IndirizzoService {
   findOne(id: number) {
     return this.indirizzoRepository.findOne({
       where: { id },
-      relations: ['cliente'],
+      relations: ['cliente', 'commesse', 'allegati'],
     });
   }
 

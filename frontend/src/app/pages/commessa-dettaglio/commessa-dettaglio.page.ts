@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   IonHeader,
@@ -47,6 +47,7 @@ import {
   BreadcrumbGrafoComponent,
   BreadcrumbItem,
 } from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
+import { NuovaCommessaGlobaleModalComponent } from '../../components/nuova-commessa-globale-modal/nuova-commessa-globale-modal.component';
 
 import { addIcons } from 'ionicons';
 import {
@@ -90,20 +91,7 @@ export class CommessaDettaglioPage implements OnInit {
   commessa = signal<Commessa | null>(null);
 
   hasManagerAccess = signal<boolean>(false);
-  isEditing = signal<boolean>(false);
   isSaving = signal<boolean>(false);
-
-  // Dati per i selettori padre (mutazione grafo)
-  cantieriDisponibili = signal<Indirizzo[]>([]);
-  clientiDisponibili = signal<Cliente[]>([]);
-
-  // Form state
-  editSeriale = signal<string>('');
-  editDescrizione = signal<string>('');
-  editStato = signal<'APERTA' | 'CHIUSA' | 'IN_CORSO'>('APERTA');
-  editValoreTotale = signal<number | null>(null);
-  editIndirizzoId = signal<number | null>(null);
-  editClienteId = signal<number | null>(null);
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -125,7 +113,7 @@ export class CommessaDettaglioPage implements OnInit {
       }
       items.push({
         label: `Cantiere ${com.indirizzo.via}`,
-        url: `/cantiere-dettaglio/${com.indirizzo.id}`,
+        url: `/tabs/tab3/cantiere-dettaglio/${com.indirizzo.id}`,
       });
     }
     // Se è slegata dal cantiere ma legata direttamente al Cliente
@@ -148,7 +136,7 @@ export class CommessaDettaglioPage implements OnInit {
       tipo: 'appuntamento',
       titolo: app.nome,
       sottotitolo: new Date(app.data_ora).toLocaleString('it-IT'),
-      url: `/appuntamento-dettaglio/${app.id}`,
+      url: `/tabs/tab3/appuntamento-dettaglio/${app.id}`,
     }));
   });
 
@@ -162,6 +150,7 @@ export class CommessaDettaglioPage implements OnInit {
     private alertCtrl: AlertController,
     private navCtrl: NavController,
     private modalCtrl: ModalController,
+    private router: Router,
   ) {
     addIcons({
       pencil,
@@ -196,85 +185,37 @@ export class CommessaDettaglioPage implements OnInit {
     });
   }
 
-  caricaDatiGenitore() {
-    this.indirizzoService.getAll().subscribe({
-      next: (res: any) => {
-        const cantieri = Array.isArray(res) ? res : res.data || [];
-        this.cantieriDisponibili.set(cantieri);
-      },
-      error: () => console.error('Errore cantieri'),
-    });
-
-    this.clienteService.getAll().subscribe({
-      next: (res: any) => {
-        const clienti = Array.isArray(res) ? res : res.data || [];
-        this.clientiDisponibili.set(clienti);
-      },
-      error: () => console.error('Errore clienti'),
-    });
-  }
-
-  abilitaModifica() {
+  async abilitaModifica() {
     const c = this.commessa();
     if (!c) return;
 
-    this.editSeriale.set(c.seriale);
-    this.editDescrizione.set(c.descrizione || '');
-    this.editStato.set(c.stato);
-    this.editValoreTotale.set(c.valore_totale || null);
-
-    this.editIndirizzoId.set(c.indirizzo ? c.indirizzo.id : null);
-    this.editClienteId.set(c.cliente ? c.cliente.id : null);
-
-    this.caricaDatiGenitore();
-    this.isEditing.set(true);
-  }
-
-  annullaModifica() {
-    this.isEditing.set(false);
-  }
-
-  // Regola di business: o ha un indirizzoId (cantiere), o ha un clienteId (diretta), o nessuno dei due (orfana). Evitiamo doppioni.
-  onChangeCantiere(val: any) {
-    this.editIndirizzoId.set(val);
-    if (val) this.editClienteId.set(null); // Se scelgo un cantiere, tolgo il cliente diretto
-  }
-
-  onChangeCliente(val: any) {
-    this.editClienteId.set(val);
-    if (val) this.editIndirizzoId.set(null); // Se scelgo un cliente, tolgo il cantiere
-  }
-
-  salvaModifica() {
-    const c = this.commessa();
-    if (!c || !this.editSeriale()) return;
-
-    this.isSaving.set(true);
-    const payload = {
-      seriale: this.editSeriale(),
-      descrizione: this.editDescrizione(),
-      stato: this.editStato(),
-      valore_totale: this.editValoreTotale() ?? undefined,
-      indirizzoId: this.editIndirizzoId(),
-      clienteId: this.editClienteId(),
-    };
-
-    this.commessaService.update(c.id, payload).subscribe({
-      next: async (res) => {
-        if (this.gestioneAllegati) {
-          await this.gestioneAllegati.uploadAllPendingFiles(res.id);
-        }
-
-        this.caricaDati(); // refresh full to get joined entities back
-        this.isEditing.set(false);
-        this.isSaving.set(false);
-        this.mostraToast('Modifiche salvate!', 'success');
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.mostraToast('Errore nel salvataggio.', 'danger');
+    const modal = await this.modalCtrl.create({
+      component: NuovaCommessaGlobaleModalComponent,
+      componentProps: {
+        commessa: c,
       },
     });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data && (data.aggiornato || data.creato)) {
+      this.caricaDati();
+    } else if (data && data.eliminato) {
+      this.navCtrl.back();
+    }
+  }
+
+  vaiACliente(id: number) {
+    this.router.navigate(['/tabs/tab3/cliente-dettaglio', id]);
+  }
+
+  vaiACantiere(id: number) {
+    this.router.navigate(['/tabs/tab3/cantiere-dettaglio', id]);
+  }
+
+  vaiACommessa(id: number) {
+    this.router.navigate(['/tabs/tab3/commessa-dettaglio', id]);
   }
 
   async elimina() {

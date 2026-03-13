@@ -6,10 +6,6 @@
     <ion-title>Dettaglio Commessa</ion-title>
 
     <ion-buttons slot="end" *ngIf="hasManagerAccess()">
-      @if (!isEditing() && commessa()) {
-      <ion-button (click)="abilitaModifica()">
-        <ion-icon slot="icon-only" name="pencil"></ion-icon>
-      </ion-button>
       <ion-button (click)="elimina()" color="danger">
         <ion-icon
           slot="icon-only"
@@ -17,156 +13,136 @@
           style="color: #ffcccc"
         ></ion-icon>
       </ion-button>
-      } @else if (isEditing()) {
-      <ion-button (click)="annullaModifica()" color="light">
-        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="salvaModifica()" color="warning">
-        <ion-spinner *ngIf="isSaving()" name="crescent"></ion-spinner>
-        <ion-icon
-          *ngIf="!isSaving()"
-          slot="icon-only"
-          name="save-outline"
-        ></ion-icon>
-      </ion-button>
-      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="light-bg">
-  <!-- 1. BREADCRUMBS -->
-  @if(commessa() && !isEditing()) {
-  <app-breadcrumb-grafo [items]="breadcrumbItems()"></app-breadcrumb-grafo>
-  }
-
   <div class="ion-padding">
     @if (!commessa()) {
     <div class="loading-state empty-state">
       <ion-spinner name="crescent" color="primary"></ion-spinner>
       <p>Caricamento commessa...</p>
     </div>
-    } @else { @if (!isEditing()) {
+    } @else {
+    <!-- 1. SEZIONE INFO -->
+    <div class="info-card fade-in">
+      <div class="card-header">
+        <div class="icon-box box-tertiary">
+          <ion-icon name="documents-outline"></ion-icon>
+        </div>
+        <div class="header-text">
+          <h3>{{ commessa()!.seriale }}</h3>
+          <p class="subtitle">{{ commessa()!.descrizione }}</p>
+        </div>
+      </div>
 
-    <!-- 2. INFO COMPONENT -->
-    <app-commessa-info [commessa]="commessa()"></app-commessa-info>
+      <div class="card-body">
+        <div class="info-row">
+          <ion-icon name="stats-chart-outline" color="primary"></ion-icon>
+          <div>
+            <span class="label">Stato</span>
+            <p><strong>{{ commessa()!.stato }}</strong></p>
+          </div>
+        </div>
 
-    <!-- 3. ALLEGATI -->
-    <h4 class="section-title-minor fade-in">Documenti</h4>
-    <div class="attachment-section fade-in" style="margin-bottom: 24px">
+        <div class="info-row" *ngIf="commessa()!.valore_totale">
+          <ion-icon name="cash-outline" color="primary"></ion-icon>
+          <div>
+            <span class="label">Valore Totale</span>
+            <p>{{ commessa()!.valore_totale | currency : "EUR" : "symbol" : "1.2-2" }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. SEZIONE GENITORI (CANTIERE E CLIENTE) -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Collegamenti Genitore
+    </h4>
+
+    <div class="connections-container fade-in">
+      <!-- CANTIERE -->
+      <ion-card
+        class="connection-card cantiere-card"
+        *ngIf="commessa()!.indirizzo"
+        (click)="vaiACantiere(commessa()!.indirizzo!.id)"
+        button
+      >
+        <ion-item lines="none" detail="true" class="connection-item">
+          <div slot="start" class="icon-box box-secondary">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <p class="mini-label">Cantiere collegato</p>
+            <h3>{{ commessa()!.indirizzo!.via }} {{ commessa()!.indirizzo!.civico }}</h3>
+            <p class="ellipsis">{{ commessa()!.indirizzo!.citta }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+
+      <!-- CLIENTE -->
+      <ion-card
+        class="connection-card cliente-card"
+        *ngIf="commessa()!.cliente || commessa()!.indirizzo?.cliente"
+        (click)="vaiACliente((commessa()!.cliente?.id || commessa()!.indirizzo?.cliente?.id)!)"
+        button
+      >
+        <ion-item lines="none" detail="true" class="connection-item">
+          <div slot="start" class="icon-box box-primary">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <p class="mini-label">Cliente collegato</p>
+            <h3>{{ commessa()!.cliente?.nome || commessa()!.indirizzo?.cliente?.nome }}</h3>
+            <p class="ellipsis" *ngIf="commessa()!.cliente?.email || commessa()!.indirizzo?.cliente?.email">
+              {{ commessa()!.cliente?.email || commessa()!.indirizzo?.cliente?.email }}
+            </p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+
+      <div *ngIf="!commessa()!.indirizzo && !commessa()!.cliente" class="empty-state-mini">
+        <p>Nessun collegamento genitore (Commessa Orfana).</p>
+      </div>
+    </div>
+
+    <!-- 3. SEZIONE FIGLI (APPUNTAMENTI E FATTURE) -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Elementi Collegati (Figli)
+    </h4>
+    <div class="children-section fade-in">
+      <app-child-list-accordion
+        title="Appuntamenti"
+        iconName="time-outline"
+        color="primary"
+        [items]="appuntamentiItems()"
+      >
+      </app-child-list-accordion>
+      
+      <!-- Se implementata lista fatture -->
+      <div *ngIf="!appuntamentiItems().length" class="empty-state-mini">
+        <p>Nessun appuntamento per questa commessa.</p>
+      </div>
+    </div>
+
+    <!-- 4. ALLEGATI -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Documenti Commessa
+    </h4>
+    <div class="attachment-section fade-in">
       <app-gestione-allegati
         [entityId]="commessa()!.id"
         entityType="commessa"
         [readonly]="!hasManagerAccess()"
       ></app-gestione-allegati>
     </div>
-
-    <!-- 4. ACCORDION FIGLI -->
-    <div class="children-section fade-in">
-      <app-child-list-accordion
-        title="Appuntamenti Commessa"
-        iconName="time-outline"
-        color="primary"
-        [items]="appuntamentiItems()"
-      >
-      </app-child-list-accordion>
-    </div>
-
-    } @else {
-    <!-- EDITING MODE -->
-    <div class="edit-card fade-in">
-      <h3>Modifica Commessa</h3>
-
-      <!-- MUTAZIONE GRAFO (Svincolo/Assegnazione) -->
-      <p class="section-mini-label">
-        Scegli uno <strong>solo</strong> dei due padri:
-      </p>
-
-      <div class="form-group parent-selector">
-        <ion-label position="stacked" color="tertiary"
-          ><strong>Cantiere (Indirizzo)</strong></ion-label
-        >
-        <ion-select
-          fill="outline"
-          label="Nessun Cantiere Associato"
-          labelPlacement="floating"
-          [ngModel]="editIndirizzoId()"
-          (ngModelChange)="onChangeCantiere($event)"
-        >
-          <ion-select-option [value]="null">Nessun Cantiere</ion-select-option>
-          @for (cant of cantieriDisponibili(); track cant.id) {
-          <ion-select-option [value]="cant.id"
-            >{{ cant.via }} {{ cant.civico }} - {{ cant.citta
-            }}</ion-select-option
-          >
-          }
-        </ion-select>
-      </div>
-
-      <div class="form-group parent-selector" style="margin-top: 16px">
-        <ion-label position="stacked" color="primary"
-          ><strong>Cliente Diretto (se non c'è cantiere)</strong></ion-label
-        >
-        <ion-select
-          fill="outline"
-          label="Nessun Cliente Associato"
-          labelPlacement="floating"
-          [ngModel]="editClienteId()"
-          (ngModelChange)="onChangeCliente($event)"
-        >
-          <ion-select-option [value]="null"
-            >Nessun Cliente Diretto</ion-select-option
-          >
-          @for (cli of clientiDisponibili(); track cli.id) {
-          <ion-select-option [value]="cli.id">{{ cli.nome }}</ion-select-option>
-          }
-        </ion-select>
-      </div>
-
-      <hr style="opacity: 0.2; margin: 24px 0" />
-
-      <div class="form-group">
-        <ion-label position="stacked">Seriale</ion-label>
-        <ion-input
-          fill="outline"
-          [ngModel]="editSeriale()"
-          (ngModelChange)="editSeriale.set($event)"
-          placeholder="Es: COM-2023-01"
-        ></ion-input>
-      </div>
-
-      <div class="form-group">
-        <ion-label position="stacked">Stato</ion-label>
-        <ion-select
-          interface="popover"
-          fill="outline"
-          [ngModel]="editStato()"
-          (ngModelChange)="editStato.set($event)"
-        >
-          <ion-select-option value="APERTA">Aperta</ion-select-option>
-          <ion-select-option value="IN_CORSO">In Corso</ion-select-option>
-          <ion-select-option value="CHIUSA">Chiusa</ion-select-option>
-        </ion-select>
-      </div>
-
-      <div class="form-group">
-        <ion-label position="stacked">Descrizione</ion-label>
-        <ion-textarea
-          fill="outline"
-          [ngModel]="editDescrizione()"
-          (ngModelChange)="editDescrizione.set($event)"
-          placeholder="Lavori da eseguire, specifiche..."
-          [autoGrow]="true"
-        ></ion-textarea>
-      </div>
-
-      <h4 style="margin-top: 24px">Allegati</h4>
-      <app-gestione-allegati
-        [entityId]="commessa()!.id"
-        entityType="commessa"
-        [readonly]="false"
-      ></app-gestione-allegati>
-    </div>
-    } }
+    }
   </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="hasManagerAccess() && commessa()">
+    <ion-fab-button (click)="abilitaModifica()" color="warning">
+      <ion-icon name="pencil"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   IonHeader,
@@ -41,6 +41,7 @@ import {
   BreadcrumbGrafoComponent,
   BreadcrumbItem,
 } from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
+import { NuovoCantiereGlobaleModalComponent } from '../../components/nuovo-cantiere-globale-modal/nuovo-cantiere-globale-modal.component';
 
 import { addIcons } from 'ionicons';
 import {
@@ -84,19 +85,7 @@ export class CantiereDettaglioPage implements OnInit {
   cantiere = signal<Indirizzo | null>(null);
 
   hasManagerAccess = signal<boolean>(false);
-  isEditing = signal<boolean>(false);
   isSaving = signal<boolean>(false);
-
-  // Per il selettore Cliente durante la modifica
-  clientiDisponibili = signal<Cliente[]>([]);
-
-  // Form state
-  editVia = signal<string>('');
-  editCivico = signal<string>('');
-  editCitta = signal<string>('');
-  editCap = signal<string>('');
-  editProvincia = signal<string>('');
-  editClienteId = signal<number | null>(null);
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -122,7 +111,7 @@ export class CantiereDettaglioPage implements OnInit {
       tipo: 'commessa',
       titolo: com.seriale,
       sottotitolo: com.descrizione,
-      url: `/commessa-dettaglio/${com.id}`,
+      url: `/tabs/tab3/commessa-dettaglio/${com.id}`,
     }));
   });
 
@@ -134,7 +123,7 @@ export class CantiereDettaglioPage implements OnInit {
       tipo: 'appuntamento',
       titolo: app.nome,
       sottotitolo: new Date(app.data_ora).toLocaleString('it-IT'),
-      url: `/appuntamento-dettaglio/${app.id}`,
+      url: `/tabs/tab3/appuntamento-dettaglio/${app.id}`,
     }));
   });
 
@@ -147,6 +136,7 @@ export class CantiereDettaglioPage implements OnInit {
     private alertCtrl: AlertController,
     private navCtrl: NavController,
     private modalCtrl: ModalController,
+    private router: Router,
   ) {
     addIcons({
       pencil,
@@ -181,68 +171,33 @@ export class CantiereDettaglioPage implements OnInit {
     });
   }
 
-  caricaClientiPerSelettore() {
-    this.clienteService.getAll().subscribe({
-      next: (res: any) => {
-        // Handle both possible API return formats
-        const clienti = Array.isArray(res) ? res : res.data || [];
-        this.clientiDisponibili.set(clienti);
-      },
-      error: () => console.error('Errore caricamento clienti'),
-    });
-  }
-
-  abilitaModifica() {
+  async abilitaModifica() {
     const c = this.cantiere();
     if (!c) return;
 
-    this.editVia.set(c.via);
-    this.editCivico.set(c.civico);
-    this.editCitta.set(c.citta);
-    this.editCap.set(c.cap);
-    this.editProvincia.set(c.provincia || '');
-    this.editClienteId.set(c.cliente ? c.cliente.id : null);
-
-    this.caricaClientiPerSelettore();
-    this.isEditing.set(true);
-  }
-
-  annullaModifica() {
-    this.isEditing.set(false);
-  }
-
-  salvaModifica() {
-    const c = this.cantiere();
-    if (!c || !this.editVia() || !this.editCitta()) return;
-
-    this.isSaving.set(true);
-    const payload = {
-      via: this.editVia(),
-      civico: this.editCivico(),
-      citta: this.editCitta(),
-      cap: this.editCap(),
-      provincia: this.editProvincia(),
-      stato: c.stato, // preserved
-      clienteId: this.editClienteId(),
-    };
-
-    this.indirizzoService.update(c.id, payload).subscribe({
-      next: async (res) => {
-        if (this.gestioneAllegati) {
-          await this.gestioneAllegati.uploadAllPendingFiles(res.id);
-        }
-
-        // Ricarica tutto da server per aggiornare i genitore calcolati (per sicurezza)
-        this.caricaDati();
-        this.isEditing.set(false);
-        this.isSaving.set(false);
-        this.mostraToast('Modifiche salvate!', 'success');
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.mostraToast('Errore nel salvataggio.', 'danger');
+    const modal = await this.modalCtrl.create({
+      component: NuovoCantiereGlobaleModalComponent,
+      componentProps: {
+        cantiere: c,
       },
     });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data && (data.aggiornato || data.creato)) {
+      this.caricaDati();
+    } else if (data && data.eliminato) {
+      this.navCtrl.back();
+    }
+  }
+
+  vaiACliente(id: number) {
+    this.router.navigate(['/tabs/tab3/cliente-dettaglio', id]);
+  }
+
+  vaiACommessa(id: number) {
+    this.router.navigate(['/commessa-dettaglio', id]);
   }
 
   async elimina() {

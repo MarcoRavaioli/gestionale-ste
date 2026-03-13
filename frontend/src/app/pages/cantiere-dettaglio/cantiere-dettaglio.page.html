@@ -6,10 +6,6 @@
     <ion-title>Dettaglio Cantiere</ion-title>
 
     <ion-buttons slot="end" *ngIf="hasManagerAccess()">
-      @if (!isEditing() && cantiere()) {
-      <ion-button (click)="abilitaModifica()">
-        <ion-icon slot="icon-only" name="pencil"></ion-icon>
-      </ion-button>
       <ion-button (click)="elimina()" color="danger">
         <ion-icon
           slot="icon-only"
@@ -17,152 +13,105 @@
           style="color: #ffcccc"
         ></ion-icon>
       </ion-button>
-      } @else if (isEditing()) {
-      <ion-button (click)="annullaModifica()" color="light">
-        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-      </ion-button>
-      <ion-button (click)="salvaModifica()" color="warning">
-        <ion-spinner *ngIf="isSaving()" name="crescent"></ion-spinner>
-        <ion-icon
-          *ngIf="!isSaving()"
-          slot="icon-only"
-          name="save-outline"
-        ></ion-icon>
-      </ion-button>
-      }
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="light-bg">
-  <!-- 1. BREADCRUMBS -->
-  @if(cantiere() && !isEditing()) {
-  <app-breadcrumb-grafo [items]="breadcrumbItems()"></app-breadcrumb-grafo>
-  }
-
   <div class="ion-padding">
     @if (!cantiere()) {
     <div class="loading-state empty-state">
       <ion-spinner name="crescent" color="primary"></ion-spinner>
       <p>Caricamento cantiere...</p>
     </div>
-    } @else { @if (!isEditing()) {
+    } @else {
+    <!-- 1. SEZIONE INFO -->
+    <div class="info-card fade-in">
+      <div class="card-header">
+        <div class="icon-box box-secondary">
+          <ion-icon name="location-outline"></ion-icon>
+        </div>
+        <div class="header-text">
+          <h3>{{ cantiere()!.via }} {{ cantiere()!.civico }}</h3>
+          <p class="subtitle">{{ cantiere()!.citta }} ({{ cantiere()!.provincia }})</p>
+        </div>
+      </div>
 
-    <!-- 2. INFO COMPONENT -->
-    <app-cantiere-info [cantiere]="cantiere()"></app-cantiere-info>
+      <div class="card-body">
+        <div class="info-row">
+          <ion-icon name="map-outline" color="primary"></ion-icon>
+          <div>
+            <span class="label">CAP / Località</span>
+            <p>{{ cantiere()!.cap }} - {{ cantiere()!.citta }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- 3. ALLEGATI -->
-    <h4 class="section-title-minor fade-in">Documenti</h4>
-    <div class="attachment-section fade-in" style="margin-bottom: 24px">
+    <!-- 2. SEZIONE GENITORE (CLIENTE) -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Cliente Proprietario
+    </h4>
+
+    <div class="connections-container fade-in">
+      <ion-card
+        class="connection-card cliente-card"
+        *ngIf="cantiere()!.cliente"
+        (click)="vaiACliente(cantiere()!.cliente!.id)"
+        button
+      >
+        <ion-item lines="none" detail="true" class="connection-item">
+          <div slot="start" class="icon-box box-primary">
+            <ion-icon name="person-outline"></ion-icon>
+          </div>
+          <ion-label>
+            <p class="mini-label">Cliente collegato</p>
+            <h3>{{ cantiere()!.cliente!.nome }}</h3>
+            <p class="ellipsis" *ngIf="cantiere()!.cliente!.email">{{ cantiere()!.cliente!.email }}</p>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+
+      <div *ngIf="!cantiere()!.cliente" class="empty-state-mini">
+        <p>Nessun cliente collegato (Cantiere Orfano).</p>
+      </div>
+    </div>
+
+    <!-- 3. SEZIONE FIGLI (COMMESSE) -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Commesse Associate
+    </h4>
+    <div class="children-section fade-in">
+      <app-child-list-accordion
+        title="Elenco Commesse"
+        iconName="folder-outline"
+        color="tertiary"
+        [items]="commesseItems()"
+      >
+      </app-child-list-accordion>
+      
+      <div *ngIf="!commesseItems().length" class="empty-state-mini">
+        <p>Nessuna commessa attiva per questo cantiere.</p>
+      </div>
+    </div>
+
+    <!-- 4. ALLEGATI -->
+    <h4 class="section-title fade-in" style="margin-left: 16px; margin-top: 24px">
+      Documenti Technical
+    </h4>
+    <div class="attachment-section fade-in">
       <app-gestione-allegati
         [entityId]="cantiere()!.id"
         entityType="indirizzo"
         [readonly]="!hasManagerAccess()"
       ></app-gestione-allegati>
     </div>
-
-    <!-- 4. ACCORDION FIGLI -->
-    <div class="children-section fade-in">
-      <app-child-list-accordion
-        title="Commesse del Cantiere"
-        iconName="folder-outline"
-        color="secondary"
-        [items]="commesseItems()"
-      >
-      </app-child-list-accordion>
-
-      <app-child-list-accordion
-        title="Appuntamenti Diretti (no Commessa)"
-        iconName="time-outline"
-        color="primary"
-        [items]="appuntamentiItems()"
-      >
-      </app-child-list-accordion>
-    </div>
-
-    } @else {
-    <!-- EDITING MODE -->
-    <div class="edit-card fade-in">
-      <h3>Modifica Cantiere</h3>
-
-      <!-- MUTAZIONE GRAFO (Svincolo/Assegnazione) -->
-      <div class="form-group parent-selector">
-        <ion-label position="stacked" color="primary"
-          ><strong>Cliente Associato (Genitore)</strong></ion-label
-        >
-        <ion-select
-          fill="outline"
-          label="Nessun Cliente Selezionato (Cantiere Orfano)"
-          labelPlacement="floating"
-          [ngModel]="editClienteId()"
-          (ngModelChange)="editClienteId.set($event)"
-        >
-          <!-- Permette lo svincolo e la rimozione del padre -->
-          <ion-select-option [value]="null"
-            >Svincola Cantiere (Nessun Cliente)</ion-select-option
-          >
-
-          @for (cli of clientiDisponibili(); track cli.id) {
-          <ion-select-option [value]="cli.id">{{ cli.nome }}</ion-select-option>
-          }
-        </ion-select>
-      </div>
-
-      <div class="form-group">
-        <ion-label position="stacked">Via</ion-label>
-        <ion-input
-          fill="outline"
-          [ngModel]="editVia()"
-          (ngModelChange)="editVia.set($event)"
-          placeholder="Es: Viale Aldo Moro"
-        ></ion-input>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group half">
-          <ion-label position="stacked">Civico</ion-label>
-          <ion-input
-            fill="outline"
-            [ngModel]="editCivico()"
-            (ngModelChange)="editCivico.set($event)"
-          ></ion-input>
-        </div>
-        <div class="form-group half">
-          <ion-label position="stacked">CAP</ion-label>
-          <ion-input
-            fill="outline"
-            [ngModel]="editCap()"
-            (ngModelChange)="editCap.set($event)"
-          ></ion-input>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group flex-2">
-          <ion-label position="stacked">Città</ion-label>
-          <ion-input
-            fill="outline"
-            [ngModel]="editCitta()"
-            (ngModelChange)="editCitta.set($event)"
-          ></ion-input>
-        </div>
-        <div class="form-group flex-1">
-          <ion-label position="stacked">PR</ion-label>
-          <ion-input
-            fill="outline"
-            [ngModel]="editProvincia()"
-            (ngModelChange)="editProvincia.set($event)"
-          ></ion-input>
-        </div>
-      </div>
-
-      <h4 style="margin-top: 24px">Allegati</h4>
-      <app-gestione-allegati
-        [entityId]="cantiere()!.id"
-        entityType="indirizzo"
-        [readonly]="false"
-      ></app-gestione-allegati>
-    </div>
-    } }
+    }
   </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed" *ngIf="hasManagerAccess() && cantiere()">
+    <ion-fab-button (click)="abilitaModifica()" color="warning">
+      <ion-icon name="pencil"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>
