@@ -23,9 +23,9 @@ export class CreateCommessaDto {
   stato?: string;
 
   @IsOptional()
-  indirizzo?: any;
+  indirizzo?: { id: number };
 
   // FASE 2: Aggiunto il collegamento diretto e opzionale al Cliente
   @IsOptional()
-  cliente?: any; 
+  cliente?: { id: number }; 
 }

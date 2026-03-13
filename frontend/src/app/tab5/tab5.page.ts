@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // 1. RIMOZIONE DI IonicModule E IMPORT DEI COMPONENTI STANDALONE
@@ -40,6 +41,7 @@ import {
 export class Tab5Page implements OnInit {
   isManager = false;
   user: any = null;
+  private destroyRef = inject(DestroyRef);
 
   // --- DATI MANAGER ---
   meseSelezionato: string;
@@ -86,11 +88,13 @@ export class Tab5Page implements OnInit {
   }
 
   ngOnInit() {
-    this.auth.currentUser$.subscribe((u) => {
-      this.user = u;
-      this.isManager = this.auth.hasManagerAccess();
-      this.caricaDati();
-    });
+    this.auth.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((u) => {
+        this.user = u;
+        this.isManager = this.auth.hasManagerAccess();
+        this.caricaDati();
+      });
   }
 
   ionViewWillEnter() {

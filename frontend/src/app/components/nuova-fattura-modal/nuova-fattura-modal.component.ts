@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -95,6 +96,7 @@ export class NuovaFatturaModalComponent implements OnInit {
   commesseFiltrate: Commessa[] = [];
 
   isLoading = false;
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private fb: FormBuilder,
@@ -134,38 +136,47 @@ export class NuovaFatturaModalComponent implements OnInit {
     this.caricaClienti();
 
     // 1. SINCRONIZZAZIONE DATE (Emissione -> Scadenza)
-    this.form.get('data_emissione')?.valueChanges.subscribe((dateIso) => {
-      if (dateIso) {
-        const nuovaScadenza = this.calcolaScadenza(dateIso);
-        // Aggiorna senza emettere evento per evitare loop (emitEvent: false)
-        this.form.patchValue(
-          { data_scadenza: nuovaScadenza },
-          { emitEvent: false },
-        );
-      }
-    });
+    this.form
+      .get('data_emissione')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((dateIso) => {
+        if (dateIso) {
+          const nuovaScadenza = this.calcolaScadenza(dateIso);
+          // Aggiorna senza emettere evento per evitare loop (emitEvent: false)
+          this.form.patchValue(
+            { data_scadenza: nuovaScadenza },
+            { emitEvent: false },
+          );
+        }
+      });
 
     // 2. FILTRO COMMESSE PER CLIENTE
-    this.form.get('clienteId')?.valueChanges.subscribe((clienteId) => {
-      this.form.patchValue({ commessa_ids: [] });
+    this.form
+      .get('clienteId')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((clienteId) => {
+        this.form.patchValue({ commessa_ids: [] });
 
-      if (clienteId) {
-        // Query al backend per recuperare SOLO le Commesse appartenenti a quel Cliente che NON sono ancora chiuse
-        this.isLoading = true;
-        this.commessaService.getAll(clienteId, 'APERTA').subscribe({
-          next: (res) => {
-            this.commesseFiltrate = res;
-            this.isLoading = false;
-          },
-          error: (err) => {
-            console.error('Errore recupero commesse:', err);
-            this.isLoading = false;
-          },
-        });
-      } else {
-        this.commesseFiltrate = [];
-      }
-    });
+        if (clienteId) {
+          // Query al backend per recuperare SOLO le Commesse appartenenti a quel Cliente che NON sono ancora chiuse
+          this.isLoading = true;
+          this.commessaService
+            .getAll(clienteId, 'APERTA')
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: (res) => {
+                this.commesseFiltrate = res;
+                this.isLoading = false;
+              },
+              error: (err) => {
+                console.error('Errore recupero commesse:', err);
+                this.isLoading = false;
+              },
+            });
+        } else {
+          this.commesseFiltrate = [];
+        }
+      });
   }
 
   caricaClienti() {

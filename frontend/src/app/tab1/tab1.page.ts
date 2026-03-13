@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
+import { Component, OnInit, signal, effect, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -102,6 +103,7 @@ export class Tab1Page implements OnInit {
   mostraTeam = signal<boolean>(false);
   teamStats = signal<any[]>([]);
   totaleCostoTeam = signal<number>(0);
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private appuntamentoService: AppuntamentoService,
@@ -143,18 +145,20 @@ export class Tab1Page implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe((user) => {
-      if (user) {
-        this.userNome.set(user.nome || user.nickname || 'Utente');
-        this.isAdmin.set(this.authService.isAdmin());
-        this.isManager.set(this.authService.hasManagerAccess());
-      } else {
-        this.userNome.set('Utente');
-        this.isAdmin.set(false);
-        this.isManager.set(false);
-      }
-      this.caricaDati();
-    });
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        if (user) {
+          this.userNome.set(user.nome || user.nickname || 'Utente');
+          this.isAdmin.set(this.authService.isAdmin());
+          this.isManager.set(this.authService.hasManagerAccess());
+        } else {
+          this.userNome.set('Utente');
+          this.isAdmin.set(false);
+          this.isManager.set(false);
+        }
+        this.caricaDati();
+      });
   }
 
   ionViewWillEnter() {

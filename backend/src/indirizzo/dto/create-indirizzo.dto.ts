@@ -26,5 +26,5 @@ export class CreateIndirizzoDto {
   stato?: string; // <--- Mancava
 
   @IsOptional()
-  cliente?: any;
+  cliente?: { id: number };
 }

@@ -19,12 +19,12 @@ export class CreateAppuntamentoDto {
   descrizione?: string;
 
   @IsOptional()
-  commessa?: any;
+  commessa?: { id: number };
 
   // FASE 2: Collegamenti diretti opzionali
   @IsOptional()
-  indirizzo?: any; 
+  indirizzo?: { id: number }; 
 
   @IsOptional()
-  cliente?: any;
+  cliente?: { id: number };
 }

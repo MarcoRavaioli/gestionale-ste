@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -88,6 +89,7 @@ interface GruppoFatture {
 export class Tab4Page implements OnInit {
   tutteFatture = signal<Fattura[]>([]);
   gruppiFatture = signal<GruppoFatture[]>([]);
+  private destroyRef = inject(DestroyRef);
 
   // STATO UI
   filtroCorrente = signal<'tutte' | 'entrata' | 'uscita' | 'scadute'>('tutte');
@@ -252,21 +254,24 @@ export class Tab4Page implements OnInit {
   }
 
   caricaDati(event?: any) {
-    this.fatturaService.getAll().subscribe({
-      next: (data) => {
-        // Ordiniamo per data di emissione decrescente
-        data.sort(
-          (a, b) =>
-            new Date(b.data_emissione).getTime() -
-            new Date(a.data_emissione).getTime(),
-        );
-        this.tutteFatture.set(data);
-        if (event) event.target.complete();
-      },
-      error: () => {
-        if (event) event.target.complete();
-      },
-    });
+    this.fatturaService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          // Ordiniamo per data di emissione decrescente
+          data.sort(
+            (a, b) =>
+              new Date(b.data_emissione).getTime() -
+              new Date(a.data_emissione).getTime(),
+          );
+          this.tutteFatture.set(data);
+          if (event) event.target.complete();
+        },
+        error: () => {
+          if (event) event.target.complete();
+        },
+      });
   }
 
   cambiaFiltro(ev: any) {

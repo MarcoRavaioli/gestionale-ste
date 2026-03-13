@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, DestroyRef, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -92,6 +93,7 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
 
   form!: FormGroup;
   isSubmitting = false;
+  private destroyRef = inject(DestroyRef);
 
   tipoCollegamento: 'cantiere' | 'cliente' | 'nessuno' = 'cantiere';
   listaCantieri: Indirizzo[] = [];
@@ -130,8 +132,14 @@ export class NuovaCommessaGlobaleModalComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.indService.getAll().subscribe((res) => (this.listaCantieri = res));
-    this.clienteService.getAll().subscribe((res) => (this.listaClienti = res));
+    this.indService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => (this.listaCantieri = res));
+    this.clienteService
+      .getAll()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((res) => (this.listaClienti = res));
 
     if (this.commessa) {
       if (this.commessa.indirizzo?.id) {
