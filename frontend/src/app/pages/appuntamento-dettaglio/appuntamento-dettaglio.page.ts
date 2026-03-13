@@ -1,7 +1,7 @@
 import { Component, OnInit, signal, computed, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   IonHeader,
@@ -45,6 +45,8 @@ import {
   BreadcrumbGrafoComponent,
   BreadcrumbItem,
 } from '../../components/breadcrumb-grafo/breadcrumb-grafo.component';
+import { NuovoAppuntamentoGlobaleModalComponent } from '../../components/nuovo-appuntamento-globale-modal/nuovo-appuntamento-globale-modal.component';
+import { ModalController } from '@ionic/angular/standalone';
 
 import { addIcons } from 'ionicons';
 import {
@@ -89,20 +91,7 @@ export class AppuntamentoDettaglioPage implements OnInit {
   appuntamento = signal<Appuntamento | null>(null);
 
   hasManagerAccess = signal<boolean>(false);
-  isEditing = signal<boolean>(false);
   isSaving = signal<boolean>(false);
-
-  // Form state signals for editing
-  editDataOra = signal<string>('');
-  editDescrizione = signal<string>('');
-  editCommessaId = signal<number | null>(null);
-  editIndirizzoId = signal<number | null>(null);
-  editClienteId = signal<number | null>(null);
-
-  // Lists for dropdowns
-  commesseDisponibili = signal<Commessa[]>([]);
-  cantieriDisponibili = signal<Indirizzo[]>([]);
-  clientiDisponibili = signal<Cliente[]>([]);
 
   @ViewChild(GestioneAllegatiComponent)
   gestioneAllegati!: GestioneAllegatiComponent;
@@ -168,6 +157,8 @@ export class AppuntamentoDettaglioPage implements OnInit {
     private toastCtrl: ToastController,
     private alertCtrl: AlertController,
     private navCtrl: NavController,
+    private modalCtrl: ModalController,
+    private router: Router,
   ) {
     addIcons({
       pencil,
@@ -202,94 +193,39 @@ export class AppuntamentoDettaglioPage implements OnInit {
     });
   }
 
-  caricaDatiPadre() {
-    this.commessaService.getAll().subscribe({
-      next: (res: any) =>
-        this.commesseDisponibili.set(Array.isArray(res) ? res : res.data || []),
-    });
-    this.indirizzoService.getAll().subscribe({
-      next: (res: any) =>
-        this.cantieriDisponibili.set(Array.isArray(res) ? res : res.data || []),
-    });
-    this.clienteService.getAll().subscribe({
-      next: (res: any) =>
-        this.clientiDisponibili.set(Array.isArray(res) ? res : res.data || []),
-    });
-  }
-
-  abilitaModifica() {
+  async abilitaModifica() {
     const app = this.appuntamento();
     if (!app) return;
 
-    this.editDataOra.set(new Date(app.data_ora).toISOString());
-    this.editDescrizione.set(app.descrizione || '');
-    this.editCommessaId.set(app.commessa ? app.commessa.id : null);
-    this.editIndirizzoId.set(app.indirizzo ? app.indirizzo.id : null);
-    this.editClienteId.set(app.cliente ? app.cliente.id : null);
-
-    this.caricaDatiPadre();
-    this.isEditing.set(true);
-  }
-
-  annullaModifica() {
-    this.isEditing.set(false);
-  }
-
-  // Mutually Exclusive Parent Selectors logic
-  onChangeCommessa(val: any) {
-    this.editCommessaId.set(val);
-    if (val) {
-      this.editIndirizzoId.set(null);
-      this.editClienteId.set(null);
-    }
-  }
-
-  onChangeCantiere(val: any) {
-    this.editIndirizzoId.set(val);
-    if (val) {
-      this.editCommessaId.set(null);
-      this.editClienteId.set(null);
-    }
-  }
-
-  onChangeCliente(val: any) {
-    this.editClienteId.set(val);
-    if (val) {
-      this.editCommessaId.set(null);
-      this.editIndirizzoId.set(null);
-    }
-  }
-
-  salvaModifica() {
-    const app = this.appuntamento();
-    if (!app || !this.editDataOra()) return;
-
-    this.isSaving.set(true);
-    const payload: any = {
-      data_ora: new Date(this.editDataOra()).toISOString(),
-      descrizione: this.editDescrizione(),
-      commessaId: this.editCommessaId() ?? undefined,
-      indirizzoId: this.editIndirizzoId() ?? undefined,
-      clienteId: this.editClienteId() ?? undefined,
-    };
-
-    this.appuntamentoService.update(app.id, payload).subscribe({
-      next: async (res) => {
-        if (this.gestioneAllegati) {
-          await this.gestioneAllegati.uploadAllPendingFiles(res.id);
-        }
-
-        this.caricaDati(); // refresh full hierarchy
-        this.isEditing.set(false);
-        this.isSaving.set(false);
-        this.mostraToast('Modifiche salvate!', 'success');
-      },
-      error: () => {
-        this.isSaving.set(false);
-        this.mostraToast('Errore nel salvataggio.', 'danger');
+    const modal = await this.modalCtrl.create({
+      component: NuovoAppuntamentoGlobaleModalComponent,
+      componentProps: {
+        appuntamento: app,
       },
     });
+
+    await modal.present();
+
+    const { data } = await modal.onWillDismiss();
+    if (data && (data.aggiornato || data.creato)) {
+      this.caricaDati();
+    } else if (data && data.eliminato) {
+      this.navCtrl.back();
+    }
   }
+
+  vaiACliente(id: number) {
+    this.router.navigate(['/cliente-dettaglio', id]);
+  }
+
+  vaiACantiere(id: number) {
+    this.router.navigate(['/cantiere-dettaglio', id]);
+  }
+
+  vaiACommessa(id: number) {
+    this.router.navigate(['/commessa-dettaglio', id]);
+  }
+
 
   async elimina() {
     const alert = await this.alertCtrl.create({

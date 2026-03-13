@@ -34,7 +34,11 @@ export class FatturaService {
     
     // Le relazioni vanno passate solo se presenti
     if (dati.clienteId) formData.append('clienteId', dati.clienteId.toString());
-    if (dati.commessaId) formData.append('commessaId', dati.commessaId.toString());
+    if (dati.commessa_ids && Array.isArray(dati.commessa_ids)) {
+      dati.commessa_ids.forEach((id: number) => {
+        formData.append('commessa_ids', id.toString());
+      });
+    }
 
     // 2. Appendiamo il file (chiave 'file' deve coincidere con @UploadedFile nel controller)
     if (file) {
@@ -63,7 +67,11 @@ export class FatturaService {
     if (dati.descrizione) formData.append('descrizione', dati.descrizione);
     if (dati.data_scadenza) formData.append('data_scadenza', dati.data_scadenza);
     if (dati.clienteId) formData.append('clienteId', dati.clienteId.toString());
-    if (dati.commessaId) formData.append('commessaId', dati.commessaId.toString());
+    if (dati.commessa_ids && Array.isArray(dati.commessa_ids)) {
+      dati.commessa_ids.forEach((id: number) => {
+        formData.append('commessa_ids', id.toString());
+      });
+    }
     
     if (file) {
       formData.append('file', file, file.name);

@@ -55,23 +55,9 @@
           </div>
         </ion-label>
         <ion-icon
-          [name]="
-            app.cliente?.id ||
-            app.indirizzo?.cliente?.id ||
-            app.commessa?.cliente?.id ||
-            app.commessa?.indirizzo?.cliente?.id
-              ? 'chevron-forward'
-              : 'create-outline'
-          "
+          name="chevron-forward"
           slot="end"
-          [color]="
-            app.cliente?.id ||
-            app.indirizzo?.cliente?.id ||
-            app.commessa?.cliente?.id ||
-            app.commessa?.indirizzo?.cliente?.id
-              ? 'medium'
-              : 'primary'
-          "
+          color="medium"
           class="arrow-icon"
         ></ion-icon>
       </ion-item>

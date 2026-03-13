@@ -525,16 +525,8 @@ export class Tab3Page implements OnInit {
       if (item.indirizzo) queryParams.cantiereId = item.indirizzo.id;
       queryParams.commessaId = item.id;
     } else if (tipo === 'appuntamento') {
-      targetClienteId =
-        item.cliente?.id ||
-        item.indirizzo?.cliente?.id ||
-        item.commessa?.cliente?.id ||
-        item.commessa?.indirizzo?.cliente?.id;
-      if (item.indirizzo) queryParams.cantiereId = item.indirizzo.id;
-      if (item.commessa?.indirizzo)
-        queryParams.cantiereId = item.commessa.indirizzo.id;
-      if (item.commessa) queryParams.commessaId = item.commessa.id;
-      queryParams.appuntamentoId = item.id;
+      this.router.navigate(['/appuntamento-dettaglio', item.id]);
+      return;
     }
 
     if (targetClienteId) {
@@ -544,10 +536,7 @@ export class Tab3Page implements OnInit {
     } else {
       let componentToOpen: any;
       let propsToPass: any = {};
-      if (tipo === 'appuntamento') {
-        componentToOpen = NuovoAppuntamentoGlobaleModalComponent;
-        propsToPass = { appuntamento: item };
-      } else if (tipo === 'commessa') {
+      if (tipo === 'commessa') {
         this.router.navigate(['/commessa-dettaglio', item.id]);
         return;
       } else if (tipo === 'cantiere') {

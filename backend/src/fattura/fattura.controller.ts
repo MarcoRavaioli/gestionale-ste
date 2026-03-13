@@ -122,7 +122,14 @@ export class FatturaController {
         ? new Date(body.data_scadenza)
         : undefined,
       cliente: body.clienteId ? { id: parseInt(body.clienteId) } : null,
-      commessa: body.commessaId ? { id: parseInt(body.commessaId) } : null,
+      commesse: body.commessa_ids
+        ? (Array.isArray(body.commessa_ids)
+            ? body.commessa_ids
+            : [body.commessa_ids]
+          ).map((id) => ({ id: parseInt(id) }))
+        : body.commessaId
+          ? [{ id: parseInt(body.commessaId) }]
+          : [],
     };
   }
 }
